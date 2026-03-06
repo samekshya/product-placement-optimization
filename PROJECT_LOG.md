@@ -1,0 +1,1 @@
+- 2026-03-06 09:00:00: fix cell ordering basket_numeric must run before cooccurrence_scaled
