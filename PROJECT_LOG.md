@@ -1,2 +1,3 @@
 - 2026-03-06 09:00:00: fix cell ordering basket_numeric must run before cooccurrence_scaled
 - 2026-03-06 16:06:21: remove abandoned k=4 clustering cell no finding no purpose
+- 2026-03-06 23:12:43: fix silhouette score to exact value 0.554 matches actual output
