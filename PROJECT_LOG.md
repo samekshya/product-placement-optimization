@@ -2,3 +2,4 @@
 - 2026-03-06 16:06:21: remove abandoned k=4 clustering cell no finding no purpose
 - 2026-03-06 23:12:43: fix silhouette score to exact value 0.554 matches actual output
 - 2026-03-07 06:19:04: fix cell order notebook 06 now runs clean top to bottom
+- 2026-03-07 13:25:26: delete duplicate import cell 18 in notebook 05
