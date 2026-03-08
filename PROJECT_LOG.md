@@ -6,3 +6,4 @@
 - 2026-03-07 20:31:48: fix revenue impact variable name product_rules to rules prevents crash
 - 2026-03-08 03:38:09: fix truncated placement recommendations table wider column display
 - 2026-03-08 10:44:31: add revenue impact explanation lift alone does not equal revenue
+- 2026-03-08 17:50:52: add revenue impact calculation support x transactions x basket value
