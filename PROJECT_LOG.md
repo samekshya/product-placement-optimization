@@ -4,3 +4,4 @@
 - 2026-03-07 06:19:04: fix cell order notebook 06 now runs clean top to bottom
 - 2026-03-07 13:25:26: delete duplicate import cell 18 in notebook 05
 - 2026-03-07 20:31:48: fix revenue impact variable name product_rules to rules prevents crash
+- 2026-03-08 03:38:09: fix truncated placement recommendations table wider column display
