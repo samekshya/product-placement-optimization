@@ -18,3 +18,4 @@
 - 2026-03-11 09:48:07: add timing varies by hardware note to algorithm comparison finding
 - 2026-03-11 16:54:28: add physical constraints note data driven zones must consider refrigeration entry points aisle width
 - 2026-03-12 00:00:50: add controlled testing recommendation start small measure then expand
+- 2026-03-12 07:07:12: add 4 step controlled testing implementation guide to seasonal planning page
