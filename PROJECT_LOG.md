@@ -20,3 +20,4 @@
 - 2026-03-12 00:00:50: add controlled testing recommendation start small measure then expand
 - 2026-03-12 07:07:12: add 4 step controlled testing implementation guide to seasonal planning page
 - 2026-03-12 14:13:33: create notebook 10 demand forecasting title and purpose
+- 2026-03-12 21:19:55: explain why linear regression and prophet count as supervised machine learning
