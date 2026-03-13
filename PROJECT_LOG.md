@@ -22,3 +22,4 @@
 - 2026-03-12 14:13:33: create notebook 10 demand forecasting title and purpose
 - 2026-03-12 21:19:55: explain why linear regression and prophet count as supervised machine learning
 - 2026-03-13 04:26:16: add imports for linear regression sklearn and matplotlib
+- 2026-03-13 11:32:38: create monthly revenue dataset 10 months training data for forecasting model
