@@ -34,3 +34,4 @@
 - 2026-03-16 03:29:52: compare linear regression vs prophet mae and rmse prophet handles seasonality better
 - 2026-03-16 10:36:14: add business interpretation how store owner uses forecasts for stock planning
 - 2026-03-16 17:42:36: add final summary 4 ml models in project linear regression prophet clustering recommendations
+- 2026-03-17 00:48:57: fix cell ordering data driven zones must run before cooccurrence_scaled
