@@ -50,3 +50,4 @@
 - 2026-03-20 21:11:38: add notebook 11 decision tree basket classifier 61.3% accuracy COOKING OIL top predictor
 - 2026-03-21 04:18:00: fix student id capitalisation to Student ID
 - 2026-03-21 11:24:21: delete duplicate data load cell in notebook 01
+- 2026-03-21 18:30:43: merge import and print cells into single cell 3
