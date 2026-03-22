@@ -51,3 +51,4 @@
 - 2026-03-21 04:18:00: fix student id capitalisation to Student ID
 - 2026-03-21 11:24:21: delete duplicate data load cell in notebook 01
 - 2026-03-21 18:30:43: merge import and print cells into single cell 3
+- 2026-03-22 01:37:04: delete empty code cell from notebook 03
