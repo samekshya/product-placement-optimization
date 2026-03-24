@@ -61,3 +61,4 @@
 - 2026-03-24 03:21:36: fix cell order notebook 06 now runs clean top to bottom
 - 2026-03-24 10:27:57: delete duplicate import cell 18 in notebook 05
 - 2026-03-24 17:34:19: fix revenue impact variable name product_rules to rules prevents crash
+- 2026-03-25 00:40:40: fix truncated placement recommendations table wider column display
