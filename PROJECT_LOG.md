@@ -81,3 +81,4 @@
 - 2026-03-30 01:28:48: add imports for linear regression sklearn and matplotlib
 - 2026-03-30 08:35:09: create monthly revenue dataset 10 months training data for forecasting model
 - 2026-03-30 15:41:31: add monthly revenue trend chart19 shows dashain peak september 2025
+- 2026-03-30 22:47:52: train linear regression model on monthly revenue data learns sales trend
