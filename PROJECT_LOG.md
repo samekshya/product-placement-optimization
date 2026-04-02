@@ -90,3 +90,4 @@
 - 2026-04-01 17:26:02: add prophet forecast chart21 shows actual vs predicted with confidence interval
 - 2026-04-02 00:32:24: compare linear regression vs prophet mae and rmse prophet handles seasonality better
 - 2026-04-02 07:38:45: add business interpretation how store owner uses forecasts for stock planning
+- 2026-04-02 14:45:07: add final summary 4 ml models in project linear regression prophet clustering recommendations
