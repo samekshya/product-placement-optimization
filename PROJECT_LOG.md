@@ -93,3 +93,4 @@
 - 2026-04-02 14:45:07: add final summary 4 ml models in project linear regression prophet clustering recommendations
 - 2026-04-02 21:51:28: fix cell ordering data driven zones must run before cooccurrence_scaled
 - 2026-04-03 04:57:50: delete duplicate import and data load cell halfway through notebook 05
+- 2026-04-03 12:04:12: add dark mode toggle button in sidebar light theme is default
