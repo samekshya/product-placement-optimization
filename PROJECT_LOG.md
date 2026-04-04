@@ -96,3 +96,4 @@
 - 2026-04-03 12:04:12: add dark mode toggle button in sidebar light theme is default
 - 2026-04-03 19:10:33: fix all charts to use theme colours works in both light and dark mode
 - 2026-04-04 02:16:55: add support to recommendation cards now shows all three metrics lift confidence support
+- 2026-04-04 09:23:16: add zone methodology note and fix zone cards to use theme colours
