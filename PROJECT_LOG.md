@@ -97,3 +97,4 @@
 - 2026-04-03 19:10:33: fix all charts to use theme colours works in both light and dark mode
 - 2026-04-04 02:16:55: add support to recommendation cards now shows all three metrics lift confidence support
 - 2026-04-04 09:23:16: add zone methodology note and fix zone cards to use theme colours
+- 2026-04-04 16:29:38: fix seasonal page theme colours add 4 step controlled testing implementation guide
