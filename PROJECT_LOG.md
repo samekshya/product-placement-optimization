@@ -100,3 +100,4 @@
 - 2026-04-04 16:29:38: fix seasonal page theme colours add 4 step controlled testing implementation guide
 - 2026-04-04 23:36:00: rebuild dashboard with owner mode and examiner mode practical tool not just charts
 - 2026-04-05 06:42:21: add revenue impact analysis support x transactions x basket value ranks rules by money
+- 2026-04-05 13:48:43: add ABC analysis Chart 10 and day of week Chart 11 to notebook 03
