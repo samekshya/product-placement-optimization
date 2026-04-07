@@ -105,3 +105,4 @@
 - 2026-04-06 04:01:26: add 95% confidence interval for revenue projection grounded in store data
 - 2026-04-06 11:07:48: add Store Analytics examiner page with ABC analysis and day of week charts
 - 2026-04-06 18:14:09: add notebook 11 decision tree basket classifier 61.3% accuracy COOKING OIL top predictor
+- 2026-04-07 01:20:31: fix student id capitalisation to Student ID
