@@ -112,3 +112,4 @@
 - 2026-04-08 05:45:57: add top 10 products by revenue table with actual numbers
 - 2026-04-08 12:52:19: add specific transaction numbers to chart 1 finding sugar 23083 rato dal 12533
 - 2026-04-08 19:58:40: fix kalo dal rato dal count 3989 not 4000 matches actual output
+- 2026-04-09 03:05:02: fix cell ordering basket_numeric must run before cooccurrence_scaled
