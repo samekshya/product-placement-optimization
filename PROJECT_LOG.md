@@ -114,3 +114,4 @@
 - 2026-04-08 19:58:40: fix kalo dal rato dal count 3989 not 4000 matches actual output
 - 2026-04-09 03:05:02: fix cell ordering basket_numeric must run before cooccurrence_scaled
 - 2026-04-09 10:11:24: remove abandoned k=4 clustering cell no finding no purpose
+- 2026-04-09 17:17:45: fix silhouette score to exact value 0.554 matches actual output
