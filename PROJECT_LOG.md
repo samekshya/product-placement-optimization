@@ -158,3 +158,4 @@
 - 2026-04-21 20:38:31: rebuild dashboard with owner mode and examiner mode practical tool not just charts
 - 2026-04-22 03:44:52: add revenue impact analysis support x transactions x basket value ranks rules by money
 - 2026-04-22 10:51:14: add ABC analysis Chart 10 and day of week Chart 11 to notebook 03
+- 2026-04-22 17:57:36: add category relationship network graph Chart 10 to notebook 05
