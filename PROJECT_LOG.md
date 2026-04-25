@@ -168,3 +168,4 @@
 - 2026-04-24 19:42:07: delete empty code cell from notebook 03
 - 2026-04-25 02:48:28: add top 10 products by revenue table with actual numbers
 - 2026-04-25 09:54:50: add specific transaction numbers to chart 1 finding sugar 23083 rato dal 12533
+- 2026-04-25 17:01:12: fix kalo dal rato dal count 3989 not 4000 matches actual output
