@@ -174,3 +174,4 @@
 - 2026-04-26 14:20:16: fix silhouette score to exact value 0.554 matches actual output
 - 2026-04-26 21:26:38: fix cell order notebook 06 now runs clean top to bottom
 - 2026-04-27 04:33:00: delete duplicate import cell 18 in notebook 05
+- 2026-04-27 11:39:21: fix revenue impact variable name product_rules to rules prevents crash
