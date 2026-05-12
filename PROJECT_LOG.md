@@ -225,3 +225,4 @@
 - 2026-05-11 16:44:38: delete empty code cell from notebook 03
 - 2026-05-11 23:51:00: add top 10 products by revenue table with actual numbers
 - 2026-05-12 06:57:21: add specific transaction numbers to chart 1 finding sugar 23083 rato dal 12533
+- 2026-05-12 14:03:43: fix kalo dal rato dal count 3989 not 4000 matches actual output
