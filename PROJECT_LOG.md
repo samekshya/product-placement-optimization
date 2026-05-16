@@ -237,3 +237,4 @@
 - 2026-05-15 06:00:57: add revenue impact calculation support x transactions x basket value
 - 2026-05-15 13:07:19: add finding revenue impact rules must pass lift support and confidence thresholds
 - 2026-05-15 20:13:40: add product level revenue impact analysis sugar rato dal outranks high lift rare pairs
+- 2026-05-16 03:20:02: fix month count 1 to 11 not 1 to 10 in ml explanation
