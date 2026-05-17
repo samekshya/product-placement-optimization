@@ -243,3 +243,4 @@
 - 2026-05-17 00:39:07: fix summary 11 months not 10 months of revenue data
 - 2026-05-17 07:45:28: add notebooks 09 and 10 to evaluation scope
 - 2026-05-17 14:51:50: add notebook 09 and 10 results to final evaluation summary
+- 2026-05-17 21:58:12: add timing varies by hardware note to algorithm comparison finding
