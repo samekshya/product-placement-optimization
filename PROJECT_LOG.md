@@ -241,3 +241,4 @@
 - 2026-05-16 10:26:24: explain july 2025 partial month only 14 days data from july 17
 - 2026-05-16 17:32:45: explain negative r-squared expected with 11 data points prophet handles this better
 - 2026-05-17 00:39:07: fix summary 11 months not 10 months of revenue data
+- 2026-05-17 07:45:28: add notebooks 09 and 10 to evaluation scope
