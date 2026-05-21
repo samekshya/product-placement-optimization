@@ -255,3 +255,4 @@
 - 2026-05-20 13:55:26: train linear regression model on monthly revenue data learns sales trend
 - 2026-05-20 21:01:48: evaluate linear regression model mae rmse r2 score on test data
 - 2026-05-21 04:08:09: forecast next 3 months revenue using linear regression chart20 saved
+- 2026-05-21 11:14:31: add prophet explanation why it handles seasonality better than linear regression
