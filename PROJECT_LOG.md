@@ -258,3 +258,4 @@
 - 2026-05-21 11:14:31: add prophet explanation why it handles seasonality better than linear regression
 - 2026-05-21 18:20:52: train prophet model on 10 months of monthly revenue data
 - 2026-05-22 01:27:14: generate prophet forecast for next 3 months with confidence intervals
+- 2026-05-22 08:33:36: add prophet forecast chart21 shows actual vs predicted with confidence interval
