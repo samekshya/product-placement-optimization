@@ -290,3 +290,4 @@
 - 2026-05-30 22:38:02: delete duplicate import cell 18 in notebook 05
 - 2026-05-31 05:44:24: fix revenue impact variable name product_rules to rules prevents crash
 - 2026-05-31 12:50:45: fix truncated placement recommendations table wider column display
+- 2026-05-31 19:57:07: add revenue impact explanation lift alone does not equal revenue
