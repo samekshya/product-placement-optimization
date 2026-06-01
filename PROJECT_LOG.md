@@ -293,3 +293,4 @@
 - 2026-05-31 19:57:07: add revenue impact explanation lift alone does not equal revenue
 - 2026-06-01 03:03:28: add revenue impact calculation support x transactions x basket value
 - 2026-06-01 10:09:50: add finding revenue impact rules must pass lift support and confidence thresholds
+- 2026-06-01 17:16:12: add product level revenue impact analysis sugar rato dal outranks high lift rare pairs
