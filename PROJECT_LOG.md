@@ -299,3 +299,4 @@
 - 2026-06-02 14:35:16: explain negative r-squared expected with 11 data points prophet handles this better
 - 2026-06-02 21:41:38: fix summary 11 months not 10 months of revenue data
 - 2026-06-03 04:48:00: add notebooks 09 and 10 to evaluation scope
+- 2026-06-03 11:54:21: add notebook 09 and 10 results to final evaluation summary
