@@ -302,3 +302,4 @@
 - 2026-06-03 11:54:21: add notebook 09 and 10 results to final evaluation summary
 - 2026-06-03 19:00:43: add timing varies by hardware note to algorithm comparison finding
 - 2026-06-04 02:07:04: add physical constraints note data driven zones must consider refrigeration entry points aisle width
+- 2026-06-04 09:13:26: add controlled testing recommendation start small measure then expand
