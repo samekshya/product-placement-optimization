@@ -3,3 +3,6 @@ venv/
 *.xlsx
 __pycache__/
 .ipynb_checkpoints/
+echo data/processed/ >> .gitignore
+data/processed/
+data/raw/
