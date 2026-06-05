@@ -306,3 +306,4 @@
 - 2026-06-04 16:19:48: add 4 step controlled testing implementation guide to seasonal planning page
 - 2026-06-04 23:26:09: create notebook 10 demand forecasting title and purpose
 - 2026-06-05 06:32:31: explain why linear regression and prophet count as supervised machine learning
+- 2026-06-05 13:38:52: add imports for linear regression sklearn and matplotlib
