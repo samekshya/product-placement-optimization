@@ -308,3 +308,4 @@
 - 2026-06-05 06:32:31: explain why linear regression and prophet count as supervised machine learning
 - 2026-06-05 13:38:52: add imports for linear regression sklearn and matplotlib
 - 2026-06-05 20:45:14: create monthly revenue dataset 10 months training data for forecasting model
+- 2026-06-06 03:51:36: add monthly revenue trend chart19 shows dashain peak september 2025
