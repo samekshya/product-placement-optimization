@@ -316,3 +316,4 @@
 - 2026-06-07 15:23:24: train prophet model on 10 months of monthly revenue data
 - 2026-06-07 22:29:45: generate prophet forecast for next 3 months with confidence intervals
 - 2026-06-08 05:36:07: add prophet forecast chart21 shows actual vs predicted with confidence interval
+- 2026-06-08 12:42:28: compare linear regression vs prophet mae and rmse prophet handles seasonality better
