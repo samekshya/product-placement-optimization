@@ -64,3 +64,4 @@ product-placement-optimization/
 ## How to Run
 
 **Step 1: Clone the repository**
+git clone https://github.com/samekshya/product-placement-optimization.git
