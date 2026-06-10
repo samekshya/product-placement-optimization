@@ -323,3 +323,4 @@
 - 2026-06-09 17:07:55: delete duplicate import and data load cell halfway through notebook 05
 - 2026-06-10 00:14:16: add dark mode toggle button in sidebar light theme is default
 - 2026-06-10 07:20:38: fix all charts to use theme colours works in both light and dark mode
+- 2026-06-10 14:27:00: add support to recommendation cards now shows all three metrics lift confidence support
