@@ -59,3 +59,8 @@ product-placement-optimization/
 ├── reports/
 │   └── figures/                (all charts and visualizations)
 └── README.md
+---
+
+## How to Run
+
+**Step 1: Clone the repository**
