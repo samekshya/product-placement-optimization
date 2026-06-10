@@ -69,3 +69,6 @@ git clone https://github.com/samekshya/product-placement-optimization.git
 **Step 2: Create virtual environment**
 python -m venv venv
 venv\Scripts\activate
+
+**Step 3: Install required libraries**
+pip install pandas numpy matplotlib seaborn scikit-learn mlxtend openpyxl
