@@ -67,3 +67,5 @@ product-placement-optimization/
 git clone https://github.com/samekshya/product-placement-optimization.git
 
 **Step 2: Create virtual environment**
+python -m venv venv
+venv\Scripts\activate
