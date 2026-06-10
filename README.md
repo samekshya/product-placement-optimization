@@ -72,3 +72,69 @@ venv\Scripts\activate
 
 **Step 3: Install required libraries**
 pip install pandas numpy matplotlib seaborn scikit-learn mlxtend openpyxl
+
+**Step 4: Add the raw data file**
+Place sales_data_raw.xlsx inside the data/raw/ folder.
+This file is not on GitHub as it contains confidential store data.
+
+**Step 5: Run notebooks in order**
+Run from 01_data_audit.ipynb through to 08_evaluation.ipynb.
+Each notebook builds on the previous one.
+
+---
+
+## Algorithms Used
+
+| Algorithm | Type | Purpose |
+|-----------|------|---------|
+| Apriori | Unsupervised ML | Find frequent itemsets and association rules |
+| FP-Growth | Unsupervised ML | Faster association rule mining for comparison |
+| K-Means | Unsupervised ML | Group categories into natural placement zones |
+
+---
+
+## Results Summary
+
+| Metric | Value |
+|--------|-------|
+| Total association rules found | 1,228 |
+| Strong rules with lift above 5 | 48 |
+| Maximum lift score | 6.81 |
+| Clustering silhouette score | 0.55 |
+| Current average basket value | Rs 1,000.81 |
+| Projected basket at 5 percent uplift | Rs 1,050.85 |
+| Extra daily revenue at 5 percent | Rs 35,540 |
+| Extra annual revenue at 5 percent | Rs 1.30 Crore |
+
+---
+
+## Placement Recommendation
+
+Based on MBA analysis of 218,037 real transactions:
+
+| Zone | Categories | Location |
+|------|-----------|---------|
+| Zone 1: Daily Essentials | Food Staples, Cooking Oil, Cleaning Supplies, Tea and Spices, Household Items | Store center |
+| Zone 2: Snacks and Drinks | Noodles, Soft Drinks, Biscuits, Confectionery, Canned Foods | Near entrance |
+| Zone 3: Personal Care | Personal Care, Baby Care, Stationery | Side aisle |
+| Zone 4: Dairy and Fresh | Dairy, Frozen Foods, Fruits, Bakery | Back of store |
+| Zone 5: Special Categories | Rice, Alcohol, Cigarettes, Pooja Items, Cereals | Store perimeter |
+
+---
+
+## Limitations
+
+- Revenue projections are based on retail industry benchmarks not a live experiment
+- 98 percent of customers are anonymous so individual tracking is not possible
+- Single store dataset may not generalize to other Nepali grocery stores
+- Data covers 10 months only, June 2026 is missing for full year analysis
+
+---
+
+## Future Work
+
+- Conduct live A/B test comparing old vs new shelf layout
+- Install loyalty card system to track individual customers
+- Expand analysis to product level with all 5,681 products
+- Build real time recommendation system for cashiers
+- Replicate study with full 12 months of data
