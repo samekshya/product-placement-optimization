@@ -2,7 +2,7 @@
 ### Baniya Shopping Center, Lamachour-16, Pokhara, Nepal
 
 **Student:** Samikshya Baniya | **ID:** 230360
-**Module:** ST6000CEM Final Year Project
+**Module:** ST6001CEM Individual Project
 **University:** Softwarica College / Coventry University
 
 ---
