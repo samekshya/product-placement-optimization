@@ -341,3 +341,4 @@
 - 2026-06-15 01:02:24: add specific transaction numbers to chart 1 finding sugar 23083 rato dal 12533
 - 2026-06-15 08:08:45: fix kalo dal rato dal count 3989 not 4000 matches actual output
 - 2026-06-15 15:15:07: fix cell ordering basket_numeric must run before cooccurrence_scaled
+- 2026-06-15 22:21:28: remove abandoned k=4 clustering cell no finding no purpose
