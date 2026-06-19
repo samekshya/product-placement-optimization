@@ -354,3 +354,4 @@
 - 2026-06-18 21:25:04: fix month count 1 to 11 not 1 to 10 in ml explanation
 - 2026-06-19 04:31:26: explain july 2025 partial month only 14 days data from july 17
 - 2026-06-19 11:37:48: explain negative r-squared expected with 11 data points prophet handles this better
+- 2026-06-19 18:44:09: fix summary 11 months not 10 months of revenue data
