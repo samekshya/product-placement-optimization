@@ -10,33 +10,47 @@ from sklearn.model_selection import train_test_split
 import warnings
 warnings.filterwarnings('ignore')
 
+# ============================================================
+# PAGE CONFIG
+# ============================================================
+
 st.set_page_config(
     page_title="Baniya Shopping Center",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+# ============================================================
+# THEME - light by default, dark optional
+# ============================================================
+
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = False
 
 if st.session_state.dark_mode:
-    bg = "#0f0f0f"
-    sidebar_bg = "#1a1a1a"
-    card_bg = "#1a1a1a"
-    text = "#ffffff"
-    subtext = "#888888"
-    border = "#2a2a2a"
-    chart_bg = "#0f0f0f"
-    bar_color = "#3a3a3a"
+    bg          = "#0f0f0f"
+    sidebar_bg  = "#1a1a1a"
+    card_bg     = "#1a1a1a"
+    text        = "#ffffff"
+    subtext     = "#888888"
+    border      = "#2a2a2a"
+    chart_bg    = "#0f0f0f"
+    bar_color   = "#3a3a3a"
+    annot_color = "white"
 else:
-    bg = "#ffffff"
-    sidebar_bg = "#f8f9fa"
-    card_bg = "#f8f9fa"
-    text = "#1a1a1a"
-    subtext = "#666666"
-    border = "#e0e0e0"
-    chart_bg = "#ffffff"
-    bar_color = "#d0d0d0"
+    bg          = "#ffffff"
+    sidebar_bg  = "#f8f9fa"
+    card_bg     = "#f8f9fa"
+    text        = "#1a1a1a"
+    subtext     = "#666666"
+    border      = "#e0e0e0"
+    chart_bg    = "#ffffff"
+    bar_color   = "#d0d0d0"
+    annot_color = "#1a1a1a"
+
+# ============================================================
+# CSS STYLING
+# ============================================================
 
 st.markdown(f"""
 <style>
@@ -65,9 +79,17 @@ st.markdown(f"""
         text-transform: uppercase;
         letter-spacing: 1px;
     }}
-    h1, h2 {{ color: {text}; font-weight: 800; }}
-    h3 {{ color: {text}; font-weight: 600; }}
-    hr {{ border-color: {border}; }}
+    h1, h2 {{
+        color: {text};
+        font-weight: 800;
+    }}
+    h3 {{
+        color: {text};
+        font-weight: 600;
+    }}
+    hr {{
+        border-color: {border};
+    }}
     .insight-box {{
         background-color: {card_bg};
         border-left: 4px solid #e63946;
@@ -75,7 +97,11 @@ st.markdown(f"""
         border-radius: 4px;
         margin: 12px 0;
     }}
-    .insight-box p {{ margin: 0; color: {text}; font-size: 15px; }}
+    .insight-box p {{
+        margin: 0;
+        color: {text};
+        font-size: 15px;
+    }}
     .insight-title {{
         color: #e63946;
         font-size: 11px;
@@ -91,7 +117,11 @@ st.markdown(f"""
         padding: 16px;
         margin-bottom: 10px;
     }}
-    .rec-product {{ color: {text}; font-size: 16px; font-weight: 600; }}
+    .rec-product {{
+        color: {text};
+        font-size: 16px;
+        font-weight: 600;
+    }}
     .rec-bar-container {{
         background-color: {border};
         border-radius: 4px;
@@ -113,6 +143,10 @@ st.markdown(f"""
     }}
 </style>
 """, unsafe_allow_html=True)
+
+# ============================================================
+# LANGUAGE TRANSLATIONS
+# ============================================================
 
 TRANSLATIONS = {
     "English": {
@@ -157,13 +191,22 @@ TRANSLATIONS = {
     }
 }
 
+# ============================================================
+# DATA PATH
+# ============================================================
+
 DATA_PATH = r'D:\softwarica\Sem 6\Individual Project\product-placement-optimization\data\processed\sales_data_cleaned.csv'
+
+# ============================================================
+# DATA LOADING FUNCTIONS (cached so they only run once)
+# ============================================================
 
 @st.cache_data
 def load_data():
     df = pd.read_csv(DATA_PATH)
     df['date'] = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
     return df
+
 
 @st.cache_data
 def get_monthly_revenue(df):
@@ -172,8 +215,10 @@ def get_monthly_revenue(df):
     monthly.columns = ['month', 'revenue']
     return monthly
 
+
 @st.cache_data
 def get_product_rules(df):
+    # Find top 100 most sold products
     top_100 = (
         df.groupby('product')['invoice_no']
         .nunique()
@@ -181,33 +226,63 @@ def get_product_rules(df):
         .head(100)
     )
     top_names = top_100.index.tolist()
+
+    # Filter data to top 100 products only
     df_top = df[df['product'].isin(top_names)]
+
+    # Group into baskets
     baskets = df_top.groupby('invoice_no')['product'].apply(list)
+
+    # Encode into True/False matrix
     te = TransactionEncoder()
     te_array = te.fit(baskets).transform(baskets)
     basket_df = pd.DataFrame(te_array, columns=te.columns_)
+
+    # 70/30 train test split
     train_df, _ = train_test_split(basket_df, test_size=0.3, random_state=42)
+
+    # Run Apriori on training data only
     frequent = apriori(train_df, min_support=0.005, use_colnames=True)
     rules = association_rules(frequent, metric="lift", min_threshold=1.0)
     rules = rules.sort_values('lift', ascending=False)
+
     return rules, top_100
+
 
 @st.cache_data
 def get_category_rules(df):
+    # Group into category baskets
     baskets = df.groupby('invoice_no')['category'].apply(list)
+
+    # Encode into True/False matrix
     te = TransactionEncoder()
     te_array = te.fit(baskets).transform(baskets)
     basket_df = pd.DataFrame(te_array, columns=te.columns_)
+
+    # Run Apriori on all category data
     frequent = apriori(basket_df, min_support=0.01, use_colnames=True)
     rules = association_rules(frequent, metric="lift", min_threshold=1.0)
     rules = rules.sort_values('lift', ascending=False)
+
     return rules
 
+# ============================================================
+# RECOMMENDATION FUNCTION (the ML model)
+# ============================================================
+
 def get_recommendations(product_name, rules_df, top_n=5):
+    """
+    Takes a product name.
+    Searches all association rules for that product on the left side.
+    Returns top N products from the right side, ranked by lift.
+    Shows support, confidence and lift together for full picture.
+    """
     product_name = product_name.strip()
     recommendations = []
+
     for _, row in rules_df.iterrows():
         antecedents = [a.strip() for a in list(row['antecedents'])]
+
         if product_name in antecedents:
             for product in list(row['consequents']):
                 recommendations.append({
@@ -216,47 +291,41 @@ def get_recommendations(product_name, rules_df, top_n=5):
                     'Confidence': round(row['confidence'], 2),
                     'Lift': round(row['lift'], 2)
                 })
+
     if not recommendations:
         return None
+
     rec_df = pd.DataFrame(recommendations)
     rec_df = rec_df.groupby('Product').agg({
         'Support': 'max',
         'Confidence': 'max',
         'Lift': 'max'
     }).reset_index()
-    return rec_df.sort_values('Lift', ascending=False).head(top_n)
-    product_name = product_name.strip()
-    recommendations = []
-    for _, row in rules_df.iterrows():
-        antecedents = [a.strip() for a in list(row['antecedents'])]
-        if product_name in antecedents:
-            for product in list(row['consequents']):
-                recommendations.append({
-                    'Product': product,
-                    'Confidence': round(row['confidence'], 2),
-                    'Lift': round(row['lift'], 2)
-                })
-    if not recommendations:
-        return None
-    rec_df = pd.DataFrame(recommendations)
-    rec_df = rec_df.groupby('Product').agg({
-        'Confidence': 'max',
-        'Lift': 'max'
-    }).reset_index()
+
     return rec_df.sort_values('Lift', ascending=False).head(top_n)
 
+# ============================================================
+# SIDEBAR
+# ============================================================
+
 with st.sidebar:
+    # Language selector
     lang = st.selectbox("Language / भाषा", ["English", "Nepali"])
     T = TRANSLATIONS[lang]
-    
+
     st.markdown("---")
+
+    # Dark/Light mode toggle
     mode_label = "Switch to Light Mode" if st.session_state.dark_mode else "Switch to Dark Mode"
     if st.button(mode_label):
         st.session_state.dark_mode = not st.session_state.dark_mode
         st.rerun()
+
     st.markdown("---")
+
+    # Navigation
     st.markdown(f'<div class="sidebar-title">Navigation</div>', unsafe_allow_html=True)
-    
+
     page = st.radio(
         "",
         [
@@ -268,11 +337,13 @@ with st.sidebar:
         ],
         label_visibility="collapsed"
     )
-    
+
     st.markdown("---")
+
+    # Student info
     st.markdown(f"""
-    <div style="color: #444; font-size: 11px; line-height: 1.8;">
-        <div style="color: #666; margin-bottom: 4px;">STUDENT</div>
+    <div style="color: {subtext}; font-size: 11px; line-height: 1.8;">
+        <div style="margin-bottom: 4px;">STUDENT</div>
         Samikshya Baniya<br>
         ID: 230360<br>
         ST6001CEM<br>
@@ -280,17 +351,27 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
+# ============================================================
+# LOAD DATA
+# ============================================================
+
 with st.spinner("Loading data..."):
     df = load_data()
     monthly_revenue = get_monthly_revenue(df)
     product_rules, top_100_products = get_product_rules(df)
     category_rules = get_category_rules(df)
 
+# ============================================================
+# PAGE 1 - OVERVIEW
+# ============================================================
+
 if page == T["nav_overview"]:
+
     st.title(T["title"])
     st.markdown(f"#### {T['subtitle']}")
     st.markdown("---")
 
+    # Top insight box
     st.markdown(f"""
     <div class="insight-box">
         <div class="insight-title">{T['top_insight']}</div>
@@ -300,6 +381,7 @@ if page == T["nav_overview"]:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # KPI cards - row 1
     col1, col2, col3, col4 = st.columns(4)
     col1.metric(T["total_transactions"], "218,037")
     col2.metric(T["avg_basket"], "Rs 1,000.81")
@@ -308,6 +390,7 @@ if page == T["nav_overview"]:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # KPI cards - row 2
     col5, col6, col7, col8 = st.columns(4)
     col5.metric("Total Products", "5,681")
     col6.metric("Categories", "25")
@@ -315,23 +398,27 @@ if page == T["nav_overview"]:
     col8.metric("Max Lift (Product Level)", "22.41")
 
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # Monthly revenue bar chart
     st.markdown(f"### {T['revenue_chart_title']}")
 
     fig, ax = plt.subplots(figsize=(14, 5))
-    fig.patch.set_facecolor('#0f0f0f')
-    ax.set_facecolor('#0f0f0f')
+    fig.patch.set_facecolor(chart_bg)
+    ax.set_facecolor(chart_bg)
 
-    colors = ['#e63946' if 'Sep' in m or 'Oct' in m else '#3a3a3a' for m in monthly_revenue['month']]
-    bars = ax.bar(monthly_revenue['month'], monthly_revenue['revenue'] / 1_000_000, color=colors, width=0.6)
+    # Highlight Sep and Oct in red for Dashain
+    colors = ['#e63946' if 'Sep' in m or 'Oct' in m else bar_color for m in monthly_revenue['month']]
+    ax.bar(monthly_revenue['month'], monthly_revenue['revenue'] / 1_000_000, color=colors, width=0.6)
 
-    ax.set_ylabel('Revenue (Rs Million)', color='#888888', fontsize=11)
-    ax.tick_params(colors='#888888')
-    ax.spines['bottom'].set_color('#2a2a2a')
-    ax.spines['left'].set_color('#2a2a2a')
+    ax.set_ylabel('Revenue (Rs Million)', color=subtext, fontsize=11)
+    ax.tick_params(colors=subtext)
+    ax.spines['bottom'].set_color(border)
+    ax.spines['left'].set_color(border)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.set_xticklabels(monthly_revenue['month'], rotation=45, ha='right', color='#888888', fontsize=9)
+    ax.set_xticklabels(monthly_revenue['month'], rotation=45, ha='right', color=subtext, fontsize=9)
 
+    # Annotate the Dashain peak
     max_idx = monthly_revenue['revenue'].idxmax()
     max_month = monthly_revenue.iloc[max_idx]
     ax.annotate(
@@ -349,6 +436,8 @@ if page == T["nav_overview"]:
     plt.close()
 
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # Revenue projections
     st.markdown(f"### {T['projection_title']}")
 
     col_a, col_b, col_c = st.columns(3)
@@ -363,12 +452,18 @@ if page == T["nav_overview"]:
     </div>
     """, unsafe_allow_html=True)
 
+# ============================================================
+# PAGE 2 - PRODUCT INTELLIGENCE
+# ============================================================
+
 elif page == T["nav_products"]:
+
     st.title("Product Intelligence")
     st.markdown("---")
 
     col1, col2 = st.columns(2)
 
+    # Top 20 products bar chart
     with col1:
         st.markdown("### Top 20 Products by Transactions")
         top20 = top_100_products.head(20).reset_index()
@@ -378,6 +473,7 @@ elif page == T["nav_products"]:
         fig.patch.set_facecolor(chart_bg)
         ax.set_facecolor(chart_bg)
 
+        # Highlight top 3 in red
         colors = ['#e63946' if i < 3 else bar_color for i in range(len(top20))]
         ax.barh(top20['Product'][::-1], top20['Transactions'][::-1], color=colors[::-1], height=0.6)
         ax.set_xlabel('Transactions', color=subtext)
@@ -390,14 +486,16 @@ elif page == T["nav_products"]:
         st.pyplot(fig)
         plt.close()
 
+    # Top 15 categories bar chart
     with col2:
         st.markdown("### Top 15 Categories by Transactions")
         cat_counts = df.groupby('category')['invoice_no'].nunique().sort_values(ascending=False).head(15)
 
-        ffig2, ax2 = plt.subplots(figsize=(8, 9))
+        fig2, ax2 = plt.subplots(figsize=(8, 9))
         fig2.patch.set_facecolor(chart_bg)
         ax2.set_facecolor(chart_bg)
 
+        # Highlight top 3 in red
         colors2 = ['#e63946' if i < 3 else bar_color for i in range(len(cat_counts))]
         ax2.barh(cat_counts.index[::-1], cat_counts.values[::-1], color=colors2[::-1], height=0.6)
         ax2.set_xlabel('Transactions', color=subtext)
@@ -411,6 +509,8 @@ elif page == T["nav_products"]:
         plt.close()
 
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # Co-occurrence heatmap
     st.markdown("### Product Co-occurrence Heatmap (Top 20 Products)")
     st.markdown("Darker red means bought together more often. Use this to decide shelf arrangement.")
 
@@ -435,7 +535,7 @@ elif page == T["nav_products"]:
         linecolor=border,
         annot=True,
         fmt='g',
-        annot_kws={'size': 8, 'color': text},
+        annot_kws={'size': 8, 'color': annot_color},
         cbar_kws={'shrink': 0.8}
     )
     ax3.tick_params(colors=subtext, labelsize=8)
@@ -445,11 +545,17 @@ elif page == T["nav_products"]:
     st.pyplot(fig3)
     plt.close()
 
+# ============================================================
+# PAGE 3 - RECOMMENDATION ENGINE
+# ============================================================
+
 elif page == T["nav_recommendations"]:
+
     st.title("Recommendation Engine")
     st.markdown("Trained on 95,570 baskets. Validated on 40,959 unseen baskets. Hit rate: 28%.")
     st.markdown("---")
 
+    # Model performance metrics
     col1, col2, col3 = st.columns(3)
     col1.metric("Training Baskets", "95,570")
     col2.metric("Test Baskets", "40,959")
@@ -457,9 +563,14 @@ elif page == T["nav_recommendations"]:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # Product selector - defaults to Sugar
     all_products = sorted(top_100_products.index.tolist())
     default_idx = all_products.index('Sugar') if 'Sugar' in all_products else 0
-    selected = st.selectbox("Select a product to get shelf placement recommendations", all_products, index=default_idx)
+    selected = st.selectbox(
+        "Select a product to get shelf placement recommendations",
+        all_products,
+        index=default_idx
+    )
 
     if selected:
         recs = get_recommendations(selected, product_rules)
@@ -472,12 +583,13 @@ elif page == T["nav_recommendations"]:
 
             max_lift = recs['Lift'].max()
 
+            # Show each recommendation as a card with lift bar
             for _, row in recs.iterrows():
                 bar_pct = int((row['Lift'] / max_lift) * 100)
                 st.markdown(f"""
                 <div class="rec-card">
                     <div class="rec-product">{row['Product']}</div>
-                    <div style="color: #888; font-size: 13px; margin-top: 4px;">
+                    <div style="color: {subtext}; font-size: 13px; margin-top: 4px;">
                         Lift: <span style="color: #e63946; font-weight: 700;">{row['Lift']}</span>
                         &nbsp;&nbsp;|&nbsp;&nbsp;
                         Confidence: <span style="color: {text};">{row['Confidence']}</span>
@@ -491,6 +603,8 @@ elif page == T["nav_recommendations"]:
                 """, unsafe_allow_html=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
+
+            # Shelf placement action box
             st.markdown(f"""
             <div class="insight-box">
                 <div class="insight-title">Shelf Placement Action</div>
@@ -499,26 +613,34 @@ elif page == T["nav_recommendations"]:
             """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # Category level rules table with slider filter
     st.markdown("### Category Level Rules")
-    st.markdown("Filter by minimum lift to see which categories belong together.")
+    st.markdown("Filter by minimum lift to see which categories belong together. Support, confidence and lift are all shown.")
 
     min_lift = st.slider("Minimum Lift", 1.0, 7.0, 4.0, 0.1)
     filtered = category_rules[category_rules['lift'] >= min_lift].head(20)
 
     if len(filtered) > 0:
-        display = filtered[['antecedents', 'consequents', 'confidence', 'lift']].copy()
+        display = filtered[['antecedents', 'consequents', 'support', 'confidence', 'lift']].copy()
         display['antecedents'] = display['antecedents'].apply(lambda x: ', '.join(list(x)))
         display['consequents'] = display['consequents'].apply(lambda x: ', '.join(list(x)))
-        display.columns = ['If customer buys', 'They also buy', 'Confidence', 'Lift']
+        display.columns = ['If customer buys', 'They also buy', 'Support', 'Confidence', 'Lift']
         st.dataframe(display.reset_index(drop=True), use_container_width=True)
     else:
         st.info("No rules found at this lift level. Lower the minimum lift.")
 
+# ============================================================
+# PAGE 4 - PLACEMENT ZONES
+# ============================================================
+
 elif page == T["nav_zones"]:
+
     st.title("Placement Zones")
     st.markdown("5 zones designed from MBA association rules and co-occurrence clustering (silhouette 0.554 at k=3).")
     st.markdown("---")
 
+    # How zones were decided
     st.markdown(f"""
     <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 6px; padding: 16px 20px; margin-bottom: 20px;">
         <div style="color: {subtext}; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">How zones were decided</div>
@@ -528,6 +650,7 @@ elif page == T["nav_zones"]:
     </div>
     """, unsafe_allow_html=True)
 
+    # Zone definitions
     zones = [
         {
             "name": "Zone 1 - CENTER",
@@ -571,6 +694,7 @@ elif page == T["nav_zones"]:
         }
     ]
 
+    # Render each zone as a card
     for zone in zones:
         st.markdown(f"""
         <div style="
@@ -582,7 +706,7 @@ elif page == T["nav_zones"]:
         ">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <div style="color: {zone['color']}; font-size: 16px; font-weight: 700;">{zone['name']}</div>
-                <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">{zone['label']}</div>
+                <div style="color: {subtext}; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">{zone['label']}</div>
             </div>
             <div style="color: {text}; font-size: 14px; margin-bottom: 8px;">
                 <span style="color: {subtext};">Categories: </span>{', '.join(zone['categories'])}
@@ -595,21 +719,23 @@ elif page == T["nav_zones"]:
             </div>
         </div>
         """, unsafe_allow_html=True)
-dahsbotafvn kjrh m,oifg m vdfjkg
+
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # Visual store layout map
     st.markdown("### Visual Store Layout")
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    fig.patch.set_facecolor('#0f0f0f')
-    ax.set_facecolor('#0f0f0f')
+    fig.patch.set_facecolor(chart_bg)
+    ax.set_facecolor(chart_bg)
 
     store_zones = [
-        (0.1, 0.1, 0.8, 0.8, '#1a1a1a', 'STORE BOUNDARY', '#444'),
-        (0.35, 0.3, 0.3, 0.4, '#e63946', 'ZONE 1\nCENTER\nFood Staples\nCleaning Supplies\nCooking Oil', 'white'),
-        (0.05, 0.05, 0.9, 0.15, '#457b9d', 'ZONE 2 - ENTRANCE: Noodles, Soft Drinks, Biscuits, Snacks', 'white'),
-        (0.05, 0.25, 0.25, 0.6, '#2a9d8f', 'ZONE 3\nSIDE AISLE\nPersonal Care\nBaby Care\nStationery', 'white'),
-        (0.05, 0.75, 0.9, 0.2, '#e9c46a', 'ZONE 4 - BACK WALL: Dairy, Frozen, Fruits, Bakery', '#1a1a1a'),
-        (0.7, 0.25, 0.25, 0.45, '#6a4c93', 'ZONE 5\nPERIMETER\nRice\nAlcohol\nCigarettes\nPooja', 'white'),
+        (0.1,  0.1,  0.8,  0.8,  card_bg,   'STORE BOUNDARY',                                          subtext),
+        (0.35, 0.3,  0.3,  0.4,  '#e63946', 'ZONE 1\nCENTER\nFood Staples\nCleaning Supplies\nCooking Oil', 'white'),
+        (0.05, 0.05, 0.9,  0.15, '#457b9d', 'ZONE 2 - ENTRANCE: Noodles, Soft Drinks, Biscuits, Snacks', 'white'),
+        (0.05, 0.25, 0.25, 0.6,  '#2a9d8f', 'ZONE 3\nSIDE AISLE\nPersonal Care\nBaby Care\nStationery', 'white'),
+        (0.05, 0.75, 0.9,  0.2,  '#e9c46a', 'ZONE 4 - BACK WALL: Dairy, Frozen, Fruits, Bakery',        '#1a1a1a'),
+        (0.7,  0.25, 0.25, 0.45, '#6a4c93', 'ZONE 5\nPERIMETER\nRice\nAlcohol\nCigarettes\nPooja',      'white'),
     ]
 
     for x, y, w, h, color, label, text_color in store_zones:
@@ -617,7 +743,7 @@ dahsbotafvn kjrh m,oifg m vdfjkg
             (x, y), w, h,
             boxstyle="round,pad=0.01",
             facecolor=color,
-            edgecolor='#0f0f0f',
+            edgecolor=border,
             linewidth=2,
             alpha=0.9
         )
@@ -634,21 +760,27 @@ dahsbotafvn kjrh m,oifg m vdfjkg
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis('off')
-    ax.set_title('Recommended Store Layout', color='#888888', fontsize=13, pad=20)
+    ax.set_title('Recommended Store Layout', color=subtext, fontsize=13, pad=20)
     plt.tight_layout()
     st.pyplot(fig)
     plt.close()
 
+# ============================================================
+# PAGE 5 - SEASONAL PLANNING
+# ============================================================
+
 elif page == T["nav_seasonal"]:
+
     st.title("Seasonal Planning")
     st.markdown("Stock recommendations by month based on 10 months of real sales data.")
     st.markdown("---")
 
+    # Monthly revenue line chart
     st.markdown("### Monthly Revenue Trend")
 
     fig, ax = plt.subplots(figsize=(14, 5))
-    fig.patch.set_facecolor('#0f0f0f')
-    ax.set_facecolor('#0f0f0f')
+    fig.patch.set_facecolor(chart_bg)
+    ax.set_facecolor(chart_bg)
 
     ax.plot(
         range(len(monthly_revenue)),
@@ -658,7 +790,7 @@ elif page == T["nav_seasonal"]:
         marker='o',
         markersize=6,
         markerfacecolor='#e63946',
-        markeredgecolor='#0f0f0f',
+        markeredgecolor=chart_bg,
         markeredgewidth=2
     )
 
@@ -670,15 +802,16 @@ elif page == T["nav_seasonal"]:
     )
 
     ax.set_xticks(range(len(monthly_revenue)))
-    ax.set_xticklabels(monthly_revenue['month'], rotation=45, ha='right', color='#888888', fontsize=9)
-    ax.set_ylabel('Revenue (Rs Million)', color='#888888')
-    ax.tick_params(colors='#888888')
-    ax.spines['bottom'].set_color('#2a2a2a')
-    ax.spines['left'].set_color('#2a2a2a')
+    ax.set_xticklabels(monthly_revenue['month'], rotation=45, ha='right', color=subtext, fontsize=9)
+    ax.set_ylabel('Revenue (Rs Million)', color=subtext)
+    ax.tick_params(colors=subtext)
+    ax.spines['bottom'].set_color(border)
+    ax.spines['left'].set_color(border)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.grid(axis='y', color='#2a2a2a', linestyle='--', alpha=0.5)
+    ax.grid(axis='y', color=border, linestyle='--', alpha=0.5)
 
+    # Annotate Dashain peak
     max_idx = monthly_revenue['revenue'].idxmax()
     ax.annotate(
         'Dashain Peak',
@@ -695,6 +828,8 @@ elif page == T["nav_seasonal"]:
     plt.close()
 
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # Season cards
     st.markdown("### Stock Recommendations by Season")
 
     seasons = [
@@ -731,28 +866,56 @@ elif page == T["nav_seasonal"]:
     for s in seasons:
         st.markdown(f"""
         <div style="
-            background-color: #1a1a1a;
+            background-color: {card_bg};
             border-left: 4px solid {s['color']};
             border-radius: 6px;
             padding: 20px 24px;
             margin-bottom: 16px;
         ">
             <div style="color: {s['color']}; font-size: 15px; font-weight: 700; margin-bottom: 10px;">{s['season']}</div>
-            <div style="color: #cccccc; font-size: 14px; margin-bottom: 12px; line-height: 1.6;">{s['insight']}</div>
+            <div style="color: {text}; font-size: 14px; margin-bottom: 12px; line-height: 1.6;">{s['insight']}</div>
             <div style="display: flex; gap: 40px;">
                 <div>
-                    <div style="color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Stock Up</div>
+                    <div style="color: {subtext}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Stock Up</div>
                     {"".join([f'<div style="color: #e63946; font-size: 13px; margin-bottom: 3px;">+ {cat}</div>' for cat in s['stock_up']])}
                 </div>
                 <div>
-                    <div style="color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Normal Stock</div>
-                    {"".join([f'<div style="color: #888; font-size: 13px; margin-bottom: 3px;">= {cat}</div>' for cat in s['stock_normal']])}
+                    <div style="color: {subtext}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Normal Stock</div>
+                    {"".join([f'<div style="color: {subtext}; font-size: 13px; margin-bottom: 3px;">= {cat}</div>' for cat in s['stock_normal']])}
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # Controlled testing implementation guide
+    st.markdown(f"""
+    <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 6px; padding: 20px 24px; margin-bottom: 16px;">
+        <div style="color: #e63946; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Recommended Implementation Approach</div>
+        <div style="color: {text}; font-size: 14px; line-height: 1.8; margin-bottom: 16px;">Do not rearrange the whole store at once. Use a controlled step by step approach:</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div style="background-color: {bg}; border: 1px solid {border}; border-radius: 4px; padding: 12px;">
+                <div style="color: #e63946; font-size: 11px; font-weight: 700; margin-bottom: 6px;">STEP 1 - Week 1 to 4</div>
+                <div style="color: {text}; font-size: 13px;">Place Rato Dal next to Kalo Dal. Measure basket value daily. This is your highest confidence change with 4,236 co-occurrences.</div>
+            </div>
+            <div style="background-color: {bg}; border: 1px solid {border}; border-radius: 4px; padding: 12px;">
+                <div style="color: #e63946; font-size: 11px; font-weight: 700; margin-bottom: 6px;">STEP 2 - Week 5 to 8</div>
+                <div style="color: {text}; font-size: 13px;">If basket value increased, move CLEANING SUPPLIES to the center zone. Measure again. This is your strongest category level rule.</div>
+            </div>
+            <div style="background-color: {bg}; border: 1px solid {border}; border-radius: 4px; padding: 12px;">
+                <div style="color: #e63946; font-size: 11px; font-weight: 700; margin-bottom: 6px;">STEP 3 - Week 9 to 12</div>
+                <div style="color: {text}; font-size: 13px;">Rearrange the entrance zone with impulse items. Noodles, soft drinks, biscuits placed near the door to catch customers first.</div>
+            </div>
+            <div style="background-color: {bg}; border: 1px solid {border}; border-radius: 4px; padding: 12px;">
+                <div style="color: #e63946; font-size: 11px; font-weight: 700; margin-bottom: 6px;">STEP 4 - Week 13 onwards</div>
+                <div style="color: {text}; font-size: 13px;">Full zone implementation based on evidence gathered from Steps 1 to 3. By now you have real data proving the approach works.</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Final key insight
     st.markdown(f"""
     <div class="insight-box">
         <div class="insight-title">Key Seasonal Insight</div>
