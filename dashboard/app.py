@@ -403,23 +403,23 @@ elif page == T["nav_products"]:
     cooc_fixed = pd.DataFrame(cooc_array, index=cooc.index, columns=cooc.columns)
 
     fig3, ax3 = plt.subplots(figsize=(14, 11))
-    fig3.patch.set_facecolor('#0f0f0f')
-    ax3.set_facecolor('#0f0f0f')
+    fig3.patch.set_facecolor(chart_bg)
+    ax3.set_facecolor(chart_bg)
 
     sns.heatmap(
         cooc_fixed,
         cmap='Reds',
         ax=ax3,
         linewidths=0.3,
-        linecolor='#1a1a1a',
+        linecolor=border,
         annot=True,
         fmt='g',
-        annot_kws={'size': 8, 'color': 'white'},
+        annot_kws={'size': 8, 'color': text},
         cbar_kws={'shrink': 0.8}
     )
-    ax3.tick_params(colors='#888888', labelsize=8)
-    ax3.set_xticklabels(ax3.get_xticklabels(), rotation=45, ha='right', color='#888888')
-    ax3.set_yticklabels(ax3.get_yticklabels(), rotation=0, color='#888888')
+    ax3.tick_params(colors=subtext, labelsize=8)
+    ax3.set_xticklabels(ax3.get_xticklabels(), rotation=45, ha='right', color=subtext)
+    ax3.set_yticklabels(ax3.get_yticklabels(), rotation=0, color=subtext)
     plt.tight_layout()
     st.pyplot(fig3)
     plt.close()
