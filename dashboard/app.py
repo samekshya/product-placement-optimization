@@ -354,15 +354,15 @@ elif page == T["nav_products"]:
         top20.columns = ['Product', 'Transactions']
 
         fig, ax = plt.subplots(figsize=(8, 9))
-        fig.patch.set_facecolor('#0f0f0f')
-        ax.set_facecolor('#0f0f0f')
+        fig.patch.set_facecolor(chart_bg)
+        ax.set_facecolor(chart_bg)
 
-        colors = ['#e63946' if i < 3 else '#3a3a3a' for i in range(len(top20))]
+        colors = ['#e63946' if i < 3 else bar_color for i in range(len(top20))]
         ax.barh(top20['Product'][::-1], top20['Transactions'][::-1], color=colors[::-1], height=0.6)
-        ax.set_xlabel('Transactions', color='#888888')
-        ax.tick_params(colors='#888888', labelsize=9)
-        ax.spines['bottom'].set_color('#2a2a2a')
-        ax.spines['left'].set_color('#2a2a2a')
+        ax.set_xlabel('Transactions', color=subtext)
+        ax.tick_params(colors=subtext, labelsize=9)
+        ax.spines['bottom'].set_color(border)
+        ax.spines['left'].set_color(border)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         plt.tight_layout()
@@ -373,16 +373,16 @@ elif page == T["nav_products"]:
         st.markdown("### Top 15 Categories by Transactions")
         cat_counts = df.groupby('category')['invoice_no'].nunique().sort_values(ascending=False).head(15)
 
-        fig2, ax2 = plt.subplots(figsize=(8, 9))
-        fig2.patch.set_facecolor('#0f0f0f')
-        ax2.set_facecolor('#0f0f0f')
+        ffig2, ax2 = plt.subplots(figsize=(8, 9))
+        fig2.patch.set_facecolor(chart_bg)
+        ax2.set_facecolor(chart_bg)
 
-        colors2 = ['#e63946' if i < 3 else '#3a3a3a' for i in range(len(cat_counts))]
+        colors2 = ['#e63946' if i < 3 else bar_color for i in range(len(cat_counts))]
         ax2.barh(cat_counts.index[::-1], cat_counts.values[::-1], color=colors2[::-1], height=0.6)
-        ax2.set_xlabel('Transactions', color='#888888')
-        ax2.tick_params(colors='#888888', labelsize=9)
-        ax2.spines['bottom'].set_color('#2a2a2a')
-        ax2.spines['left'].set_color('#2a2a2a')
+        ax2.set_xlabel('Transactions', color=subtext)
+        ax2.tick_params(colors=subtext, labelsize=9)
+        ax2.spines['bottom'].set_color(border)
+        ax2.spines['left'].set_color(border)
         ax2.spines['top'].set_visible(False)
         ax2.spines['right'].set_visible(False)
         plt.tight_layout()
