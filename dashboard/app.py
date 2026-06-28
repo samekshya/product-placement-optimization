@@ -480,7 +480,9 @@ elif page == T["nav_recommendations"]:
                     <div style="color: #888; font-size: 13px; margin-top: 4px;">
                         Lift: <span style="color: #e63946; font-weight: 700;">{row['Lift']}</span>
                         &nbsp;&nbsp;|&nbsp;&nbsp;
-                        Confidence: <span style="color: #ffffff;">{row['Confidence']}</span>
+                        Confidence: <span style="color: {text};">{row['Confidence']}</span>
+                        &nbsp;&nbsp;|&nbsp;&nbsp;
+                        Support: <span style="color: {subtext};">{row['Support']}</span>
                     </div>
                     <div class="rec-bar-container">
                         <div style="background-color: #e63946; height: 8px; border-radius: 4px; width: {bar_pct}%;"></div>
@@ -516,6 +518,15 @@ elif page == T["nav_zones"]:
     st.title("Placement Zones")
     st.markdown("5 zones designed from MBA association rules and co-occurrence clustering (silhouette 0.554 at k=3).")
     st.markdown("---")
+
+    st.markdown(f"""
+    <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 6px; padding: 16px 20px; margin-bottom: 20px;">
+        <div style="color: {subtext}; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">How zones were decided</div>
+        <div style="color: {text}; font-size: 14px; line-height: 1.8;">
+            Zones are based on three factors working together. First, association rules showing which categories have high lift AND high support, meaning both a strong relationship and high customer volume. Second, co-occurrence clustering grouping categories bought together into natural zones. Third, physical constraints like refrigeration requirements and customer entry points that limit where certain categories can go regardless of what the data says.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     zones = [
         {
