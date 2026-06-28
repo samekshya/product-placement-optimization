@@ -584,16 +584,16 @@ elif page == T["nav_zones"]:
                 <div style="color: {zone['color']}; font-size: 16px; font-weight: 700;">{zone['name']}</div>
                 <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">{zone['label']}</div>
             </div>
-            <div style="color: #cccccc; font-size: 14px; margin-bottom: 8px;">
-                <span style="color: #666;">Categories: </span>{', '.join(zone['categories'])}
+            <div style="color: {text}; font-size: 14px; margin-bottom: 8px;">
+                <span style="color: {subtext};">Categories: </span>{', '.join(zone['categories'])}
             </div>
-            <div style="color: #888; font-size: 13px; margin-bottom: 8px;">
-                <span style="color: #666;">Key Products: </span>{', '.join(zone['products'])}
+            <div style="color: {subtext}; font-size: 13px; margin-bottom: 8px;">
+                <span style="color: {subtext};">Key Products: </span>{', '.join(zone['products'])}
             </div>
-            <div style="color: #888; font-size: 13px; line-height: 1.6; border-top: 1px solid #2a2a2a; padding-top: 10px; margin-top: 8px;">
+            <div style="color: {subtext}; font-size: 13px; line-height: 1.6; border-top: 1px solid {border}; padding-top: 10px; margin-top: 8px;">
                 {zone['reason']}
             </div>
-        </div>
+        </div>ksdhgfuiks
         """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
