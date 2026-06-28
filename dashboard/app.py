@@ -212,6 +212,27 @@ def get_recommendations(product_name, rules_df, top_n=5):
             for product in list(row['consequents']):
                 recommendations.append({
                     'Product': product,
+                    'Support': round(row['support'], 4),
+                    'Confidence': round(row['confidence'], 2),
+                    'Lift': round(row['lift'], 2)
+                })
+    if not recommendations:
+        return None
+    rec_df = pd.DataFrame(recommendations)
+    rec_df = rec_df.groupby('Product').agg({
+        'Support': 'max',
+        'Confidence': 'max',
+        'Lift': 'max'
+    }).reset_index()
+    return rec_df.sort_values('Lift', ascending=False).head(top_n)
+    product_name = product_name.strip()
+    recommendations = []
+    for _, row in rules_df.iterrows():
+        antecedents = [a.strip() for a in list(row['antecedents'])]
+        if product_name in antecedents:
+            for product in list(row['consequents']):
+                recommendations.append({
+                    'Product': product,
                     'Confidence': round(row['confidence'], 2),
                     'Lift': round(row['lift'], 2)
                 })
