@@ -432,7 +432,8 @@ elif page == T["nav_recommendations"]:
     st.markdown("<br>", unsafe_allow_html=True)
 
     all_products = sorted(top_100_products.index.tolist())
-    selected = st.selectbox("Select a product to get shelf placement recommendations", all_products)
+    default_idx = all_products.index('Sugar') if 'Sugar' in all_products else 0
+    selected = st.selectbox("Select a product to get shelf placement recommendations", all_products, index=default_idx)
 
     if selected:
         recs = get_recommendations(selected, product_rules)
