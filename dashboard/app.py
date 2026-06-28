@@ -574,7 +574,7 @@ elif page == T["nav_zones"]:
     for zone in zones:
         st.markdown(f"""
         <div style="
-            background-color: #1a1a1a;
+            background-color: {card_bg};
             border-left: 4px solid {zone['color']};
             border-radius: 6px;
             padding: 20px 24px;
