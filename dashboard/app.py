@@ -229,6 +229,11 @@ with st.sidebar:
     T = TRANSLATIONS[lang]
     
     st.markdown("---")
+    mode_label = "Switch to Light Mode" if st.session_state.dark_mode else "Switch to Dark Mode"
+    if st.button(mode_label):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
+    st.markdown("---")
     st.markdown(f'<div class="sidebar-title">Navigation</div>', unsafe_allow_html=True)
     
     page = st.radio(
