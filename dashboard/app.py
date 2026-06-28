@@ -21,175 +21,80 @@ st.set_page_config(
 )
 
 # ============================================================
-# THEME - light by default, dark optional
+# THEME
 # ============================================================
 
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = False
 
-if st.session_state.dark_mode:
-    bg          = "#0f0f0f"
-    sidebar_bg  = "#1a1a1a"
-    card_bg     = "#1a1a1a"
-    text        = "#ffffff"
-    subtext     = "#888888"
-    border      = "#2a2a2a"
-    chart_bg    = "#0f0f0f"
-    bar_color   = "#3a3a3a"
-    annot_color = "white"
-else:
-    bg          = "#ffffff"
-    sidebar_bg  = "#f8f9fa"
-    card_bg     = "#f8f9fa"
-    text        = "#1a1a1a"
-    subtext     = "#666666"
-    border      = "#e0e0e0"
-    chart_bg    = "#ffffff"
-    bar_color   = "#d0d0d0"
-    annot_color = "#1a1a1a"
+if 'view_mode' not in st.session_state:
+    st.session_state.view_mode = "Owner"
 
-# ============================================================
-# CSS STYLING
-# ============================================================
+if st.session_state.dark_mode:
+    bg         = "#0f0f0f"
+    card_bg    = "#1a1a1a"
+    text       = "#ffffff"
+    subtext    = "#888888"
+    border     = "#2a2a2a"
+    chart_bg   = "#0f0f0f"
+    bar_color  = "#3a3a3a"
+    annot_col  = "white"
+else:
+    bg         = "#ffffff"
+    card_bg    = "#f8f9fa"
+    text       = "#1a1a1a"
+    subtext    = "#666666"
+    border     = "#e0e0e0"
+    chart_bg   = "#ffffff"
+    bar_color  = "#d0d0d0"
+    annot_col  = "#1a1a1a"
 
 st.markdown(f"""
 <style>
-    .stApp {{
-        background-color: {bg};
-        color: {text};
-    }}
-    [data-testid="stSidebar"] {{
-        background-color: {sidebar_bg};
-        border-right: 1px solid {border};
-    }}
-    [data-testid="stMetric"] {{
-        background-color: {card_bg};
-        border: 1px solid {border};
-        border-radius: 8px;
-        padding: 16px;
-    }}
-    [data-testid="stMetricValue"] {{
-        color: {text};
-        font-size: 28px;
-        font-weight: 700;
-    }}
-    [data-testid="stMetricLabel"] {{
-        color: {subtext};
-        font-size: 13px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }}
-    h1, h2 {{
-        color: {text};
-        font-weight: 800;
-    }}
-    h3 {{
-        color: {text};
-        font-weight: 600;
-    }}
-    hr {{
-        border-color: {border};
-    }}
-    .insight-box {{
-        background-color: {card_bg};
-        border-left: 4px solid #e63946;
-        padding: 16px 20px;
-        border-radius: 4px;
-        margin: 12px 0;
-    }}
-    .insight-box p {{
-        margin: 0;
-        color: {text};
-        font-size: 15px;
-    }}
-    .insight-title {{
-        color: #e63946;
+    .stApp {{ background-color: {bg}; color: {text}; }}
+    [data-testid="stSidebar"] {{ background-color: {card_bg}; border-right: 1px solid {border}; }}
+    [data-testid="stMetric"] {{ background-color: {card_bg}; border: 1px solid {border}; border-radius: 8px; padding: 16px; }}
+    [data-testid="stMetricValue"] {{ color: {text}; font-size: 28px; font-weight: 700; }}
+    [data-testid="stMetricLabel"] {{ color: {subtext}; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }}
+    h1, h2, h3 {{ color: {text}; }}
+    hr {{ border-color: {border}; }}
+    #MainMenu {{ visibility: hidden; }}
+    footer {{ visibility: hidden; }}
+    header[data-testid="stHeader"] {{ background-color: {bg}; }}
+    .mode-badge {{
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-bottom: 6px;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
     }}
     .rec-card {{
         background-color: {card_bg};
         border: 1px solid {border};
+        border-left: 4px solid #e63946;
         border-radius: 8px;
-        padding: 16px;
+        padding: 16px 20px;
         margin-bottom: 10px;
     }}
-    .rec-product {{
-        color: {text};
-        font-size: 16px;
-        font-weight: 600;
+    .action-box {{
+        background-color: {card_bg};
+        border: 2px solid #e63946;
+        border-radius: 8px;
+        padding: 20px 24px;
+        margin: 16px 0;
     }}
-    .rec-bar-container {{
-        background-color: {border};
-        border-radius: 4px;
-        height: 8px;
-        margin-top: 8px;
-    }}
-    .sidebar-title {{
-        color: #e63946;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 16px;
-    }}
-    #MainMenu {{visibility: hidden;}}
-    footer {{visibility: hidden;}}
-    header[data-testid="stHeader"] {{
-        background-color: {bg};
+    .month-card {{
+        background-color: {card_bg};
+        border: 1px solid {border};
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
     }}
 </style>
 """, unsafe_allow_html=True)
-
-# ============================================================
-# LANGUAGE TRANSLATIONS
-# ============================================================
-
-TRANSLATIONS = {
-    "English": {
-        "title": "Baniya Shopping Center",
-        "subtitle": "Product Placement Optimisation System",
-        "nav_overview": "Overview",
-        "nav_products": "Product Intelligence",
-        "nav_recommendations": "Recommendation Engine",
-        "nav_zones": "Placement Zones",
-        "nav_seasonal": "Seasonal Planning",
-        "total_transactions": "Total Transactions",
-        "avg_basket": "Avg Basket Value",
-        "daily_revenue": "Daily Revenue",
-        "daily_customers": "Daily Customers",
-        "top_insight": "Top Opportunity",
-        "top_insight_text": "Place Rato Dal next to Kalo Dal. They are bought together 4,236 times. This single shelf change could increase basket value immediately.",
-        "revenue_chart_title": "Monthly Revenue (Jul 2025 - May 2026)",
-        "projection_title": "Revenue Projections from Optimised Placement",
-        "conservative": "Conservative 3%",
-        "moderate": "Moderate 5% (Recommended)",
-        "optimistic": "Optimistic 8%",
-    },
-    "Nepali": {
-        "title": "बनिया शपिङ सेन्टर",
-        "subtitle": "उत्पाद राख्ने स्थान अनुकूलन प्रणाली",
-        "nav_overview": "सारांश",
-        "nav_products": "उत्पाद विश्लेषण",
-        "nav_recommendations": "सिफारिस इन्जिन",
-        "nav_zones": "राख्ने क्षेत्रहरू",
-        "nav_seasonal": "मौसमी योजना",
-        "total_transactions": "कुल लेनदेन",
-        "avg_basket": "औसत टोकरी मूल्य",
-        "daily_revenue": "दैनिक आम्दानी",
-        "daily_customers": "दैनिक ग्राहक",
-        "top_insight": "शीर्ष अवसर",
-        "top_insight_text": "राटो दाल र कालो दाल एकै ठाउँ राख्नुहोस्। यी ४,२३६ पटक सँगै किनिन्छन्।",
-        "revenue_chart_title": "मासिक आम्दानी (जुलाई २०२५ - मे २०२६)",
-        "projection_title": "अनुकूलित राखाइबाट आम्दानी अनुमान",
-        "conservative": "रूढिवादी ३%",
-        "moderate": "मध्यम ५% (सिफारिस)",
-        "optimistic": "आशावादी ८%",
-    }
-}
 
 # ============================================================
 # DATA PATH
@@ -198,7 +103,7 @@ TRANSLATIONS = {
 DATA_PATH = r'D:\softwarica\Sem 6\Individual Project\product-placement-optimization\data\processed\sales_data_cleaned.csv'
 
 # ============================================================
-# DATA LOADING FUNCTIONS (cached so they only run once)
+# DATA LOADING
 # ============================================================
 
 @st.cache_data
@@ -207,7 +112,6 @@ def load_data():
     df['date'] = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
     return df
 
-
 @st.cache_data
 def get_monthly_revenue(df):
     monthly = df.groupby(df['date'].dt.to_period('M'))['total_amount'].sum().reset_index()
@@ -215,135 +119,122 @@ def get_monthly_revenue(df):
     monthly.columns = ['month', 'revenue']
     return monthly
 
-
 @st.cache_data
 def get_product_rules(df):
-    # Find top 100 most sold products
-    top_100 = (
-        df.groupby('product')['invoice_no']
-        .nunique()
-        .sort_values(ascending=False)
-        .head(100)
-    )
+    top_100 = df.groupby('product')['invoice_no'].nunique().sort_values(ascending=False).head(100)
     top_names = top_100.index.tolist()
-
-    # Filter data to top 100 products only
     df_top = df[df['product'].isin(top_names)]
-
-    # Group into baskets
     baskets = df_top.groupby('invoice_no')['product'].apply(list)
-
-    # Encode into True/False matrix
     te = TransactionEncoder()
     te_array = te.fit(baskets).transform(baskets)
     basket_df = pd.DataFrame(te_array, columns=te.columns_)
-
-    # 70/30 train test split
     train_df, _ = train_test_split(basket_df, test_size=0.3, random_state=42)
-
-    # Run Apriori on training data only
     frequent = apriori(train_df, min_support=0.005, use_colnames=True)
     rules = association_rules(frequent, metric="lift", min_threshold=1.0)
-    rules = rules.sort_values('lift', ascending=False)
-
-    return rules, top_100
-
+    return rules.sort_values('lift', ascending=False), top_100
 
 @st.cache_data
 def get_category_rules(df):
-    # Group into category baskets
     baskets = df.groupby('invoice_no')['category'].apply(list)
-
-    # Encode into True/False matrix
     te = TransactionEncoder()
     te_array = te.fit(baskets).transform(baskets)
     basket_df = pd.DataFrame(te_array, columns=te.columns_)
-
-    # Run Apriori on all category data
     frequent = apriori(basket_df, min_support=0.01, use_colnames=True)
     rules = association_rules(frequent, metric="lift", min_threshold=1.0)
-    rules = rules.sort_values('lift', ascending=False)
-
-    return rules
-
-# ============================================================
-# RECOMMENDATION FUNCTION (the ML model)
-# ============================================================
+    return rules.sort_values('lift', ascending=False)
 
 def get_recommendations(product_name, rules_df, top_n=5):
-    """
-    Takes a product name.
-    Searches all association rules for that product on the left side.
-    Returns top N products from the right side, ranked by lift.
-    Shows support, confidence and lift together for full picture.
-    """
     product_name = product_name.strip()
-    recommendations = []
-
+    recs = []
     for _, row in rules_df.iterrows():
-        antecedents = [a.strip() for a in list(row['antecedents'])]
-
-        if product_name in antecedents:
-            for product in list(row['consequents']):
-                recommendations.append({
-                    'Product': product,
+        ants = [a.strip() for a in list(row['antecedents'])]
+        if product_name in ants:
+            for p in list(row['consequents']):
+                recs.append({
+                    'Product': p,
                     'Support': round(row['support'], 4),
                     'Confidence': round(row['confidence'], 2),
                     'Lift': round(row['lift'], 2)
                 })
-
-    if not recommendations:
+    if not recs:
         return None
-
-    rec_df = pd.DataFrame(recommendations)
-    rec_df = rec_df.groupby('Product').agg({
-        'Support': 'max',
-        'Confidence': 'max',
-        'Lift': 'max'
-    }).reset_index()
-
+    rec_df = pd.DataFrame(recs)
+    rec_df = rec_df.groupby('Product').agg({'Support': 'max', 'Confidence': 'max', 'Lift': 'max'}).reset_index()
     return rec_df.sort_values('Lift', ascending=False).head(top_n)
+
+# ============================================================
+# SEASONAL STOCK DATA
+# ============================================================
+
+SEASONAL_STOCK = {
+    "July": {"season": "Monsoon", "stock_up": ["CLEANING SUPPLIES", "FOOD STAPLES", "COOKING OIL"], "reduce": ["SOFT DRINKS", "PARTY SUPPLIES"], "tip": "Monsoon starts. Customers clean more. Stock extra detergent and floor cleaners."},
+    "August": {"season": "Monsoon", "stock_up": ["CLEANING SUPPLIES", "FOOD STAPLES", "NOODLES"], "reduce": ["FROZEN FOODS", "PARTY SUPPLIES"], "tip": "Peak monsoon. NOODLES spike as customers want quick meals during rain."},
+    "September": {"season": "Dashain", "stock_up": ["ALCOHOLIC BEVERAGES", "CONFECTIONERY", "FOOD STAPLES", "POOJA ITEMS"], "reduce": ["STATIONERY", "ELECTRICAL SUPPLIES"], "tip": "Dashain month. Highest revenue month in your data at Rs 23.3 million. Stock ALCOHOL 3 weeks early."},
+    "October": {"season": "Tihar", "stock_up": ["CONFECTIONERY", "POOJA ITEMS", "ALCOHOLIC BEVERAGES", "FOOD STAPLES"], "reduce": ["FROZEN FOODS"], "tip": "Tihar follows Dashain. Confectionery and sweets peak. Keep POOJA ITEMS well stocked."},
+    "November": {"season": "Winter Start", "stock_up": ["TEA AND SPICES", "CIGARETTE AND TOBACCO", "COOKING OIL", "FOOD STAPLES"], "reduce": ["SOFT DRINKS AND JUICES"], "tip": "Winter begins. TEA AND SPICES peak. Cigarette sales consistently top 5 in cold months."},
+    "December": {"season": "Winter", "stock_up": ["TEA AND SPICES", "CIGARETTE AND TOBACCO", "FOOD STAPLES", "COOKING OIL"], "reduce": ["SOFT DRINKS AND JUICES", "FROZEN FOODS"], "tip": "Deep winter. Same pattern as November. FOOD STAPLES and TEA are your anchor categories."},
+    "January": {"season": "Winter", "stock_up": ["TEA AND SPICES", "CIGARETTE AND TOBACCO", "FOOD STAPLES"], "reduce": ["SOFT DRINKS AND JUICES"], "tip": "Coldest month. Focus on warm beverage categories and essential food staples."},
+    "February": {"season": "Spring Start", "stock_up": ["FOOD STAPLES", "PERSONAL CARE", "BISCUITS AND COOKIES"], "reduce": ["CIGARETTE AND TOBACCO"], "tip": "Regular patterns return. Good time to start rearranging shelves before the next festival season."},
+    "March": {"season": "Spring", "stock_up": ["FOOD STAPLES", "PERSONAL CARE", "COOKING OIL"], "reduce": [], "tip": "Stable month. No major spikes. Focus on maintaining core category stock levels."},
+    "April": {"season": "Spring", "stock_up": ["FOOD STAPLES", "SOFT DRINKS AND JUICES", "PERSONAL CARE"], "reduce": [], "tip": "Temperatures rising. SOFT DRINKS start to increase. Stock up ahead of summer."},
+    "May": {"season": "Pre Summer", "stock_up": ["SOFT DRINKS AND JUICES", "FOOD STAPLES", "PERSONAL CARE"], "reduce": [], "tip": "Pre summer spike in cold drinks. SOFT DRINKS AND JUICES will peak in coming months."},
+    "June": {"season": "Summer", "stock_up": ["SOFT DRINKS AND JUICES", "FOOD STAPLES", "CLEANING SUPPLIES"], "reduce": [], "tip": "Summer peak for cold drinks. Data for June is incomplete in this dataset so use trend from April and May."},
+}
+
+# ============================================================
+# LOAD DATA
+# ============================================================
+
+with st.spinner("Loading..."):
+    df = load_data()
+    monthly_revenue = get_monthly_revenue(df)
+    product_rules, top_100_products = get_product_rules(df)
+    category_rules = get_category_rules(df)
 
 # ============================================================
 # SIDEBAR
 # ============================================================
 
 with st.sidebar:
-    # Language selector
-    lang = st.selectbox("Language / भाषा", ["English", "Nepali"])
-    T = TRANSLATIONS[lang]
+
+    # Mode toggle - the most important button
+    st.markdown(f"<div style='color: {subtext}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;'>View Mode</div>", unsafe_allow_html=True)
+
+    current_mode = st.session_state.view_mode
+    col_a, col_b = st.columns(2)
+
+    with col_a:
+        if st.button("Store Owner", use_container_width=True, type="primary" if current_mode == "Owner" else "secondary"):
+            st.session_state.view_mode = "Owner"
+            st.rerun()
+
+    with col_b:
+        if st.button("Examiner", use_container_width=True, type="primary" if current_mode == "Examiner" else "secondary"):
+            st.session_state.view_mode = "Examiner"
+            st.rerun()
 
     st.markdown("---")
 
-    # Dark/Light mode toggle
-    mode_label = "Switch to Light Mode" if st.session_state.dark_mode else "Switch to Dark Mode"
-    if st.button(mode_label):
+    # Dark mode toggle
+    mode_label = "Light Mode" if st.session_state.dark_mode else "Dark Mode"
+    if st.button(mode_label, use_container_width=True):
         st.session_state.dark_mode = not st.session_state.dark_mode
         st.rerun()
 
     st.markdown("---")
 
-    # Navigation
-    st.markdown(f'<div class="sidebar-title">Navigation</div>', unsafe_allow_html=True)
-
-    page = st.radio(
-        "",
-        [
-            T["nav_overview"],
-            T["nav_products"],
-            T["nav_recommendations"],
-            T["nav_zones"],
-            T["nav_seasonal"]
-        ],
-        label_visibility="collapsed"
-    )
+    # Navigation changes based on mode
+    if st.session_state.view_mode == "Owner":
+        st.markdown(f"<div style='color: #e63946; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;'>Store Owner Tools</div>", unsafe_allow_html=True)
+        page = st.radio("", ["Shelf Planner", "Monthly Stock Plan", "Store Performance"], label_visibility="collapsed")
+    else:
+        st.markdown(f"<div style='color: #e63946; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;'>Technical Analysis</div>", unsafe_allow_html=True)
+        page = st.radio("", ["Project Overview", "Association Rules", "Clustering Results", "Model Validation", "Placement Zones"], label_visibility="collapsed")
 
     st.markdown("---")
 
-    # Student info
     st.markdown(f"""
     <div style="color: {subtext}; font-size: 11px; line-height: 1.8;">
-        <div style="margin-bottom: 4px;">STUDENT</div>
         Samikshya Baniya<br>
         ID: 230360<br>
         ST6001CEM<br>
@@ -352,85 +243,216 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ============================================================
-# LOAD DATA
+# OWNER MODE - PAGE 1: SHELF PLANNER
 # ============================================================
 
-with st.spinner("Loading data..."):
-    df = load_data()
-    monthly_revenue = get_monthly_revenue(df)
-    product_rules, top_100_products = get_product_rules(df)
-    category_rules = get_category_rules(df)
+if st.session_state.view_mode == "Owner" and page == "Shelf Planner":
 
-# ============================================================
-# PAGE 1 - OVERVIEW
-# ============================================================
-
-if page == T["nav_overview"]:
-
-    st.title(T["title"])
-    st.markdown(f"#### {T['subtitle']}")
+    st.title("Shelf Planner")
+    st.markdown(f"<div style='color: {subtext}; font-size: 15px; margin-bottom: 24px;'>Type any product to find out what to place next to it on the shelf.</div>", unsafe_allow_html=True)
     st.markdown("---")
 
-    # Top insight box
+    all_products = sorted(top_100_products.index.tolist())
+    default_idx = all_products.index('Sugar') if 'Sugar' in all_products else 0
+    selected = st.selectbox("Select a product", all_products, index=default_idx)
+
+    if selected:
+        recs = get_recommendations(selected, product_rules)
+
+        if recs is None:
+            st.warning(f"No shelf recommendations found for {selected}. Try a different product.")
+        else:
+            # Top action - the most important thing
+            top_rec = recs.iloc[0]
+            st.markdown(f"""
+            <div class="action-box">
+                <div style="color: {subtext}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Shelf Action</div>
+                <div style="color: {text}; font-size: 22px; font-weight: 700; margin-bottom: 8px;">
+                    Place <span style="color: #e63946;">{selected}</span> next to <span style="color: #e63946;">{top_rec['Product']}</span>
+                </div>
+                <div style="color: {subtext}; font-size: 14px;">
+                    Customers who buy {selected} buy {top_rec['Product']} together {int(top_rec['Confidence'] * 100)}% of the time.
+                    This relationship is {top_rec['Lift']}x stronger than random chance.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(f"### All products to place near {selected}")
+
+            for _, row in recs.iterrows():
+                bar_pct = int((row['Lift'] / recs['Lift'].max()) * 100)
+                st.markdown(f"""
+                <div class="rec-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="color: {text}; font-size: 16px; font-weight: 600;">{row['Product']}</div>
+                        <div style="color: #e63946; font-size: 14px; font-weight: 700;">Bought together {int(row['Confidence'] * 100)}% of the time</div>
+                    </div>
+                    <div style="color: {subtext}; font-size: 12px; margin-top: 6px;">
+                        Lift: {row['Lift']} &nbsp;|&nbsp; Support: {row['Support']} &nbsp;|&nbsp; Confidence: {row['Confidence']}
+                    </div>
+                    <div style="background-color: {border}; border-radius: 4px; height: 6px; margin-top: 10px;">
+                        <div style="background-color: #e63946; height: 6px; border-radius: 4px; width: {bar_pct}%;"></div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("### Top Shelf Pairs in the Store")
+    st.markdown(f"<div style='color: {subtext}; font-size: 14px; margin-bottom: 16px;'>These are the strongest product pairs from 218,037 real shopping trips. Put these products side by side.</div>", unsafe_allow_html=True)
+
+    top_pairs = [
+        ("Rato Dal", "Kalo Dal", "4,236 co-occurrences", "69% of Kalo Dal buyers also buy Rato Dal"),
+        ("Sugar", "Rato Dal", "3,771 co-occurrences", "Classic dal bhat cooking combination"),
+        ("Wai Wai Chicken", "RARA", "1,662 co-occurrences", "Both noodle brands bought together constantly"),
+        ("Surya", "Shikhar Ice", "Lift 22.41", "Strongest product pair, place on same shelf"),
+        ("PRAWN 120gm", "SADA PAPAD", "Lift 11.89", "Snack combination, place in same section"),
+        ("Mong Khosta", "Rato Dal", "2,284 co-occurrences", "Place all dal varieties together"),
+    ]
+
+    for p1, p2, metric, reason in top_pairs:
+        st.markdown(f"""
+        <div class="month-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="color: {text}; font-size: 15px; font-weight: 600;">
+                    <span style="color: #e63946;">{p1}</span> &nbsp;+&nbsp; <span style="color: #e63946;">{p2}</span>
+                </div>
+                <div style="color: {subtext}; font-size: 12px;">{metric}</div>
+            </div>
+            <div style="color: {subtext}; font-size: 13px; margin-top: 6px;">{reason}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# ============================================================
+# OWNER MODE - PAGE 2: MONTHLY STOCK PLAN
+# ============================================================
+
+elif st.session_state.view_mode == "Owner" and page == "Monthly Stock Plan":
+
+    import datetime
+    current_month = datetime.datetime.now().strftime("%B")
+
+    st.title("Monthly Stock Plan")
+    st.markdown(f"<div style='color: {subtext}; font-size: 15px; margin-bottom: 24px;'>Stock recommendations based on 10 months of real sales data from Baniya Shopping Center.</div>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    # Current month recommendation - big and clear
+    month_data = SEASONAL_STOCK.get(current_month, SEASONAL_STOCK["June"])
+
     st.markdown(f"""
-    <div class="insight-box">
-        <div class="insight-title">{T['top_insight']}</div>
-        <p>{T['top_insight_text']}</p>
+    <div class="action-box">
+        <div style="color: {subtext}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">This Month</div>
+        <div style="color: {text}; font-size: 28px; font-weight: 800; margin-bottom: 4px;">{current_month} &nbsp; <span style="color: #e63946; font-size: 16px;">{month_data['season']}</span></div>
+        <div style="color: {subtext}; font-size: 14px; margin-top: 8px;">{month_data['tip']}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown(f"### Stock Up Now")
+        for cat in month_data['stock_up']:
+            st.markdown(f"""
+            <div style="background-color: {card_bg}; border: 1px solid {border}; border-left: 4px solid #e63946; border-radius: 6px; padding: 12px 16px; margin-bottom: 8px;">
+                <div style="color: #e63946; font-size: 13px; font-weight: 700;">+ {cat}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown(f"### Normal Stock")
+        if month_data['reduce']:
+            for cat in month_data['reduce']:
+                st.markdown(f"""
+                <div style="background-color: {card_bg}; border: 1px solid {border}; border-left: 4px solid {border}; border-radius: 6px; padding: 12px 16px; margin-bottom: 8px;">
+                    <div style="color: {subtext}; font-size: 13px;">= {cat}</div>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div style='color: {subtext}; font-size: 14px; margin-top: 8px;'>All categories at normal stock levels this month.</div>", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    # Month selector for planning ahead
+    st.markdown("### Plan Ahead")
+    selected_month = st.selectbox("Select a month to plan for", list(SEASONAL_STOCK.keys()))
+    plan = SEASONAL_STOCK[selected_month]
+
+    st.markdown(f"""
+    <div class="month-card">
+        <div style="color: {text}; font-size: 18px; font-weight: 700; margin-bottom: 8px;">{selected_month} &nbsp; <span style="color: #e63946; font-size: 14px;">{plan['season']}</span></div>
+        <div style="color: {subtext}; font-size: 14px; margin-bottom: 16px;">{plan['tip']}</div>
+        <div style="color: #e63946; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Stock Up</div>
+        {"".join([f'<div style="color: {text}; font-size: 14px; margin-bottom: 4px;">+ {cat}</div>' for cat in plan['stock_up']])}
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # KPI cards - row 1
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric(T["total_transactions"], "218,037")
-    col2.metric(T["avg_basket"], "Rs 1,000.81")
-    col3.metric(T["daily_revenue"], "Rs 710,796")
-    col4.metric(T["daily_customers"], "710")
+    # Key rule
+    st.markdown(f"""
+    <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 8px; padding: 20px 24px;">
+        <div style="color: {subtext}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Rule that never changes</div>
+        <div style="color: {text}; font-size: 16px; font-weight: 600;">FOOD STAPLES, COOKING OIL and RICE are top 3 every single month without exception.</div>
+        <div style="color: {subtext}; font-size: 14px; margin-top: 8px;">Never let these run out of stock regardless of season.</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ============================================================
+# OWNER MODE - PAGE 3: STORE PERFORMANCE
+# ============================================================
+
+elif st.session_state.view_mode == "Owner" and page == "Store Performance":
+
+    st.title("Store Performance")
+    st.markdown(f"<div style='color: {subtext}; font-size: 15px; margin-bottom: 24px;'>Based on 10 months of real sales data from Baniya Shopping Center, Pokhara.</div>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    # The one number that matters
+    st.markdown(f"""
+    <div class="action-box">
+        <div style="color: {subtext}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Primary KPI</div>
+        <div style="color: {text}; font-size: 48px; font-weight: 800;">Rs 1,000.81</div>
+        <div style="color: {subtext}; font-size: 14px; margin-top: 4px;">Average basket value across 218,037 transactions</div>
+        <div style="color: #e63946; font-size: 14px; font-weight: 600; margin-top: 8px;">Target: increase this by 5% to Rs 1,050.85</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # KPI cards - row 2
-    col5, col6, col7, col8 = st.columns(4)
-    col5.metric("Total Products", "5,681")
-    col6.metric("Categories", "25")
-    col7.metric("Association Rules", "1,228")
-    col8.metric("Max Lift (Product Level)", "22.41")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Daily Revenue", "Rs 710,796")
+    col2.metric("Daily Customers", "710")
+    col3.metric("Total Products", "5,681")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Monthly revenue bar chart
-    st.markdown(f"### {T['revenue_chart_title']}")
+    # Revenue chart
+    st.markdown("### Monthly Revenue")
 
     fig, ax = plt.subplots(figsize=(14, 5))
     fig.patch.set_facecolor(chart_bg)
     ax.set_facecolor(chart_bg)
 
-    # Highlight Sep and Oct in red for Dashain
     colors = ['#e63946' if 'Sep' in m or 'Oct' in m else bar_color for m in monthly_revenue['month']]
     ax.bar(monthly_revenue['month'], monthly_revenue['revenue'] / 1_000_000, color=colors, width=0.6)
-
-    ax.set_ylabel('Revenue (Rs Million)', color=subtext, fontsize=11)
+    ax.set_ylabel('Revenue (Rs Million)', color=subtext)
     ax.tick_params(colors=subtext)
     ax.spines['bottom'].set_color(border)
     ax.spines['left'].set_color(border)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.set_xticklabels(monthly_revenue['month'], rotation=45, ha='right', color=subtext, fontsize=9)
-
-    # Annotate the Dashain peak
     max_idx = monthly_revenue['revenue'].idxmax()
     max_month = monthly_revenue.iloc[max_idx]
     ax.annotate(
         f"Dashain Peak\nRs {max_month['revenue']/1_000_000:.1f}M",
         xy=(max_idx, max_month['revenue'] / 1_000_000),
         xytext=(max_idx + 0.5, max_month['revenue'] / 1_000_000 + 1),
-        color='#e63946',
-        fontsize=10,
-        fontweight='bold',
+        color='#e63946', fontsize=10, fontweight='bold',
         arrowprops=dict(arrowstyle='->', color='#e63946')
     )
-
     plt.tight_layout()
     st.pyplot(fig)
     plt.close()
@@ -438,188 +460,120 @@ if page == T["nav_overview"]:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # Revenue projections
-    st.markdown(f"### {T['projection_title']}")
+    st.markdown("### How Much Can You Earn from Rearranging Shelves?")
 
     col_a, col_b, col_c = st.columns(3)
-    col_a.metric(T["conservative"], "Rs 0.78 Crore / year", "Rs 21,370 / day")
-    col_b.metric(T["moderate"], "Rs 1.30 Crore / year", "Rs 35,616 / day")
-    col_c.metric(T["optimistic"], "Rs 2.08 Crore / year", "Rs 56,986 / day")
+    col_a.metric("Conservative 3%", "Rs 0.78 Crore / year", "Rs 21,370 extra per day")
+    col_b.metric("Moderate 5%", "Rs 1.30 Crore / year", "Rs 35,616 extra per day")
+    col_c.metric("Optimistic 8%", "Rs 2.08 Crore / year", "Rs 56,986 extra per day")
 
     st.markdown(f"""
-    <div class="insight-box" style="margin-top: 16px;">
-        <div class="insight-title">Why 5% is Realistic</div>
-        <p>48 of your 1,228 association rules have lift above 5.0. Maximum lift is 22.41 at product level. These are exceptionally strong patterns. A 5% uplift from acting on them is conservative, not optimistic.</p>
+    <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 8px; padding: 20px 24px; margin-top: 16px;">
+        <div style="color: {subtext}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">How to start</div>
+        <div style="color: {text}; font-size: 15px; font-weight: 600; margin-bottom: 8px;">Start with one shelf change. Measure for 4 weeks. Then expand.</div>
+        <div style="color: {subtext}; font-size: 14px;">First move: Place Rato Dal next to Kalo Dal. They are bought together 4,236 times. This is your safest first step.</div>
     </div>
     """, unsafe_allow_html=True)
 
 # ============================================================
-# PAGE 2 - PRODUCT INTELLIGENCE
+# EXAMINER MODE - PAGE 1: PROJECT OVERVIEW
 # ============================================================
 
-elif page == T["nav_products"]:
+elif st.session_state.view_mode == "Examiner" and page == "Project Overview":
 
-    st.title("Product Intelligence")
+    st.title("Project Overview")
+    st.markdown(f"<div style='color: {subtext}; font-size: 15px;'>Data Analytics and Machine Learning Based Product Placement Optimisation to Increase Sales in a Nepali Grocery Retail Store</div>", unsafe_allow_html=True)
     st.markdown("---")
 
-    col1, col2 = st.columns(2)
-
-    # Top 20 products bar chart
-    with col1:
-        st.markdown("### Top 20 Products by Transactions")
-        top20 = top_100_products.head(20).reset_index()
-        top20.columns = ['Product', 'Transactions']
-
-        fig, ax = plt.subplots(figsize=(8, 9))
-        fig.patch.set_facecolor(chart_bg)
-        ax.set_facecolor(chart_bg)
-
-        # Highlight top 3 in red
-        colors = ['#e63946' if i < 3 else bar_color for i in range(len(top20))]
-        ax.barh(top20['Product'][::-1], top20['Transactions'][::-1], color=colors[::-1], height=0.6)
-        ax.set_xlabel('Transactions', color=subtext)
-        ax.tick_params(colors=subtext, labelsize=9)
-        ax.spines['bottom'].set_color(border)
-        ax.spines['left'].set_color(border)
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close()
-
-    # Top 15 categories bar chart
-    with col2:
-        st.markdown("### Top 15 Categories by Transactions")
-        cat_counts = df.groupby('category')['invoice_no'].nunique().sort_values(ascending=False).head(15)
-
-        fig2, ax2 = plt.subplots(figsize=(8, 9))
-        fig2.patch.set_facecolor(chart_bg)
-        ax2.set_facecolor(chart_bg)
-
-        # Highlight top 3 in red
-        colors2 = ['#e63946' if i < 3 else bar_color for i in range(len(cat_counts))]
-        ax2.barh(cat_counts.index[::-1], cat_counts.values[::-1], color=colors2[::-1], height=0.6)
-        ax2.set_xlabel('Transactions', color=subtext)
-        ax2.tick_params(colors=subtext, labelsize=9)
-        ax2.spines['bottom'].set_color(border)
-        ax2.spines['left'].set_color(border)
-        ax2.spines['top'].set_visible(False)
-        ax2.spines['right'].set_visible(False)
-        plt.tight_layout()
-        st.pyplot(fig2)
-        plt.close()
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Raw Rows", "768,222")
+    col2.metric("Clean Rows", "767,180")
+    col3.metric("Transactions", "218,037")
+    col4.metric("Products", "5,681")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Co-occurrence heatmap
-    st.markdown("### Product Co-occurrence Heatmap (Top 20 Products)")
-    st.markdown("Darker red means bought together more often. Use this to decide shelf arrangement.")
-
-    top_20 = top_100_products.head(20).index.tolist()
-    df_top20 = df[df['product'].isin(top_20)]
-    pivot = df_top20.groupby(['invoice_no', 'product']).size().unstack(fill_value=0)
-    pivot = pivot.reindex(columns=top_20, fill_value=0)
-    cooc = pivot.T.dot(pivot)
-    cooc_array = cooc.values.copy()
-    np.fill_diagonal(cooc_array, 0)
-    cooc_fixed = pd.DataFrame(cooc_array, index=cooc.index, columns=cooc.columns)
-
-    fig3, ax3 = plt.subplots(figsize=(14, 11))
-    fig3.patch.set_facecolor(chart_bg)
-    ax3.set_facecolor(chart_bg)
-
-    sns.heatmap(
-        cooc_fixed,
-        cmap='Reds',
-        ax=ax3,
-        linewidths=0.3,
-        linecolor=border,
-        annot=True,
-        fmt='g',
-        annot_kws={'size': 8, 'color': annot_color},
-        cbar_kws={'shrink': 0.8}
-    )
-    ax3.tick_params(colors=subtext, labelsize=8)
-    ax3.set_xticklabels(ax3.get_xticklabels(), rotation=45, ha='right', color=subtext)
-    ax3.set_yticklabels(ax3.get_yticklabels(), rotation=0, color=subtext)
-    plt.tight_layout()
-    st.pyplot(fig3)
-    plt.close()
-
-# ============================================================
-# PAGE 3 - RECOMMENDATION ENGINE
-# ============================================================
-
-elif page == T["nav_recommendations"]:
-
-    st.title("Recommendation Engine")
-    st.markdown("Trained on 95,570 baskets. Validated on 40,959 unseen baskets. Hit rate: 28%.")
-    st.markdown("---")
-
-    # Model performance metrics
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Training Baskets", "95,570")
-    col2.metric("Test Baskets", "40,959")
-    col3.metric("Hit Rate", "28%", "28x better than random")
+    col5, col6, col7, col8 = st.columns(4)
+    col5.metric("Categories", "25")
+    col6.metric("MBA Rules", "1,228")
+    col7.metric("Max Lift (Category)", "6.81")
+    col8.metric("Max Lift (Product)", "22.41")
 
     st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### Analysis Pipeline")
 
-    # Product selector - defaults to Sugar
-    all_products = sorted(top_100_products.index.tolist())
-    default_idx = all_products.index('Sugar') if 'Sugar' in all_products else 0
-    selected = st.selectbox(
-        "Select a product to get shelf placement recommendations",
-        all_products,
-        index=default_idx
-    )
+    steps = [
+        ("01", "Data Audit", "Examined 768,222 raw rows. Found 1,040 duplicates, 168,864 trailing spaces. Confirmed header=7 gives correct row count."),
+        ("02", "Data Cleaning", "Removed duplicates and bad rows. Standardised 38 product groups into 25 clean categories. Final: 767,180 rows."),
+        ("03", "EDA", "8 charts. FOOD STAPLES in 42.2% of baskets. Average basket Rs 1,000.81. Kalo Dal and Rato Dal co-occur 4,000 times."),
+        ("04", "Transaction Encoding", "Converted to basket matrix: 218,037 rows x 25 columns. True/False per category per invoice."),
+        ("05", "Market Basket Analysis", "Apriori and FP-Growth both found 243 itemsets and 1,228 rules. Max lift 6.81. 48 rules above lift 5."),
+        ("06", "Clustering", "Frequency K-Means: silhouette 0.19. Co-occurrence K-Means: silhouette 0.554 at k=3. 189% improvement."),
+        ("07", "Placement Simulation", "5 zones designed. 5% uplift projects Rs 1.30 crore extra revenue per year."),
+        ("08", "Evaluation", "Algorithm comparison, 6 limitations, 7 future recommendations."),
+        ("09", "ML Recommendation", "Product level MBA on top 100 products. 70/30 train test split. 28% hit rate on unseen data. Max lift 22.41."),
+    ]
 
-    if selected:
-        recs = get_recommendations(selected, product_rules)
-
-        if recs is None:
-            st.warning(f"No recommendations found for {selected}.")
-        else:
-            st.markdown(f"### Customers who buy {selected} also buy:")
-            st.markdown("<br>", unsafe_allow_html=True)
-
-            max_lift = recs['Lift'].max()
-
-            # Show each recommendation as a card with lift bar
-            for _, row in recs.iterrows():
-                bar_pct = int((row['Lift'] / max_lift) * 100)
-                st.markdown(f"""
-                <div class="rec-card">
-                    <div class="rec-product">{row['Product']}</div>
-                    <div style="color: {subtext}; font-size: 13px; margin-top: 4px;">
-                        Lift: <span style="color: #e63946; font-weight: 700;">{row['Lift']}</span>
-                        &nbsp;&nbsp;|&nbsp;&nbsp;
-                        Confidence: <span style="color: {text};">{row['Confidence']}</span>
-                        &nbsp;&nbsp;|&nbsp;&nbsp;
-                        Support: <span style="color: {subtext};">{row['Support']}</span>
-                    </div>
-                    <div class="rec-bar-container">
-                        <div style="background-color: #e63946; height: 8px; border-radius: 4px; width: {bar_pct}%;"></div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            st.markdown("<br>", unsafe_allow_html=True)
-
-            # Shelf placement action box
-            st.markdown(f"""
-            <div class="insight-box">
-                <div class="insight-title">Shelf Placement Action</div>
-                <p>Place <strong>{selected}</strong> directly next to <strong>{recs.iloc[0]['Product']}</strong> on the same shelf. Lift of {recs.iloc[0]['Lift']} means customers are {recs.iloc[0]['Lift']}x more likely to buy both together.</p>
+    for num, title, desc in steps:
+        st.markdown(f"""
+        <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 6px; padding: 16px 20px; margin-bottom: 10px; display: flex; gap: 16px; align-items: flex-start;">
+            <div style="color: #e63946; font-size: 20px; font-weight: 800; min-width: 32px;">{num}</div>
+            <div>
+                <div style="color: {text}; font-size: 15px; font-weight: 600; margin-bottom: 4px;">{title}</div>
+                <div style="color: {subtext}; font-size: 13px; line-height: 1.6;">{desc}</div>
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
+
+# ============================================================
+# EXAMINER MODE - PAGE 2: ASSOCIATION RULES
+# ============================================================
+
+elif st.session_state.view_mode == "Examiner" and page == "Association Rules":
+
+    st.title("Association Rules")
+    st.markdown(f"<div style='color: {subtext}; font-size: 15px; margin-bottom: 24px;'>1,228 rules from 218,037 baskets. Apriori and FP-Growth produced identical results, validating the findings.</div>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Total Rules", "1,228")
+    col2.metric("Rules with Lift > 5", "48")
+    col3.metric("Max Lift (Category)", "6.81")
+    col4.metric("Max Lift (Product)", "22.41")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Category level rules table with slider filter
-    st.markdown("### Category Level Rules")
-    st.markdown("Filter by minimum lift to see which categories belong together. Support, confidence and lift are all shown.")
+    st.markdown(f"""
+    <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px;">
+        <div style="color: {subtext}; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">What the three metrics mean</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+            <div>
+                <div style="color: #e63946; font-size: 13px; font-weight: 700; margin-bottom: 4px;">Support</div>
+                <div style="color: {subtext}; font-size: 13px;">How common is this combination. Support 0.01 means it appears in at least 1% of all 218,037 baskets, so at least 2,180 baskets.</div>
+            </div>
+            <div>
+                <div style="color: #e63946; font-size: 13px; font-weight: 700; margin-bottom: 4px;">Confidence</div>
+                <div style="color: {subtext}; font-size: 13px;">If a customer buys A, how likely are they to also buy B. Confidence 0.69 means 69% of the time.</div>
+            </div>
+            <div>
+                <div style="color: #e63946; font-size: 13px; font-weight: 700; margin-bottom: 4px;">Lift</div>
+                <div style="color: {subtext}; font-size: 13px;">How much more likely A and B are bought together vs random chance. Lift 6.81 means 6.81x more likely. Lift above 3 is considered strong.</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    min_lift = st.slider("Minimum Lift", 1.0, 7.0, 4.0, 0.1)
-    filtered = category_rules[category_rules['lift'] >= min_lift].head(20)
+    # Interactive rule filter
+    st.markdown("### Filter Rules")
+
+    col_f1, col_f2 = st.columns(2)
+    min_lift = col_f1.slider("Minimum Lift", 1.0, 7.0, 3.0, 0.1)
+    min_conf = col_f2.slider("Minimum Confidence", 0.0, 1.0, 0.1, 0.05)
+
+    filtered = category_rules[
+        (category_rules['lift'] >= min_lift) &
+        (category_rules['confidence'] >= min_conf)
+    ].head(30)
 
     if len(filtered) > 0:
         display = filtered[['antecedents', 'consequents', 'support', 'confidence', 'lift']].copy()
@@ -627,136 +581,234 @@ elif page == T["nav_recommendations"]:
         display['consequents'] = display['consequents'].apply(lambda x: ', '.join(list(x)))
         display.columns = ['If customer buys', 'They also buy', 'Support', 'Confidence', 'Lift']
         st.dataframe(display.reset_index(drop=True), use_container_width=True)
+        st.caption(f"{len(filtered)} rules shown. Support, Confidence and Lift all displayed together as your examiner recommended.")
     else:
-        st.info("No rules found at this lift level. Lower the minimum lift.")
+        st.info("No rules at this filter level. Lower the minimum lift.")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Scatter plot
+    st.markdown("### Rules Scatter Plot")
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    fig.patch.set_facecolor(chart_bg)
+    ax.set_facecolor(chart_bg)
+
+    scatter = ax.scatter(
+        category_rules['support'],
+        category_rules['confidence'],
+        c=category_rules['lift'],
+        cmap='Reds',
+        s=80,
+        alpha=0.7
+    )
+    plt.colorbar(scatter, label='Lift', ax=ax)
+    ax.set_xlabel('Support', color=subtext)
+    ax.set_ylabel('Confidence', color=subtext)
+    ax.set_title('Category Association Rules: Support vs Confidence coloured by Lift', color=text)
+    ax.tick_params(colors=subtext)
+    ax.spines['bottom'].set_color(border)
+    ax.spines['left'].set_color(border)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    plt.tight_layout()
+    st.pyplot(fig)
+    plt.close()
 
 # ============================================================
-# PAGE 4 - PLACEMENT ZONES
+# EXAMINER MODE - PAGE 3: CLUSTERING RESULTS
 # ============================================================
 
-elif page == T["nav_zones"]:
+elif st.session_state.view_mode == "Examiner" and page == "Clustering Results":
 
-    st.title("Placement Zones")
-    st.markdown("5 zones designed from MBA association rules and co-occurrence clustering (silhouette 0.554 at k=3).")
+    st.title("Clustering Results")
+    st.markdown(f"<div style='color: {subtext}; font-size: 15px; margin-bottom: 24px;'>Comparison of frequency based vs co-occurrence based K-Means clustering.</div>", unsafe_allow_html=True)
     st.markdown("---")
 
-    # How zones were decided
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Frequency Clustering", "0.19", "Silhouette at k=5 - weak")
+    col2.metric("Co-occurrence Clustering", "0.554", "Silhouette at k=3 - strong")
+    col3.metric("Improvement", "189%", "By asking the right question")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
     st.markdown(f"""
-    <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 6px; padding: 16px 20px; margin-bottom: 20px;">
-        <div style="color: {subtext}; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">How zones were decided</div>
-        <div style="color: {text}; font-size: 14px; line-height: 1.8;">
-            Zones are based on three factors working together. First, association rules showing which categories have high lift AND high support, meaning both a strong relationship and high customer volume. Second, co-occurrence clustering grouping categories bought together into natural zones. Third, physical constraints like refrigeration requirements and customer entry points that limit where certain categories can go regardless of what the data says.
+    <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 8px; padding: 20px 24px; margin-bottom: 20px;">
+        <div style="color: {text}; font-size: 15px; font-weight: 600; margin-bottom: 8px;">Why co-occurrence is better</div>
+        <div style="color: {subtext}; font-size: 14px; line-height: 1.8;">
+            Frequency clustering asks "how often is this category bought?" FOOD STAPLES at 42.2% dominates and forms its own cluster just because of its size. That is not useful for placement decisions.
+            <br><br>
+            Co-occurrence clustering asks "how often are these two categories bought together?" This directly answers the placement question: which categories belong next to each other on the shop floor.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Zone definitions
-    zones = [
+    st.markdown("### Three Placement Clusters at k=3")
+
+    clusters = [
         {
-            "name": "Zone 1 - CENTER",
+            "name": "Cluster 1 - Daily Essentials",
             "color": "#e63946",
-            "label": "High Traffic Anchor Zone",
-            "categories": ["FOOD STAPLES", "COOKING OIL", "CLEANING SUPPLIES", "TEA AND SPICES", "HOUSEHOLD ITEMS"],
-            "reason": "These categories appear in almost every strong association rule. CLEANING SUPPLIES alone connects to 48 rules with lift above 5. Placing them centrally forces customers to pass other products on the way.",
-            "products": ["Sugar", "Rato Dal", "Kalo Dal", "SALT", "Chana"]
+            "categories": ["CLEANING SUPPLIES", "COOKING OIL", "TEA AND SPICES", "BISCUITS AND COOKIES", "DAIRY PRODUCTS", "SOFT DRINKS AND JUICES", "CONFECTIONERY", "HOUSEHOLD ITEMS", "PERSONAL CARE", "NOODLES"],
+            "note": "Bought together regularly on typical shopping trips."
         },
         {
-            "name": "Zone 2 - ENTRANCE",
+            "name": "Cluster 2 - Occasional and Speciality",
             "color": "#457b9d",
-            "label": "Impulse Purchase Zone",
-            "categories": ["NOODLES", "SOFT DRINKS AND JUICES", "BISCUITS AND COOKIES", "CONFECTIONERY", "NAMKEEN AND SNACKS", "CANNED AND PACKAGED FOODS"],
-            "reason": "High frequency impulse categories. Catching customers at the entrance before they focus on essentials increases unplanned purchases.",
-            "products": ["WAI WAI CHICKEN", "RARA", "COKE FANTA SPRITE 1.5L", "BADAM RAMRO"]
+            "categories": ["ALCOHOLIC BEVERAGES", "CIGARETTE AND TOBACCO", "BABY CARE", "STATIONERY", "ELECTRICAL SUPPLIES", "POOJA ITEMS", "FROZEN FOODS", "FRUITS AND VEGETABLES", "PARTY SUPPLIES", "NAMKEEN AND SNACKS", "RICE", "BREAKFAST CEREALS", "BAKERY"],
+            "note": "Bought on specific occasions or for specific purposes."
         },
         {
-            "name": "Zone 3 - SIDE AISLE",
+            "name": "Cluster 3 - Core Staples",
             "color": "#2a9d8f",
-            "label": "Personal and Household Zone",
-            "categories": ["PERSONAL CARE", "BABY CARE", "STATIONERY"],
-            "reason": "Destination categories. Customers seeking these will find them without central placement. Side aisle keeps them out of the main traffic flow.",
-            "products": ["PATANJALI SOAP", "LUV POUCH DAHI 500ML"]
-        },
-        {
-            "name": "Zone 4 - BACK WALL",
-            "color": "#e9c46a",
-            "label": "Fresh and Cold Zone",
-            "categories": ["DAIRY PRODUCTS", "FROZEN FOODS", "FRUITS AND VEGETABLES", "BAKERY"],
-            "reason": "Require refrigeration. Placed at back to draw customers through the entire store, increasing exposure to other products.",
-            "products": ["Local Milk 500ml"]
-        },
-        {
-            "name": "Zone 5 - PERIMETER",
-            "color": "#6a4c93",
-            "label": "Destination and Speciality Zone",
-            "categories": ["RICE", "ALCOHOLIC BEVERAGES", "CIGARETTE AND TOBACCO", "POOJA ITEMS", "BREAKFAST CEREALS", "ELECTRICAL SUPPLIES", "PARTY SUPPLIES"],
-            "reason": "Low frequency or specialist categories. Customers buying these know what they want and will seek them out.",
-            "products": ["Khukuri FT", "Makai", "GHARANA MAIDA 1KG"]
+            "categories": ["FOOD STAPLES", "CANNED AND PACKAGED FOODS"],
+            "note": "Co-occur so strongly they form their own cluster. Bought together 31,074 times."
         }
     ]
 
-    # Render each zone as a card
+    for cluster in clusters:
+        st.markdown(f"""
+        <div style="background-color: {card_bg}; border-left: 4px solid {cluster['color']}; border-radius: 6px; padding: 16px 20px; margin-bottom: 12px;">
+            <div style="color: {cluster['color']}; font-size: 15px; font-weight: 700; margin-bottom: 8px;">{cluster['name']}</div>
+            <div style="color: {text}; font-size: 13px; margin-bottom: 8px;">{', '.join(cluster['categories'])}</div>
+            <div style="color: {subtext}; font-size: 13px; font-style: italic;">{cluster['note']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# ============================================================
+# EXAMINER MODE - PAGE 4: MODEL VALIDATION
+# ============================================================
+
+elif st.session_state.view_mode == "Examiner" and page == "Model Validation":
+
+    st.title("Model Validation")
+    st.markdown(f"<div style='color: {subtext}; font-size: 15px; margin-bottom: 24px;'>Product level ML recommendation system. Trained on top 100 most sold products with 70/30 train test split.</div>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Training Baskets", "95,570 (70%)")
+    col2.metric("Test Baskets", "40,959 (30%)")
+    col3.metric("Hit Rate", "28%")
+    col4.metric("vs Random Chance", "28x better")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 8px; padding: 20px 24px; margin-bottom: 20px;">
+        <div style="color: {text}; font-size: 15px; font-weight: 600; margin-bottom: 12px;">Why 28% hit rate is good</div>
+        <div style="color: {subtext}; font-size: 14px; line-height: 1.8;">
+            The model had to pick from 100 possible products. Random guessing would give 1% accuracy.
+            Our model gives 28%, which is 28 times better than random chance.
+            <br><br>
+            The model was trained on 70% of baskets only and tested on 40,959 baskets it had never seen.
+            Achieving 28% hit rate on completely unseen data confirms the model learned real patterns,
+            not just memorised the training data.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("### Product Level Rules")
+    st.markdown(f"<div style='color: {subtext}; font-size: 14px; margin-bottom: 16px;'>100 rules from top 100 products. Max lift 22.41, much stronger than category level max of 6.81.</div>", unsafe_allow_html=True)
+
+    all_products = sorted(top_100_products.index.tolist())
+    default_idx = all_products.index('Sugar') if 'Sugar' in all_products else 0
+    selected = st.selectbox("Select a product to see its rules", all_products, index=default_idx)
+
+    if selected:
+        recs = get_recommendations(selected, product_rules)
+        if recs is None:
+            st.info(f"No rules found for {selected}.")
+        else:
+            st.dataframe(recs, use_container_width=True)
+            st.caption("Support, Confidence and Lift shown together. High lift with decent support = strong actionable rule.")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### Key Product Findings")
+
+    findings = [
+        ("Surya + Shikhar Ice", "Lift 22.41", "Strongest pair. 22x more likely to be bought together than random."),
+        ("PRAWN + SADA PAPAD", "Lift 11.89", "Strong snack combination. Place in same section."),
+        ("Mong Khosta + Aadar Dal", "Lift 10.20", "Dal combination. Place all dal varieties together."),
+        ("Rato Dal + Sugar + Kalo Dal", "Lift 7.72", "Classic Nepali dal bhat cooking pattern."),
+        ("Wai Wai Chicken + RARA", "Lift 6.94", "Two noodle brands bought together constantly."),
+    ]
+
+    for pair, metric, insight in findings:
+        st.markdown(f"""
+        <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 6px; padding: 14px 18px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <div style="color: {text}; font-size: 14px; font-weight: 600; margin-bottom: 4px;">{pair}</div>
+                <div style="color: {subtext}; font-size: 13px;">{insight}</div>
+            </div>
+            <div style="color: #e63946; font-size: 14px; font-weight: 700; white-space: nowrap; margin-left: 16px;">{metric}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# ============================================================
+# EXAMINER MODE - PAGE 5: PLACEMENT ZONES
+# ============================================================
+
+elif st.session_state.view_mode == "Examiner" and page == "Placement Zones":
+
+    st.title("Placement Zones")
+    st.markdown(f"<div style='color: {subtext}; font-size: 15px; margin-bottom: 24px;'>5 zones derived from MBA association rules and co-occurrence clustering (silhouette 0.554 at k=3).</div>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Zones Designed", "5")
+    col2.metric("Conservative Uplift", "Rs 0.78 Crore / year")
+    col3.metric("Moderate Uplift (5%)", "Rs 1.30 Crore / year")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px;">
+        <div style="color: {subtext}; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Zone design methodology</div>
+        <div style="color: {text}; font-size: 14px; line-height: 1.8;">
+            Zones use three factors together. First, MBA rules with high lift AND high support so both relationship strength and customer volume are considered. Second, co-occurrence clustering grouping categories that are bought together. Third, physical constraints including refrigeration requirements for dairy and frozen foods, and customer entry point assumptions.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    zones = [
+        {"name": "Zone 1 - CENTER", "color": "#e63946", "label": "High Traffic Anchor", "categories": ["FOOD STAPLES", "COOKING OIL", "CLEANING SUPPLIES", "TEA AND SPICES", "HOUSEHOLD ITEMS"], "reason": "CLEANING SUPPLIES connects to 48 rules with lift above 5. FOOD STAPLES appears in 42.2% of all baskets. Central placement forces customers to pass other products."},
+        {"name": "Zone 2 - ENTRANCE", "color": "#457b9d", "label": "Impulse Purchase", "categories": ["NOODLES", "SOFT DRINKS AND JUICES", "BISCUITS AND COOKIES", "CONFECTIONERY", "NAMKEEN AND SNACKS", "CANNED AND PACKAGED FOODS"], "reason": "High frequency impulse categories. Entrance placement captures customers before they focus on essentials, increasing unplanned purchases."},
+        {"name": "Zone 3 - SIDE AISLE", "color": "#2a9d8f", "label": "Destination", "categories": ["PERSONAL CARE", "BABY CARE", "STATIONERY"], "reason": "Customers seeking these products will find them regardless of placement. Side aisle keeps them out of the main traffic flow."},
+        {"name": "Zone 4 - BACK WALL", "color": "#e9c46a", "label": "Cold Storage", "categories": ["DAIRY PRODUCTS", "FROZEN FOODS", "FRUITS AND VEGETABLES", "BAKERY"], "reason": "Physical constraint: refrigeration required. Back placement also draws customers through the store, increasing exposure to other products."},
+        {"name": "Zone 5 - PERIMETER", "color": "#6a4c93", "label": "Speciality", "categories": ["RICE", "ALCOHOLIC BEVERAGES", "CIGARETTE AND TOBACCO", "POOJA ITEMS", "BREAKFAST CEREALS", "ELECTRICAL SUPPLIES", "PARTY SUPPLIES"], "reason": "Low frequency or destination categories. Customers buying these seek them out specifically. Perimeter placement reduces main aisle congestion."},
+    ]
+
     for zone in zones:
         st.markdown(f"""
-        <div style="
-            background-color: {card_bg};
-            border-left: 4px solid {zone['color']};
-            border-radius: 6px;
-            padding: 20px 24px;
-            margin-bottom: 16px;
-        ">
+        <div style="background-color: {card_bg}; border-left: 4px solid {zone['color']}; border-radius: 6px; padding: 18px 22px; margin-bottom: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <div style="color: {zone['color']}; font-size: 16px; font-weight: 700;">{zone['name']}</div>
+                <div style="color: {zone['color']}; font-size: 15px; font-weight: 700;">{zone['name']}</div>
                 <div style="color: {subtext}; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">{zone['label']}</div>
             </div>
-            <div style="color: {text}; font-size: 14px; margin-bottom: 8px;">
-                <span style="color: {subtext};">Categories: </span>{', '.join(zone['categories'])}
-            </div>
-            <div style="color: {subtext}; font-size: 13px; margin-bottom: 8px;">
-                <span style="color: {subtext};">Key Products: </span>{', '.join(zone['products'])}
-            </div>
-            <div style="color: {subtext}; font-size: 13px; line-height: 1.6; border-top: 1px solid {border}; padding-top: 10px; margin-top: 8px;">
-                {zone['reason']}
-            </div>
+            <div style="color: {text}; font-size: 13px; margin-bottom: 8px;">{', '.join(zone['categories'])}</div>
+            <div style="color: {subtext}; font-size: 13px; line-height: 1.6; border-top: 1px solid {border}; padding-top: 8px; margin-top: 8px;">{zone['reason']}</div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Visual store layout map
+    # Visual store map
     st.markdown("### Visual Store Layout")
-
     fig, ax = plt.subplots(figsize=(12, 8))
     fig.patch.set_facecolor(chart_bg)
     ax.set_facecolor(chart_bg)
-
     store_zones = [
-        (0.1,  0.1,  0.8,  0.8,  card_bg,   'STORE BOUNDARY',                                          subtext),
-        (0.35, 0.3,  0.3,  0.4,  '#e63946', 'ZONE 1\nCENTER\nFood Staples\nCleaning Supplies\nCooking Oil', 'white'),
-        (0.05, 0.05, 0.9,  0.15, '#457b9d', 'ZONE 2 - ENTRANCE: Noodles, Soft Drinks, Biscuits, Snacks', 'white'),
-        (0.05, 0.25, 0.25, 0.6,  '#2a9d8f', 'ZONE 3\nSIDE AISLE\nPersonal Care\nBaby Care\nStationery', 'white'),
-        (0.05, 0.75, 0.9,  0.2,  '#e9c46a', 'ZONE 4 - BACK WALL: Dairy, Frozen, Fruits, Bakery',        '#1a1a1a'),
-        (0.7,  0.25, 0.25, 0.45, '#6a4c93', 'ZONE 5\nPERIMETER\nRice\nAlcohol\nCigarettes\nPooja',      'white'),
+        (0.1, 0.1, 0.8, 0.8, card_bg, 'STORE BOUNDARY', subtext),
+        (0.35, 0.3, 0.3, 0.4, '#e63946', 'ZONE 1\nCENTER\nFood Staples\nCleaning Supplies\nCooking Oil', 'white'),
+        (0.05, 0.05, 0.9, 0.15, '#457b9d', 'ZONE 2 - ENTRANCE: Noodles, Soft Drinks, Biscuits, Snacks', 'white'),
+        (0.05, 0.25, 0.25, 0.6, '#2a9d8f', 'ZONE 3\nSIDE AISLE\nPersonal Care\nBaby Care\nStationery', 'white'),
+        (0.05, 0.75, 0.9, 0.2, '#e9c46a', 'ZONE 4 - BACK WALL: Dairy, Frozen, Fruits, Bakery', '#1a1a1a'),
+        (0.7, 0.25, 0.25, 0.45, '#6a4c93', 'ZONE 5\nPERIMETER\nRice\nAlcohol\nCigarettes\nPooja', 'white'),
     ]
-
     for x, y, w, h, color, label, text_color in store_zones:
-        rect = mpatches.FancyBboxPatch(
-            (x, y), w, h,
-            boxstyle="round,pad=0.01",
-            facecolor=color,
-            edgecolor=border,
-            linewidth=2,
-            alpha=0.9
-        )
+        rect = mpatches.FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.01", facecolor=color, edgecolor=border, linewidth=2, alpha=0.9)
         ax.add_patch(rect)
-        ax.text(
-            x + w/2, y + h/2, label,
-            ha='center', va='center',
-            color=text_color,
-            fontsize=8,
-            fontweight='bold',
-            wrap=True
-        )
-
+        ax.text(x + w/2, y + h/2, label, ha='center', va='center', color=text_color, fontsize=8, fontweight='bold', wrap=True)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis('off')
@@ -764,161 +816,3 @@ elif page == T["nav_zones"]:
     plt.tight_layout()
     st.pyplot(fig)
     plt.close()
-
-# ============================================================
-# PAGE 5 - SEASONAL PLANNING
-# ============================================================
-
-elif page == T["nav_seasonal"]:
-
-    st.title("Seasonal Planning")
-    st.markdown("Stock recommendations by month based on 10 months of real sales data.")
-    st.markdown("---")
-
-    # Monthly revenue line chart
-    st.markdown("### Monthly Revenue Trend")
-
-    fig, ax = plt.subplots(figsize=(14, 5))
-    fig.patch.set_facecolor(chart_bg)
-    ax.set_facecolor(chart_bg)
-
-    ax.plot(
-        range(len(monthly_revenue)),
-        monthly_revenue['revenue'] / 1_000_000,
-        color='#e63946',
-        linewidth=2.5,
-        marker='o',
-        markersize=6,
-        markerfacecolor='#e63946',
-        markeredgecolor=chart_bg,
-        markeredgewidth=2
-    )
-
-    ax.fill_between(
-        range(len(monthly_revenue)),
-        monthly_revenue['revenue'] / 1_000_000,
-        alpha=0.1,
-        color='#e63946'
-    )
-
-    ax.set_xticks(range(len(monthly_revenue)))
-    ax.set_xticklabels(monthly_revenue['month'], rotation=45, ha='right', color=subtext, fontsize=9)
-    ax.set_ylabel('Revenue (Rs Million)', color=subtext)
-    ax.tick_params(colors=subtext)
-    ax.spines['bottom'].set_color(border)
-    ax.spines['left'].set_color(border)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.grid(axis='y', color=border, linestyle='--', alpha=0.5)
-
-    # Annotate Dashain peak
-    max_idx = monthly_revenue['revenue'].idxmax()
-    ax.annotate(
-        'Dashain Peak',
-        xy=(max_idx, monthly_revenue['revenue'].max() / 1_000_000),
-        xytext=(max_idx - 1.5, monthly_revenue['revenue'].max() / 1_000_000 - 2),
-        color='#e63946',
-        fontsize=10,
-        fontweight='bold',
-        arrowprops=dict(arrowstyle='->', color='#e63946')
-    )
-
-    plt.tight_layout()
-    st.pyplot(fig)
-    plt.close()
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Season cards
-    st.markdown("### Stock Recommendations by Season")
-
-    seasons = [
-        {
-            "season": "Monsoon (Jul - Sep)",
-            "color": "#457b9d",
-            "insight": "CLEANING SUPPLIES rises significantly. Stock extra detergent, floor cleaners, and disinfectants. Customers clean more during monsoon.",
-            "stock_up": ["CLEANING SUPPLIES", "FOOD STAPLES", "COOKING OIL"],
-            "stock_normal": ["ALCOHOLIC BEVERAGES", "SOFT DRINKS"]
-        },
-        {
-            "season": "Festival Season (Sep - Oct)",
-            "color": "#e63946",
-            "insight": "September 2025 was the highest revenue month at Rs 23.3 million due to Dashain. Stock ALCOHOLIC BEVERAGES 3 weeks before Dashain. Confectionery and gift items spike.",
-            "stock_up": ["ALCOHOLIC BEVERAGES", "CONFECTIONERY", "FOOD STAPLES", "POOJA ITEMS"],
-            "stock_normal": ["STATIONERY", "ELECTRICAL SUPPLIES"]
-        },
-        {
-            "season": "Winter (Nov - Jan)",
-            "color": "#6a4c93",
-            "insight": "CIGARETTE AND TOBACCO consistently top 5 in winter months. TEA AND SPICES peaks. Customers buy more warm beverages and comfort food.",
-            "stock_up": ["CIGARETTE AND TOBACCO", "TEA AND SPICES", "COOKING OIL", "FOOD STAPLES"],
-            "stock_normal": ["SOFT DRINKS AND JUICES", "FROZEN FOODS"]
-        },
-        {
-            "season": "Spring (Feb - Apr)",
-            "color": "#2a9d8f",
-            "insight": "Regular buying patterns return. No major spikes. Good time to rearrange shelves and implement placement recommendations without disrupting peak season sales.",
-            "stock_up": ["FOOD STAPLES", "PERSONAL CARE", "BISCUITS AND COOKIES"],
-            "stock_normal": ["ALCOHOLIC BEVERAGES", "POOJA ITEMS"]
-        }
-    ]
-
-    for s in seasons:
-        st.markdown(f"""
-        <div style="
-            background-color: {card_bg};
-            border-left: 4px solid {s['color']};
-            border-radius: 6px;
-            padding: 20px 24px;
-            margin-bottom: 16px;
-        ">
-            <div style="color: {s['color']}; font-size: 15px; font-weight: 700; margin-bottom: 10px;">{s['season']}</div>
-            <div style="color: {text}; font-size: 14px; margin-bottom: 12px; line-height: 1.6;">{s['insight']}</div>
-            <div style="display: flex; gap: 40px;">
-                <div>
-                    <div style="color: {subtext}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Stock Up</div>
-                    {"".join([f'<div style="color: #e63946; font-size: 13px; margin-bottom: 3px;">+ {cat}</div>' for cat in s['stock_up']])}
-                </div>
-                <div>
-                    <div style="color: {subtext}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Normal Stock</div>
-                    {"".join([f'<div style="color: {subtext}; font-size: 13px; margin-bottom: 3px;">= {cat}</div>' for cat in s['stock_normal']])}
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Controlled testing implementation guide
-    st.markdown(f"""
-    <div style="background-color: {card_bg}; border: 1px solid {border}; border-radius: 6px; padding: 20px 24px; margin-bottom: 16px;">
-        <div style="color: #e63946; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Recommended Implementation Approach</div>
-        <div style="color: {text}; font-size: 14px; line-height: 1.8; margin-bottom: 16px;">Do not rearrange the whole store at once. Use a controlled step by step approach:</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div style="background-color: {bg}; border: 1px solid {border}; border-radius: 4px; padding: 12px;">
-                <div style="color: #e63946; font-size: 11px; font-weight: 700; margin-bottom: 6px;">STEP 1 - Week 1 to 4</div>
-                <div style="color: {text}; font-size: 13px;">Place Rato Dal next to Kalo Dal. Measure basket value daily. This is your highest confidence change with 4,236 co-occurrences.</div>
-            </div>
-            <div style="background-color: {bg}; border: 1px solid {border}; border-radius: 4px; padding: 12px;">
-                <div style="color: #e63946; font-size: 11px; font-weight: 700; margin-bottom: 6px;">STEP 2 - Week 5 to 8</div>
-                <div style="color: {text}; font-size: 13px;">If basket value increased, move CLEANING SUPPLIES to the center zone. Measure again. This is your strongest category level rule.</div>
-            </div>
-            <div style="background-color: {bg}; border: 1px solid {border}; border-radius: 4px; padding: 12px;">
-                <div style="color: #e63946; font-size: 11px; font-weight: 700; margin-bottom: 6px;">STEP 3 - Week 9 to 12</div>
-                <div style="color: {text}; font-size: 13px;">Rearrange the entrance zone with impulse items. Noodles, soft drinks, biscuits placed near the door to catch customers first.</div>
-            </div>
-            <div style="background-color: {bg}; border: 1px solid {border}; border-radius: 4px; padding: 12px;">
-                <div style="color: #e63946; font-size: 11px; font-weight: 700; margin-bottom: 6px;">STEP 4 - Week 13 onwards</div>
-                <div style="color: {text}; font-size: 13px;">Full zone implementation based on evidence gathered from Steps 1 to 3. By now you have real data proving the approach works.</div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Final key insight
-    st.markdown(f"""
-    <div class="insight-box">
-        <div class="insight-title">Key Seasonal Insight</div>
-        <p>FOOD STAPLES, COOKING OIL and RICE are top 3 every single month without exception. These are your guaranteed sellers regardless of season. Never let these run out of stock.</p>
-    </div>
-    """, unsafe_allow_html=True)
