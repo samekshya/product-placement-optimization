@@ -593,9 +593,9 @@ elif page == T["nav_zones"]:
             <div style="color: {subtext}; font-size: 13px; line-height: 1.6; border-top: 1px solid {border}; padding-top: 10px; margin-top: 8px;">
                 {zone['reason']}
             </div>
-        </div>ksdhgfuiks
+        </div>
         """, unsafe_allow_html=True)
-
+dahsbotafvn kjrh m,oifg m vdfjkg
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("### Visual Store Layout")
 
