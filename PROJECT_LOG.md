@@ -384,3 +384,4 @@
 - 2026-06-27 18:35:52: add zone methodology note and fix zone cards to use theme colours
 - 2026-06-28 01:42:14: fix seasonal page theme colours add 4 step controlled testing implementation guide
 - 2026-06-28 08:48:36: rebuild dashboard with owner mode and examiner mode practical tool not just charts
+- 2026-06-28 15:54:57: add revenue impact analysis support x transactions x basket value ranks rules by money
