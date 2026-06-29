@@ -388,3 +388,4 @@
 - 2026-06-28 23:01:19: add ABC analysis Chart 10 and day of week Chart 11 to notebook 03
 - 2026-06-29 06:07:40: add category relationship network graph Chart 10 to notebook 05
 - 2026-06-29 13:14:02: add 95% confidence interval for revenue projection grounded in store data
+- 2026-06-29 20:20:24: add Store Analytics examiner page with ABC analysis and day of week charts
