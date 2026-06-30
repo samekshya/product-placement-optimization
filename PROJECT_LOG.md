@@ -391,3 +391,4 @@
 - 2026-06-29 20:20:24: add Store Analytics examiner page with ABC analysis and day of week charts
 - 2026-06-30 03:26:45: add notebook 11 decision tree basket classifier 61.3% accuracy COOKING OIL top predictor
 - 2026-06-30 10:33:07: fix student id capitalisation to Student ID
+- 2026-06-30 17:39:28: delete duplicate data load cell in notebook 01
