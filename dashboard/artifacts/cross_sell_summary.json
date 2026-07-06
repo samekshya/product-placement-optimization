@@ -1,0 +1,15 @@
+{
+  "lift_floor": 3.0,
+  "total_strong_rules": 360,
+  "total_strong_support": 4.986,
+  "current_layout": "Frequency-based clusters (unoptimised baseline)",
+  "optimised_layout": "5 designed placement zones",
+  "current_rules_captured": 28,
+  "optimised_rules_captured": 56,
+  "rules_captured_delta": 28,
+  "current_support_captured": 0.4106,
+  "optimised_support_captured": 0.813,
+  "support_captured_delta": 0.4024,
+  "current_capture_pct": 8.2,
+  "optimised_capture_pct": 16.3
+}
