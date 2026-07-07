@@ -415,3 +415,4 @@
 - 2026-07-06 22:53:02: add notebooks 09 and 10 to evaluation scope
 - 2026-07-07 05:59:24: add notebook 09 and 10 results to final evaluation summary
 - 2026-07-07 13:05:45: add timing varies by hardware note to algorithm comparison finding
+- 2026-07-07 20:12:07: add physical constraints note data driven zones must consider refrigeration entry points aisle width
