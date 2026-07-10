@@ -425,3 +425,4 @@
 - 2026-07-09 21:56:38: add monthly revenue trend chart19 shows dashain peak september 2025
 - 2026-07-10 05:03:00: train linear regression model on monthly revenue data learns sales trend
 - 2026-07-10 12:09:21: evaluate linear regression model mae rmse r2 score on test data
+- 2026-07-10 19:15:43: forecast next 3 months revenue using linear regression chart20 saved
