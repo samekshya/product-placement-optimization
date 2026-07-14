@@ -436,3 +436,4 @@
 - 2026-07-13 04:06:36: fix cell ordering data driven zones must run before cooccurrence_scaled
 - 2026-07-13 11:12:57: delete duplicate import and data load cell halfway through notebook 05
 - 2026-07-13 18:19:19: add dark mode toggle button in sidebar light theme is default
+- 2026-07-14 01:25:40: fix all charts to use theme colours works in both light and dark mode
