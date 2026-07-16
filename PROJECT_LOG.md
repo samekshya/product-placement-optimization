@@ -444,3 +444,4 @@
 - 2026-07-15 12:57:28: add revenue impact analysis support x transactions x basket value ranks rules by money
 - 2026-07-15 20:03:50: add ABC analysis Chart 10 and day of week Chart 11 to notebook 03
 - 2026-07-16 03:10:12: add category relationship network graph Chart 10 to notebook 05
+- 2026-07-16 10:16:33: add 95% confidence interval for revenue projection grounded in store data
