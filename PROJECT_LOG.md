@@ -457,3 +457,4 @@
 - 2026-07-19 09:20:09: fix cell ordering basket_numeric must run before cooccurrence_scaled
 - 2026-07-19 16:26:31: remove abandoned k=4 clustering cell no finding no purpose
 - 2026-07-19 23:32:52: fix silhouette score to exact value 0.554 matches actual output
+- 2026-07-20 06:39:14: fix cell order notebook 06 now runs clean top to bottom
