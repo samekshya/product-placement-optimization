@@ -17,6 +17,7 @@ and 07 (placement) so every number matches the verified project figures:
     silhouette 0.554 at k=3 | top pair Kalo Dal + Rato Dal ~ 3,989
 """
 
+import datetime
 import json
 import os
 
@@ -196,6 +197,156 @@ log(
 )
 
 # ==================================================================
+# 5d. Subcategory summary (notebook 12) -- used by the dashboard
+#     Subcategory Analysis page. Keyword rules are kept in sync with
+#     notebooks/12_subcategory_analysis.ipynb (first match wins).
+# ==================================================================
+log("Computing subcategory summary (notebook 12) ...")
+
+from collections import Counter
+from itertools import combinations
+
+TOP5_CATEGORIES = ['FOOD STAPLES', 'CANNED AND PACKAGED FOODS', 'TEA AND SPICES',
+                   'COOKING OIL', 'CLEANING SUPPLIES']
+
+SUBCATEGORY_KEYWORDS = {
+    'FOOD STAPLES': [
+        ('Grains and Flour',    ['RICE', 'CHAMAL', 'MAKAI', 'AATA', 'MAIDA', 'SUJI', 'PITHO',
+                                 'BHUJA', 'CHIURA', 'CHAKKI', 'BASMATI', 'JEERA MASINO', 'DHAN']),
+        ('Seasonings',          ['DALCHINI', 'SALT', 'NUN', 'JEERA', 'METHI', 'JWANO', 'TILL',
+                                 'TIL ', 'SOFF', 'PANCHAPURAN', 'DHANIYA', 'TESTING', 'AJINOMOTO', 'MASALA']),
+        ('Pulses',              ['DAL', 'DAAL', 'CHANA', 'CHAANA', 'KERAU', 'MONG', 'MASHURO',
+                                 'BHATTA', 'BODI', 'RAHAR', 'SIMI']),
+        ('Sweeteners',          ['SUGAR', 'SAKKHAR', 'GUD', 'JAGGERY', 'MISHRI', 'CHAKU', 'CHINI']),
+        ('Dairy and Eggs',      ['MILK', 'EGG', 'DUDH', 'PANEER', 'GHIU']),
+        ('Nuts and Dry Fruits', ['BADAM', 'MIXNUT', 'COCONUT', 'KAJU', 'OKHAR', 'KISMISS',
+                                 'CASHEW', 'ALMOND']),
+    ],
+    'CANNED AND PACKAGED FOODS': [
+        ('Noodles and Pasta',         ['CHOWMIN', 'RAMEN', 'RAMYAN', 'MACARONI', 'MACORONI', 'PASTA',
+                                       'NOODLE', 'WAI WAI', 'WAIWAI', '2PM', '2 PM', 'SOUP',
+                                       'SAMYANG', 'BULDAK']),
+        ('Chips and Snacks',          ['LAYS', 'CHIPS', 'CHEESEBALL', 'CHEESE BALL', 'STICKS', 'BHUJA',
+                                       'DALMOT', 'FURANDANA', 'KURKURE', 'CURRENT', 'CRAX', 'RINGS',
+                                       'JHILINGA', 'PRAWN']),
+        ('Papad and Fryums',          ['PAPAD', 'FRYUMS', 'FRYUM']),
+        ('Dry Fruits and Nuts',       ['KAJU', 'ALMOND', 'OKHAR', 'KISMISS', 'MIXNUT', 'BADAM',
+                                       'ANJEER', 'CHHOKADA', 'DATES']),
+        ('Pickles and Sauces',        ['PICKLE', 'ACHAR', 'CHUK', 'SAUCE', 'KETCHUP', 'JAM ', 'HONEY',
+                                       'TITAURA', 'VINEGAR', 'MAYONNAISE']),
+        ('Health Drinks and Cereals', ['HORLICKS', 'BOURNVITA', 'VIVA', 'OATS', 'CORNFLAKES', 'MUESLI',
+                                       'MUSELI', 'CEREAL', 'GLUCOSE', 'COMPLAN']),
+        ('Beaten Rice and Flakes',    ['CHIURA', 'FLAKES']),
+    ],
+    'TEA AND SPICES': [
+        ('Tea',                      ['TEA', 'CHIYA', 'TOKLA', 'SAIDEEP', 'SAI DEEP', 'MITTAL', 'SARBADA']),
+        ('Coffee',                   ['NES', 'COFFEE', 'MAC ']),
+        ('Masala Blends',            ['MASALA']),
+        ('Whole Spices',             ['MARIJ', 'SUKMEL', 'LWANG', 'JEERA', 'TILL', 'JWANO', 'METHI',
+                                      'SOFF', 'DALCHINI', 'TEJPAT', 'ALAICHI', 'BIRE']),
+        ('Spice Powders and Flours', ['CHILLYPOW', 'TUMERIC', 'TURMERIC', 'BESHAN', 'PITHO', 'POWDER',
+                                      'HALDI', 'KHURSANI']),
+    ],
+    'COOKING OIL': [
+        ('Sunflower Oil',           ['SUNFLOWER', 'SUNFLOWEER', 'SUNFLOW', 'SUNF ', 'SUNBEAN SUN']),
+        ('Mustard Oil',             ['MUSTARD', 'TORI']),
+        ('Soybean Oil',             ['SOYABEAN', 'SOYBEAN']),
+        ('Ghee and Vanaspati',      ['GHEE', 'DALDA', 'VANASPATI']),
+        ('Blended and Health Oils', ['HEALTH', 'CORN', 'SAFFOLA', 'OLIVE', 'RICE BRAN']),
+    ],
+    'CLEANING SUPPLIES': [
+        ('Detergent Powder',          ['RIN ', 'TIDE', 'ARIEL', 'WHEEL', 'SURF', 'XTRAA PLUS', 'HENKO',
+                                       'DAZ ', 'DET ']),
+        ('Washing Soap Bars',         ['SOAP', 'LUX', 'TIKA', 'DHONI', 'RICH', 'ZOOM', 'AAHA',
+                                       'XTRAA NEEM', 'DTT', 'DETTOL', 'LIFEBUOY', 'LB ', 'LIRIL',
+                                       'DOVE', 'SANTOOR', 'HANDWASH']),
+        ('Dishwash',                  ['VIM', 'EXO', 'DISHWASH', 'PITAMBARI', 'SCOTCH', 'JUNA']),
+        ('Toilet and Floor Cleaners', ['HRP', 'HARPIC', 'COLIN', 'LIZOL', 'LYS', 'PHENYL', 'TOILET',
+                                       'FLOOR', 'ACID', 'BRUSH', 'BROOM', 'KUCHO', 'MOP']),
+    ],
+}
+
+
+def assign_subcategory(product_name, category):
+    name = str(product_name).upper()
+    for subcat, keywords in SUBCATEGORY_KEYWORDS[category]:
+        for kw in keywords:
+            if kw in name:
+                return subcat
+    return 'Other'
+
+
+top5_sc = df[df["category"].isin(TOP5_CATEGORIES)].copy()
+unique_sc = top5_sc[["category", "product"]].drop_duplicates().copy()
+unique_sc["subcategory"] = unique_sc.apply(
+    lambda r: assign_subcategory(r["product"], r["category"]), axis=1
+)
+top5_sc = top5_sc.merge(unique_sc, on=["category", "product"], how="left")
+
+subcat_rows = []
+for cat in TOP5_CATEGORIES:
+    sub = top5_sc[top5_sc["category"] == cat]
+    total_tx = sub["invoice_no"].nunique()
+    stats = sub.groupby("subcategory").agg(
+        n_products=("product", "nunique"),
+        transactions=("invoice_no", "nunique"),
+    ).sort_values("transactions", ascending=False)
+
+    # Within-category subcategory co-occurrence (Other excluded: a shelf
+    # cannot be arranged around an unnamed residual group).
+    named = sub[sub["subcategory"] != "Other"]
+    sc_basket = named.groupby(["invoice_no", "subcategory"]).size().unstack(fill_value=0) > 0
+    sc_pairs = {}
+    for a, b in combinations(sorted(sc_basket.columns), 2):
+        sc_pairs[(a, b)] = int((sc_basket[a] & sc_basket[b]).sum())
+
+    for subcat, row in stats.iterrows():
+        prods = sub[sub["subcategory"] == subcat]
+        example_products = ", ".join(
+            prods.groupby("product")["invoice_no"].nunique()
+            .sort_values(ascending=False).head(3).index.tolist()
+        )
+        if subcat == "Other":
+            partner, shared, top_pair, top_pair_count = "-", "-", "-", "-"
+        else:
+            cand = [(p, c) for p, c in sc_pairs.items() if subcat in p]
+            best_p, best_c = max(cand, key=lambda x: x[1]) if cand else ((subcat, "-"), 0)
+            partner = best_p[1] if best_p[0] == subcat else best_p[0]
+            shared = best_c
+            # Top product pair inside this subcategory
+            pc = Counter()
+            for items in prods.groupby("invoice_no")["product"].apply(set):
+                if len(items) > 1:
+                    items = sorted(items)
+                    for i in range(len(items)):
+                        for j in range(i + 1, len(items)):
+                            pc[(items[i], items[j])] += 1
+            if pc:
+                (pa, pb), cnt = pc.most_common(1)[0]
+                top_pair, top_pair_count = f"{pa} + {pb}", cnt
+            else:
+                top_pair, top_pair_count = "-", "-"
+        subcat_rows.append({
+            "category": cat,
+            "subcategory": subcat,
+            "n_products": int(row["n_products"]),
+            "transactions": int(row["transactions"]),
+            "share_pct": round(row["transactions"] / total_tx * 100, 1),
+            "top_partner_subcategory": partner,
+            "shared_baskets": shared,
+            "top_product_pair": top_pair,
+            "top_pair_count": top_pair_count,
+            "example_products": example_products,
+        })
+
+subcat_summary_df = pd.DataFrame(subcat_rows)
+subcat_summary_df.to_csv(os.path.join(ARTIFACTS, "subcategory_summary.csv"), index=False)
+log(
+    f"  -> {len(subcat_summary_df)} subcategory rows across {len(TOP5_CATEGORIES)} categories "
+    f"({(subcat_summary_df['subcategory'] != 'Other').sum()} named subcategories)"
+)
+
+# ==================================================================
 # 6. Category association rules (notebook 05 parameters: support 0.01)
 # ==================================================================
 log("Mining category association rules (Apriori, min_support=0.01) ...")
@@ -356,6 +507,7 @@ log(
 # 12. KPI summary JSON (written last so it can include rule counts)
 # ==================================================================
 kpi = {
+    "generated_at": datetime.datetime.now().strftime("%d %b %Y, %H:%M"),
     "total_transactions": total_baskets,
     "total_revenue": round(total_revenue, 2),
     "avg_basket_value": round(avg_basket, 2),

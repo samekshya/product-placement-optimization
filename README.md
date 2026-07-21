@@ -5,14 +5,21 @@
 **Module:** ST6001CEM Individual Project
 **University:** Softwarica College / Coventry University
 
+> **Note on title:** The phrase "to Increase Sales" refers to the intended
+> business outcome of the placement optimisation system. The project does not
+> claim to have measured a sales increase, as this would require a controlled
+> in-store experiment. The contribution is a validated data-driven placement
+> recommendation framework. A pilot study protocol for measuring actual sales
+> impact is included in notebook 08.
+
 ---
 
 ## Project Overview
 
-This project analyses 10 months of real Point of Sale data from a Nepali grocery store to find which products are bought together and recommend how to rearrange shelves to increase sales.
+This project analyses 11 calendar months of real Point of Sale data (17 July 2025 to 20 May 2026, first and last months partial) from a Nepali grocery store to find which products are bought together and recommend how to rearrange shelves to support higher sales.
 
 **Primary KPI:** Average basket value baseline = Rs 1,001
-**Projected impact:** Rs 1.30 Crore additional annual revenue at 5% uplift
+**Benchmark scenario:** Rs 1.30 Crore additional annual revenue IF a 5% industry benchmark uplift were achieved (scenario, not a prediction)
 
 ---
 
@@ -24,6 +31,16 @@ This project analyses 10 months of real Point of Sale data from a Nepali grocery
 - Highest revenue month: September 2025 (Festival/Dashain season) at Rs 23.3 Million
 - Recommended store center: Daily Essentials Zone (Food Staples, Cooking Oil, Cleaning Supplies, Tea and Spices, Household Items)
 
+### Subcategory Analysis: The Three Level Placement Hierarchy
+
+The placement recommendations work at three levels of physical detail:
+
+1. **Zones** (clustering, notebook 06): which categories belong in the same area of the store. Co-occurrence clustering found 3 zones at silhouette 0.554.
+2. **Categories** (market basket analysis, notebook 05): which category sections should sit next to each other inside a zone. 1,228 rules with maximum lift 6.81.
+3. **Subcategories** (subcategory analysis, notebook 12): how shelves should be ordered inside each category section. 27 named subcategories were defined across 5 high volume categories (Food Staples, Canned and Packaged Foods, Tea and Spices, Cooking Oil, Cleaning Supplies).
+
+Within a category most subcategory pairs have lift below 1.0 because they substitute for each other (a household picks one cooking oil type per trip), so shelf order inside a section is driven by shared basket volume instead, for example Pulses next to Sweeteners inside the Food Staples section (8,300 shared baskets).
+
 ---
 
 ## Dataset
@@ -33,7 +50,7 @@ This project analyses 10 months of real Point of Sale data from a Nepali grocery
 | Source | Real POS data, Baniya Shopping Center Pokhara |
 | Raw Size | 768,222 rows, 14 columns |
 | After Cleaning | 767,180 rows, 14 columns |
-| Period | July 2025 to May 2026 (10 months) |
+| Period | 17 July 2025 to 20 May 2026 (11 calendar months, first and last partial) |
 | Unique Transactions | 218,037 shopping trips |
 | Unique Products | 5,681 |
 | Categories | 25 standardized |
@@ -47,13 +64,13 @@ This project analyses 10 months of real Point of Sale data from a Nepali grocery
 **Data provenance and consent.** This study uses **primary data** collected from the
 student's own family-run store, Baniya Shopping Center (Lamachour-16, Pokhara). The data was
 obtained and used **with the explicit permission of store management**, for academic research
-only. It is **not faculty-provided / secondary data** — any earlier note describing it that way
+only. It is **not faculty-provided / secondary data**; any earlier note describing it that way
 is incorrect and is corrected here: the dataset is primary data gathered directly from the store's
 Point of Sale system.
 
 **Privacy and anonymisation.** 98% of transactions are cash sales (`CASH A/C`) with no customer
 identity attached, so no individual can be re-identified. No names, phone numbers, addresses or
-loyalty IDs are stored or analysed — only product-level basket contents and amounts. The raw Excel
+loyalty IDs are stored or analysed; only product-level basket contents and amounts. The raw Excel
 file and the 114 MB cleaned CSV are kept out of version control (gitignored); only small aggregated
 artifacts are published with the dashboard.
 
@@ -80,13 +97,15 @@ product-placement-optimization/
 │   ├── 07_placement_simulation.ipynb   (includes ADDED cross-sell before/after)
 │   ├── 08_evaluation.ipynb
 │   ├── 09_ml_recommendation.ipynb
-│   └── 10_demand_forecasting.ipynb
+│   ├── 10_demand_forecasting.ipynb
+│   ├── 11_basket_classifier.ipynb
+│   └── 12_subcategory_analysis.ipynb
 ├── dashboard/
 │   ├── app.py                  (Streamlit dashboard, loads only artifacts/)
 │   ├── precompute_artifacts.py (builds the small artifacts from processed data)
 │   └── artifacts/              (small precomputed files committed for the dashboard)
 ├── reports/
-│   └── figures/                (all charts and visualizations)
+│   └── figures/                (all 24 charts and visualizations)
 ├── requirements.txt
 └── README.md
 ---
@@ -108,7 +127,7 @@ Place sales_data_raw.xlsx inside the data/raw/ folder.
 This file is not on GitHub as it contains confidential store data.
 
 **Step 5: Run notebooks in order**
-Run from 01_data_audit.ipynb through to 10_demand_forecasting.ipynb.
+Run from 01_data_audit.ipynb through to 12_subcategory_analysis.ipynb.
 Each notebook builds on the previous one.
 
 ---
@@ -125,8 +144,9 @@ streamlit run dashboard/app.py
 ```
 
 It opens with two modes: **Store Owner** (shelf planner, monthly stock plan, store
-performance) and **Examiner** (project overview, association rules, clustering, model
-validation, placement zones, ethics). All charts are interactive (hover/zoom) and the
+performance) and **Examiner** (project overview, store analytics, subcategory analysis,
+association rules, clustering, model validation, placement zones, ethics). All charts
+are interactive (hover/zoom) and the
 layout works in both light and dark themes.
 
 To rebuild the artifacts after re-running the notebooks (requires the processed CSVs):
@@ -156,15 +176,17 @@ python dashboard/precompute_artifacts.py
 | Maximum lift score | 6.81 |
 | Clustering silhouette score | 0.55 |
 | Current average basket value | Rs 1,000.81 |
-| Projected basket at 5 percent uplift | Rs 1,050.85 |
-| Extra daily revenue at 5 percent | Rs 35,540 |
-| Extra annual revenue at 5 percent | Rs 1.30 Crore |
+| Basket under 5 percent benchmark scenario | Rs 1,050.85 |
+| Extra daily revenue under the scenario | Rs 35,540 |
+| Extra annual revenue under the scenario | Rs 1.30 Crore |
+
+The three scenario rows are industry benchmark scenarios, not predictions or measured results.
 
 **Cross-sell before/after (RQ2 / Objective 4, data-driven):** the optimised 5-zone layout
-co-locates **56** strong cross-sell rules (lift ≥ 3) versus **28** for the current
-frequency-driven layout — a **2.0x** increase, raising captured strong-rule support from
+co-locates **56** strong cross-sell rules (lift >= 3) versus **28** for the current
+frequency-driven layout, a **2.0x** increase, raising captured strong-rule support from
 8.2% to 16.3%. This result is measured from the association rules; the rupee uplift above
-remains a projection.
+remains an industry benchmark scenario.
 
 ---
 
@@ -184,10 +206,10 @@ Based on MBA analysis of 218,037 real transactions:
 
 ## Limitations
 
-- Revenue projections are based on retail industry benchmarks not a live experiment
+- Revenue scenarios are based on retail industry benchmarks not a live experiment
 - 98 percent of customers are anonymous so individual tracking is not possible
 - Single store dataset may not generalize to other Nepali grocery stores
-- Data covers 10 months only, June 2026 is missing for full year analysis
+- Data covers 11 calendar months with partial July 2025 and May 2026; June is absent, so no complete calendar year is observed
 
 ---
 

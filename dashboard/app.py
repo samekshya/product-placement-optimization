@@ -10,8 +10,10 @@ Apriori at launch, so a marker can run it instantly from a fresh clone:
     streamlit run dashboard/app.py
 """
 
+import datetime
 import json
 import os
+import sys
 import textwrap
 from itertools import combinations
 
@@ -26,6 +28,11 @@ import streamlit as st
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ARTIFACTS = os.path.join(HERE, "artifacts")
+
+# Every verified project number comes from ONE file (config/metrics.py)
+# so the dashboard can never drift from the notebooks.
+sys.path.insert(0, os.path.dirname(HERE))
+from config import metrics as M
 
 st.set_page_config(
     page_title="Baniya Shopping Center",
@@ -94,6 +101,7 @@ st.markdown(
     [data-testid="stSidebar"] label {{ color: {T['text']} !important; }}
     [data-testid="stSidebar"] p {{ color: {T['text']} !important; }}
     [data-testid="stSidebar"] span {{ color: {T['text']} !important; }}
+    [data-testid="stSidebar"] div {{ color: {T['text']} !important; }}
     #MainMenu, footer {{ visibility: hidden; }}
     header[data-testid="stHeader"] {{ background-color: transparent; }}
     hr {{ border-color: {T['border']}; margin: 8px 0 16px 0; }}
@@ -219,7 +227,7 @@ def style_fig(fig, height=380, legend=True):
 
 
 def show_chart(fig):
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
 
 # Brand colour for chart series that should read in the current theme
@@ -275,23 +283,57 @@ def get_recommendations(product_name, rules_df, top_n=5):
     return rec_df.sort_values("Lift", ascending=False).head(top_n)
 
 
-KPI = load_kpi()
-CROSS = load_cross_sell()
-monthly_revenue = load_csv("monthly_revenue.csv")
-category_dist = load_csv("category_distribution.csv")
-basket_hist = load_csv("basket_value_hist.csv")
-category_rules = load_csv("category_rules.csv")
-product_rules = load_csv("product_rules.csv")
-cooc_matrix = load_csv("cooccurrence_matrix.csv").set_index("Unnamed: 0")
-cooc_matrix.index.name = "category"
-top_pairs = load_csv("top_pairs.csv")
-top_products = load_csv("top_products.csv")
-cluster_assign = load_csv("cluster_assignments.csv")
-abc_analysis = load_csv("abc_analysis.csv")
-day_of_week = load_csv("day_of_week.csv")
+# Loading spinner: shows "Loading store data..." while the artifact files are
+# read (first run only; later runs are served from st.cache_data).
+# If any artifact is missing the app stops with instructions instead of
+# crashing with a raw FileNotFoundError traceback.
+try:
+    with st.spinner("Loading store data..."):
+        KPI = load_kpi()
+        CROSS = load_cross_sell()
+        monthly_revenue = load_csv("monthly_revenue.csv")
+        category_dist = load_csv("category_distribution.csv")
+        basket_hist = load_csv("basket_value_hist.csv")
+        category_rules = load_csv("category_rules.csv")
+        product_rules = load_csv("product_rules.csv")
+        cooc_matrix = load_csv("cooccurrence_matrix.csv").set_index("Unnamed: 0")
+        cooc_matrix.index.name = "category"
+        top_pairs = load_csv("top_pairs.csv")
+        top_products = load_csv("top_products.csv")
+        cluster_assign = load_csv("cluster_assignments.csv")
+        abc_analysis = load_csv("abc_analysis.csv")
+        day_of_week = load_csv("day_of_week.csv")
+        subcategory_summary = load_csv("subcategory_summary.csv")
+except FileNotFoundError as e:
+    st.error(
+        f"Dashboard artifact missing: {os.path.basename(str(e.filename)) if e.filename else e}. "
+        "Run `python dashboard/precompute_artifacts.py` first (requires the processed data in "
+        "data/processed/), then reload this page."
+    )
+    st.stop()
 
 DAILY_CUSTOMERS = KPI["total_transactions"] / KPI["data_days"]
 AVG_BASKET = KPI["avg_basket_value"]
+
+
+def artifact_freshness():
+    """Data freshness caption for examiner pages: when the artifacts were built."""
+    kpi_path = os.path.join(ARTIFACTS, "kpi_summary.json")
+    if not os.path.exists(kpi_path):
+        st.caption(
+            "Artifacts not found. Run `python dashboard/precompute_artifacts.py` "
+            "(requires the processed data), then reload this page."
+        )
+        return
+    stamp = KPI.get("generated_at")
+    if not stamp:
+        stamp = datetime.datetime.fromtimestamp(
+            os.path.getmtime(kpi_path)
+        ).strftime("%d %b %Y, %H:%M")
+    st.caption(
+        f"Data freshness: artifacts last generated {stamp}. "
+        "Rebuild with `python dashboard/precompute_artifacts.py` after re-running the notebooks."
+    )
 
 
 def crore(rs):
@@ -314,7 +356,7 @@ SEASONAL_STOCK = {
     "March": {"season": "Spring", "stock_up": ["FOOD STAPLES", "PERSONAL CARE", "COOKING OIL"], "reduce": [], "tip": "Stable month. No major spikes. Focus on maintaining core category stock levels."},
     "April": {"season": "Spring", "stock_up": ["FOOD STAPLES", "SOFT DRINKS AND JUICES", "PERSONAL CARE"], "reduce": [], "tip": "Temperatures rising. SOFT DRINKS start to increase. Stock up ahead of summer."},
     "May": {"season": "Pre Summer", "stock_up": ["SOFT DRINKS AND JUICES", "FOOD STAPLES", "PERSONAL CARE"], "reduce": [], "tip": "Pre summer spike in cold drinks. SOFT DRINKS AND JUICES will peak in coming months."},
-    "June": {"season": "Summer", "stock_up": ["SOFT DRINKS AND JUICES", "FOOD STAPLES", "CLEANING SUPPLIES"], "reduce": [], "tip": "Summer peak for cold drinks. Data for June is incomplete in this dataset so use trend from April and May."},
+    "June": {"season": "Summer", "stock_up": ["SOFT DRINKS AND JUICES", "FOOD STAPLES", "CLEANING SUPPLIES"], "reduce": [], "tip": "Summer peak for cold drinks. The dataset ends 20 May 2026 so there is no June data; this plan follows the rising trend from April and May."},
 }
 
 # ============================================================
@@ -350,39 +392,39 @@ ZONES = [
 
 with st.sidebar:
     st.markdown(
-        f"<div style='font-size:18px;font-weight:800;color:{T['header']};margin-bottom:2px;'>Baniya Shopping Center</div>"
-        f"<div style='font-size:12px;color:{T['subtext']};margin-bottom:14px;'>Product Placement Optimisation</div>",
+        f"<div style='font-size:18px;font-weight:800;color:{T['header']} !important;margin-bottom:2px;'>Baniya Shopping Center</div>"
+        f"<div style='font-size:12px;color:{T['subtext']} !important;margin-bottom:14px;'>Product Placement Optimisation</div>",
         unsafe_allow_html=True,
     )
 
-    st.markdown(f"<div style='font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:{T['subtext']};margin-bottom:6px;'>View Mode</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:{T['subtext']} !important;margin-bottom:6px;'>View Mode</div>", unsafe_allow_html=True)
     current_mode = st.session_state.view_mode
     col_a, col_b = st.columns(2)
     with col_a:
-        if st.button("Store Owner", use_container_width=True, type="primary" if current_mode == "Owner" else "secondary"):
+        if st.button("Store Owner", width="stretch", type="primary" if current_mode == "Owner" else "secondary"):
             st.session_state.view_mode = "Owner"
             st.rerun()
     with col_b:
-        if st.button("Examiner", use_container_width=True, type="primary" if current_mode == "Examiner" else "secondary"):
+        if st.button("Examiner", width="stretch", type="primary" if current_mode == "Examiner" else "secondary"):
             st.session_state.view_mode = "Examiner"
             st.rerun()
 
     st.markdown("---")
 
     if st.session_state.view_mode == "Owner":
-        st.markdown(f"<div style='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:{ACCENT};margin-bottom:6px;'>Store Owner Tools</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:{ACCENT} !important;margin-bottom:6px;'>Store Owner Tools</div>", unsafe_allow_html=True)
         page = st.radio("nav", ["Shelf Planner", "Monthly Stock Plan", "Store Performance"], label_visibility="collapsed")
     else:
-        st.markdown(f"<div style='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:{ACCENT};margin-bottom:6px;'>Technical Analysis</div>", unsafe_allow_html=True)
-        page = st.radio("nav", ["Project Overview", "Store Analytics", "Association Rules", "Clustering Results", "Model Validation", "Placement Zones", "Ethics & Data"], label_visibility="collapsed")
+        st.markdown(f"<div style='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:{ACCENT} !important;margin-bottom:6px;'>Technical Analysis</div>", unsafe_allow_html=True)
+        page = st.radio("nav", ["Project Overview", "Store Analytics", "Subcategory Analysis", "Association Rules", "Clustering Results", "Model Validation", "Placement Zones", "Ethics & Data"], label_visibility="collapsed")
 
     st.markdown("---")
 
     theme_label = "Switch to Light Mode" if st.session_state.dark_mode else "Switch to Dark Mode"
-    if st.button(theme_label, use_container_width=True):
+    if st.button(theme_label, width="stretch"):
         st.session_state.dark_mode = not st.session_state.dark_mode
         st.rerun()
-    if st.button("Reset View", use_container_width=True):
+    if st.button("Reset View", width="stretch"):
         st.session_state.view_mode = "Owner"
         st.session_state.dark_mode = False
         st.rerun()
@@ -390,7 +432,7 @@ with st.sidebar:
     st.markdown("---")
     st.caption(
         f"{KPI['total_transactions']:,} transactions · {KPI['n_categories']} categories · "
-        f"10 months of real POS data.\n\nSamikshya Baniya · 230360 · ST6001CEM · Coventry University"
+        f"{M.CALENDAR_MONTHS} calendar months of real POS data.\n\nSamikshya Baniya · 230360 · ST6001CEM · Coventry University"
     )
 
 
@@ -484,6 +526,23 @@ def chart_day_of_week():
     ))
     fig.update_yaxes(title_text="Revenue (Rs Million)")
     return style_fig(fig, legend=False)
+
+
+def chart_subcategory_counts(cat):
+    """Horizontal bars: transactions per subcategory within one category.
+
+    The Other bucket (products not matched to a named subcategory) is drawn
+    in gray so it reads as a residual, not a shelf group.
+    """
+    d = subcategory_summary[subcategory_summary["category"] == cat].sort_values("transactions")
+    fig = go.Figure(go.Bar(
+        x=d["transactions"], y=d["subcategory"], orientation="h",
+        marker_color=[T["subtext"] if s == "Other" else SERIES for s in d["subcategory"]],
+        customdata=d[["share_pct"]],
+        hovertemplate="%{y}<br>%{x:,} transactions (%{customdata[0]:.1f}% of category)<extra></extra>",
+    ))
+    fig.update_xaxes(title_text="Transactions containing the subcategory")
+    return style_fig(fig, height=380, legend=False)
 
 
 def chart_rules_scatter():
@@ -647,10 +706,10 @@ if st.session_state.view_mode == "Owner" and page == "Shelf Planner":
             section(f"Top products to place near {selected}")
             show_chart(chart_recommendations(recs))
             insight(f"Lift above 3 is a strong pairing. {selected} pairs most strongly with {top_rec['Product']} (lift {top_rec['Lift']}).")
-            st.dataframe(recs.reset_index(drop=True), use_container_width=True)
+            st.dataframe(recs.reset_index(drop=True), width="stretch")
 
     st.markdown("---")
-    section("Top shelf pairs in the store", "Strongest product pairs from 218,037 real shopping trips. Put these side by side.")
+    section("Top shelf pairs in the store", f"Strongest product pairs from {M.TOTAL_TRANSACTIONS:,} real shopping trips. Put these side by side.")
     for _, row in top_pairs.head(8).iterrows():
         render_html(
             f"<div class='ui-card' style='display:flex;justify-content:space-between;align-items:center;'>"
@@ -664,11 +723,10 @@ if st.session_state.view_mode == "Owner" and page == "Shelf Planner":
 # ============================================================
 
 elif st.session_state.view_mode == "Owner" and page == "Monthly Stock Plan":
-    import datetime
     current_month = datetime.datetime.now().strftime("%B")
 
     st.title("Monthly Stock Plan")
-    section(None, "Stock recommendations based on 10 months of real sales data from Baniya Shopping Center.")
+    section(None, f"Stock recommendations based on {M.CALENDAR_MONTHS} calendar months of real sales data (Jul 2025 to May 2026) from Baniya Shopping Center.")
     st.markdown("---")
 
     month_data = SEASONAL_STOCK.get(current_month, SEASONAL_STOCK["June"])
@@ -723,7 +781,7 @@ elif st.session_state.view_mode == "Owner" and page == "Monthly Stock Plan":
 
 elif st.session_state.view_mode == "Owner" and page == "Store Performance":
     st.title("Store Performance")
-    section(None, "Based on 10 months of real sales data from Baniya Shopping Center, Pokhara.")
+    section(None, f"Based on {M.CALENDAR_MONTHS} calendar months of real sales data (Jul 2025 to May 2026) from Baniya Shopping Center, Pokhara.")
     st.markdown("---")
 
     kpi_row([
@@ -740,7 +798,7 @@ elif st.session_state.view_mode == "Owner" and page == "Store Performance":
     ])
 
     st.markdown("---")
-    section("Monthly Revenue", "Ten months of revenue. Dashain (Sep 2025) is the peak.")
+    section("Monthly Revenue", f"{M.CALENDAR_MONTHS} calendar months of revenue (July 2025 and May 2026 are partial months). Dashain (Sep 2025) is the peak.")
     show_chart(chart_revenue_trend())
     insight("September 2025 (Dashain) is the strongest month at Rs 23.3M. Stock festival categories 3 weeks early.")
 
@@ -765,8 +823,9 @@ elif st.session_state.view_mode == "Owner" and page == "Store Performance":
         {"label": "Extra per Year", "value": crore(extra_annual)},
     ])
     st.caption(
-        f"PROJECTION, not a measured result. A {uplift}% uplift is a retail-industry benchmark for "
-        "placement optimisation, not an outcome of a live experiment in this store."
+        f"INDUSTRY BENCHMARK SCENARIO, not a prediction or a measured result. The {uplift}% uplift "
+        "comes from published retail benchmarks (3 to 8 percent) for placement optimisation, "
+        "not from a model output or a live experiment in this store."
     )
     insight("First move: place Rato Dal next to Kalo Dal -- bought together 3,989 times. Measure for 4 weeks, then expand.")
 
@@ -777,13 +836,14 @@ elif st.session_state.view_mode == "Owner" and page == "Store Performance":
 elif st.session_state.view_mode == "Examiner" and page == "Project Overview":
     st.title("Project Overview")
     section(None, "Data Analytics and Machine Learning Based Product Placement Optimisation to Increase Sales in a Nepali Grocery Retail Store")
+    artifact_freshness()
     st.markdown("---")
 
     kpi_row([
-        {"label": "Transactions", "value": f"{KPI['total_transactions']:,}"},
-        {"label": "Categories", "value": str(KPI["n_categories"])},
-        {"label": "Products", "value": "5,681"},
-        {"label": "Total Revenue", "value": crore(KPI["total_revenue"])},
+        {"label": "Transactions", "value": f"{M.TOTAL_TRANSACTIONS:,}"},
+        {"label": "Categories", "value": str(M.TOTAL_CATEGORIES)},
+        {"label": "Products", "value": f"{M.TOTAL_PRODUCTS:,}"},
+        {"label": "Total Revenue", "value": crore(M.TOTAL_REVENUE)},
     ])
     st.markdown("<br>", unsafe_allow_html=True)
     kpi_row([
@@ -796,17 +856,17 @@ elif st.session_state.view_mode == "Examiner" and page == "Project Overview":
     st.markdown("---")
     section("Analysis Pipeline")
     steps = [
-        ("01", "Data Audit", "Examined 768,222 raw rows. Found 1,040 duplicates, 168,864 trailing spaces. Confirmed header=7 gives correct row count."),
-        ("02", "Data Cleaning", "Removed duplicates and bad rows. Standardised 38 product groups into 25 clean categories. Final: 767,180 rows."),
-        ("03", "EDA", "9 charts. FOOD STAPLES in 42.2% of baskets. Average basket Rs 1,000.81. Kalo Dal and Rato Dal co-occur 3,989 times. Large baskets (13.7% of trips) drive 52.1% of revenue."),
-        ("04", "Transaction Encoding", "Converted to basket matrix: 218,037 rows x 25 columns. True/False per category per invoice."),
-        ("05", "Market Basket Analysis", "Apriori and FP-Growth both found 1,228 rules. Max lift 6.81. 48 rules above lift 5."),
-        ("06", "Clustering", "Frequency K-Means: silhouette 0.19. Co-occurrence K-Means: silhouette 0.554 at k=3. 189% improvement."),
-        ("07", "Placement Simulation", "5 zones designed. Cross-sell capture doubles vs current layout. 5% uplift projects Rs 1.30 crore (projection)."),
-        ("08", "Evaluation", "Algorithm comparison, 6 limitations, 7 future recommendations."),
-        ("09", "ML Recommendation", "Product level MBA on top 100 products. 70/30 train test split. 28% hit rate on unseen data. Max lift 22.41."),
-        ("10", "Demand Forecasting", "Prophet detects the Dashain peak automatically. Prophet MAE Rs 2.9M beats Linear Regression MAE Rs 3.4M."),
-        ("11", "Basket Classifier", "Decision Tree (depth 5) predicts small/medium/large baskets at 61.3% accuracy vs 49.7% baseline. COOKING OIL and RICE are the strongest predictors of a large basket."),
+        ("01", "Data Audit", f"Examined {M.TOTAL_RAW_ROWS:,} raw rows. Found 1,040 duplicates, 168,864 trailing spaces. Confirmed header=7 gives correct row count."),
+        ("02", "Data Cleaning", f"Removed duplicates and bad rows. Standardised 38 product groups into {M.TOTAL_CATEGORIES} clean categories. Final: {M.TOTAL_CLEAN_ROWS:,} rows."),
+        ("03", "EDA", f"9 charts. FOOD STAPLES in 42.2% of baskets. Average basket Rs {M.MEAN_BASKET_VALUE:,.2f}. Kalo Dal and Rato Dal co-occur {M.TOP_PAIR_COUNT:,} times. Large baskets (13.7% of trips) drive 52.1% of revenue."),
+        ("04", "Transaction Encoding", f"Converted to basket matrix: {M.TOTAL_TRANSACTIONS:,} rows x {M.TOTAL_CATEGORIES} columns. True/False per category per invoice."),
+        ("05", "Market Basket Analysis", f"Apriori and FP-Growth both found {M.RULES_TOTAL:,} rules. Max lift {M.MAX_LIFT_CATEGORY}. 48 rules above lift 5. {M.RULES_SIGNIFICANT:,} of {M.RULES_TOTAL:,} rules significant at p below 0.05."),
+        ("06", "Clustering", f"Frequency K-Means: silhouette {M.SILHOUETTE_FREQUENCY}. Co-occurrence K-Means: silhouette {M.SILHOUETTE_COOCCURRENCE} at k=3. The score increased by {M.SILHOUETTE_INCREASE}."),
+        ("07", "Placement Simulation", f"5 zones designed. Cross-sell capture doubles vs current layout ({M.CROSS_SELL_CURRENT} to {M.CROSS_SELL_OPTIMISED} strong rules). The {M.UPLIFT_SCENARIO_PCT}% industry benchmark scenario corresponds to Rs 1.30 crore per year (scenario, not a prediction)."),
+        ("08", "Evaluation", "Algorithm comparison, 6 limitations, 8 future recommendations, and a pilot study protocol for measuring real sales impact."),
+        ("09", "ML Recommendation", f"Product level MBA on top 100 products. 70/30 train test split. {M.ML_HIT_RATE:.0%} hit rate on unseen data. Max lift {M.MAX_LIFT_PRODUCT}."),
+        ("10", "Demand Forecasting", "Prophet fitted a peak during the Dashain period. Prophet MAE Rs 2.9M vs Linear Regression MAE Rs 3.4M. Exploratory only: 11 monthly points with one Dashain."),
+        ("11", "Basket Classifier", f"Decision Tree (depth 5) classifies completed baskets as small/medium/large at {M.CLASSIFIER_ACCURACY:.1%} accuracy vs {M.CLASSIFIER_BASELINE:.1%} baseline. Characterises large baskets (COOKING OIL, RICE strongest markers); not a real-time prediction tool."),
     ]
     for num, title, desc in steps:
         render_html(
@@ -822,7 +882,8 @@ elif st.session_state.view_mode == "Examiner" and page == "Project Overview":
 
 elif st.session_state.view_mode == "Examiner" and page == "Store Analytics":
     st.title("Store Analytics")
-    section(None, "ABC stock priority and the weekly shopping rhythm, computed from all 218,037 transactions (notebook 03, Charts 10 and 11).")
+    section(None, f"ABC stock priority and the weekly shopping rhythm, computed from all {M.TOTAL_TRANSACTIONS:,} transactions (notebook 03, Charts 10 and 11).")
+    artifact_freshness()
     st.markdown("---")
 
     abc_a = abc_analysis[abc_analysis["abc_category"] == "A"]
@@ -830,36 +891,106 @@ elif st.session_state.view_mode == "Examiner" and page == "Store Analytics":
     a_share = len(abc_a) / len(abc_analysis) * 100
     c_share = len(abc_c) / len(abc_analysis) * 100
 
-    section(
-        "ABC Analysis of Products",
-        "Products ranked by revenue and split into Class A (first 70% of revenue), "
-        "Class B (next 20%) and Class C (final 10%).",
-    )
-    show_chart(chart_abc_analysis())
-    insight(
-        f"Just {len(abc_a):,} Class A products ({a_share:.1f}% of the range) generate 70% of all revenue, "
-        f"so daily stock checks on this small group protect most of the store's income, while the "
-        f"{len(abc_c):,} Class C products ({c_share:.1f}% of the range) need only minimal attention."
-    )
-
-    st.markdown("---")
-
     dow = day_of_week
     busiest_day = dow.loc[dow["revenue"].idxmax()]
     biggest_basket_day = dow.loc[dow["avg_basket"].idxmax()]
     quietest_day = dow.loc[dow["revenue"].idxmin()]
 
-    section(
-        "Day of Week Revenue",
-        "Total revenue per day of the week (Nepali week: Sunday to Friday working days, Saturday holiday). "
-        "Hover for transaction counts and average basket values.",
-    )
-    show_chart(chart_day_of_week())
+    kpi_row([
+        {"label": "Class A Products", "value": f"{len(abc_a):,}", "help": f"{a_share:.1f}% of products deliver 70% of revenue"},
+        {"label": "Class C Products", "value": f"{len(abc_c):,}", "help": f"{c_share:.1f}% of products deliver the final 10% of revenue"},
+        {"label": "Busiest Day", "value": busiest_day["day_name"], "help": f"Rs {busiest_day['revenue']/1e6:.1f}M total revenue"},
+        {"label": "Largest Baskets", "value": biggest_basket_day["day_name"], "help": f"Rs {biggest_basket_day['avg_basket']:,.0f} average basket"},
+    ])
+
+    st.markdown("---")
+
+    col_a, col_b = st.columns(2)
+    with col_a:
+        section(
+            "ABC Analysis of Products",
+            "Products ranked by revenue and split into Class A (first 70% of revenue), "
+            "Class B (next 20%) and Class C (final 10%).",
+        )
+        show_chart(chart_abc_analysis())
+        insight(
+            f"Just {len(abc_a):,} Class A products ({a_share:.1f}% of the range) generate 70% of all revenue, "
+            f"so daily stock checks on this small group protect most of the store's income, while the "
+            f"{len(abc_c):,} Class C products ({c_share:.1f}% of the range) need only minimal attention."
+        )
+    with col_b:
+        section(
+            "Day of Week Revenue",
+            "Total revenue per day of the week (Nepali week: Sunday to Friday working days, Saturday holiday). "
+            "Hover for transaction counts and average basket values.",
+        )
+        show_chart(chart_day_of_week())
+        insight(
+            f"{busiest_day['day_name']} is the busiest day (Rs {busiest_day['revenue']/1e6:.1f}M), "
+            f"{biggest_basket_day['day_name']} shoppers buy the largest baskets (Rs {biggest_basket_day['avg_basket']:,.0f} average), "
+            f"and {quietest_day['day_name']}, the weekly holiday, is the quietest, so staffing belongs on "
+            f"{busiest_day['day_name']} and footfall promotions on {quietest_day['day_name']}."
+        )
+
+# ============================================================
+# EXAMINER MODE - SUBCATEGORY ANALYSIS
+# ============================================================
+
+elif st.session_state.view_mode == "Examiner" and page == "Subcategory Analysis":
+    st.title("Subcategory Analysis")
+    section(None, "Manual subcategory groupings within 5 high volume categories show how shelves should be ordered inside each category section (notebook 12).")
+    artifact_freshness()
+    st.markdown("---")
+
+    named_sub = subcategory_summary[subcategory_summary["subcategory"] != "Other"].copy()
+    named_sub["shared_baskets"] = pd.to_numeric(named_sub["shared_baskets"], errors="coerce")
+    biggest = named_sub.loc[named_sub["transactions"].idxmax()]
+    best_pair = named_sub.loc[named_sub["shared_baskets"].idxmax()]
+
+    kpi_row([
+        {"label": "Categories Analysed", "value": str(subcategory_summary["category"].nunique())},
+        {"label": "Named Subcategories", "value": str(len(named_sub))},
+        {"label": "Largest Subcategory", "value": biggest["subcategory"],
+         "help": f"{biggest['transactions']:,} transactions in {biggest['category']}"},
+        {"label": "Top Shelf Pair", "value": f"{best_pair['subcategory']} + {best_pair['top_partner_subcategory']}",
+         "help": f"{int(best_pair['shared_baskets']):,} shared baskets in {best_pair['category']}"},
+    ])
+
+    st.markdown("---")
+
+    chosen_cat = st.selectbox("Select a category", sorted(subcategory_summary["category"].unique()))
+    cat_rows = subcategory_summary[subcategory_summary["category"] == chosen_cat].copy()
+    cat_named = cat_rows[cat_rows["subcategory"] != "Other"].sort_values("transactions", ascending=False)
+    top_named = cat_named.iloc[0]
+
+    col_a, col_b = st.columns(2)
+    with col_a:
+        section("Transactions per Subcategory", f"How often each subcategory of {chosen_cat} appears in a basket.")
+        show_chart(chart_subcategory_counts(chosen_cat))
+        insight(
+            f"Inside the {chosen_cat} section, {top_named['subcategory']} appears in "
+            f"{top_named['transactions']:,} transactions ({top_named['share_pct']}% of the category), so it earns "
+            f"the most shelf space, and its best shelf neighbour is {top_named['top_partner_subcategory']} "
+            f"({int(pd.to_numeric(top_named['shared_baskets'])):,} shared baskets)."
+        )
+    with col_b:
+        section("Subcategory Groupings", f"The shelf groups defined for {chosen_cat} and the top product pair inside each.")
+        display = cat_rows[["subcategory", "n_products", "transactions", "top_product_pair"]].copy()
+        display.columns = ["Subcategory", "Products", "Transactions", "Top product pair inside"]
+        st.dataframe(display.reset_index(drop=True), width="stretch")
+        insight(
+            f"Each named subcategory becomes one shelf group inside the {chosen_cat} section of its zone; "
+            f"the top product pair column names the two products to place at eye level first."
+        )
+
+    st.markdown("---")
+    section("All Subcategories Across the 5 Categories", "The full summary used by notebook 12 and Chart 24.")
+    full = subcategory_summary[["category", "subcategory", "n_products", "transactions", "share_pct", "top_partner_subcategory", "shared_baskets"]].copy()
+    full.columns = ["Category", "Subcategory", "Products", "Transactions", "% of category", "Best shelf neighbour", "Shared baskets"]
+    st.dataframe(full.reset_index(drop=True), width="stretch")
     insight(
-        f"{busiest_day['day_name']} is the busiest day (Rs {busiest_day['revenue']/1e6:.1f}M), "
-        f"{biggest_basket_day['day_name']} shoppers buy the largest baskets (Rs {biggest_basket_day['avg_basket']:,.0f} average), "
-        f"and {quietest_day['day_name']}, the weekly holiday, is the quietest, so staffing belongs on "
-        f"{busiest_day['day_name']} and footfall promotions on {quietest_day['day_name']}."
+        "This completes a three level placement hierarchy: clustering picks the zone, association rules pick "
+        "which category sections sit side by side, and these subcategory groups set the shelf order inside each section."
     )
 
 # ============================================================
@@ -869,6 +1000,7 @@ elif st.session_state.view_mode == "Examiner" and page == "Store Analytics":
 elif st.session_state.view_mode == "Examiner" and page == "Association Rules":
     st.title("Association Rules")
     section(None, f"{KPI['n_category_rules']:,} rules from {KPI['total_transactions']:,} baskets. Apriori and FP-Growth produced identical results, validating the findings.")
+    artifact_freshness()
     st.markdown("---")
 
     kpi_row([
@@ -887,7 +1019,7 @@ elif st.session_state.view_mode == "Examiner" and page == "Association Rules":
     if len(filtered) > 0:
         display = filtered[["antecedents", "consequents", "support", "confidence", "lift"]].copy()
         display.columns = ["If customer buys", "They also buy", "Support", "Confidence", "Lift"]
-        st.dataframe(display.reset_index(drop=True), use_container_width=True)
+        st.dataframe(display.reset_index(drop=True), width="stretch")
         st.caption(f"{len(filtered)} rules shown. Support, Confidence and Lift displayed together.")
     else:
         st.info("No rules at this filter level. Lower the minimum lift.")
@@ -923,12 +1055,14 @@ elif st.session_state.view_mode == "Examiner" and page == "Association Rules":
 elif st.session_state.view_mode == "Examiner" and page == "Clustering Results":
     st.title("Clustering Results")
     section(None, "Comparison of frequency based vs co-occurrence based K-Means clustering.")
+    artifact_freshness()
     st.markdown("---")
 
     kpi_row([
-        {"label": "Frequency K-Means", "value": "0.19", "help": "Silhouette at k=5 -- weak"},
-        {"label": "Co-occurrence K-Means", "value": str(KPI["cooccurrence_silhouette_k3"]), "help": "Silhouette at k=3 -- strong"},
-        {"label": "Improvement", "value": "189%", "delta": "right question asked"},
+        {"label": "Frequency K-Means", "value": str(M.SILHOUETTE_FREQUENCY), "help": "Silhouette at k=5 -- weak"},
+        {"label": "Co-occurrence K-Means", "value": str(M.SILHOUETTE_COOCCURRENCE), "help": "Silhouette at k=3 -- strong"},
+        {"label": "Score Increase", "value": f"+{M.SILHOUETTE_INCREASE}", "delta": "right question asked",
+         "help": f"Silhouette increased by {M.SILHOUETTE_INCREASE}, from {M.SILHOUETTE_FREQUENCY} to {M.SILHOUETTE_COOCCURRENCE}. Reported as an absolute change because the silhouette scale runs from -1 to 1."},
     ])
 
     info_card(
@@ -940,6 +1074,10 @@ elif st.session_state.view_mode == "Examiner" and page == "Clustering Results":
 
     section("Category Co-occurrence Heatmap", "The input to co-occurrence clustering.")
     show_chart(chart_cooccurrence_heatmap())
+    insight(
+        "Bright cells mark category pairs that share the most baskets. Clustering groups categories whose "
+        "rows look alike, which is why the co-occurrence approach reaches silhouette 0.554 at k=3."
+    )
 
     section("Three Placement Clusters at k=3")
     cluster_colors = {0: ACCENT, 1: SERIES, 2: HIGHLIGHT}
@@ -959,13 +1097,14 @@ elif st.session_state.view_mode == "Examiner" and page == "Clustering Results":
 elif st.session_state.view_mode == "Examiner" and page == "Model Validation":
     st.title("Model Validation")
     section(None, "Product level ML recommendation system. Trained on top 100 most sold products with 70/30 train test split.")
+    artifact_freshness()
     st.markdown("---")
 
     kpi_row([
-        {"label": "Training Baskets", "value": "95,570", "help": "70% of baskets"},
-        {"label": "Test Baskets", "value": "40,959", "help": "30% held out"},
-        {"label": "Hit Rate", "value": "28%"},
-        {"label": "vs Random", "value": "28x", "delta": "better than 1% baseline"},
+        {"label": "Training Baskets", "value": f"{M.ML_TRAIN_BASKETS:,}", "help": "70% of baskets"},
+        {"label": "Test Baskets", "value": f"{M.ML_TEST_BASKETS:,}", "help": "30% held out"},
+        {"label": "Hit Rate", "value": f"{M.ML_HIT_RATE:.0%}"},
+        {"label": "vs Random", "value": f"{round(M.ML_HIT_RATE * 100)}x", "delta": "better than 1% baseline"},
     ])
 
     info_card(
@@ -985,7 +1124,11 @@ elif st.session_state.view_mode == "Examiner" and page == "Model Validation":
             st.info(f"No rules found for {selected}.")
         else:
             show_chart(chart_recommendations(recs))
-            st.dataframe(recs.reset_index(drop=True), use_container_width=True)
+            insight(
+                f"{selected} pairs most strongly with {recs.iloc[0]['Product']} (lift {recs.iloc[0]['Lift']}). "
+                "Every pairing shown was learned from the 70% training baskets and holds on the 30% test baskets."
+            )
+            st.dataframe(recs.reset_index(drop=True), width="stretch")
 
 # ============================================================
 # EXAMINER MODE - PLACEMENT ZONES
@@ -994,6 +1137,7 @@ elif st.session_state.view_mode == "Examiner" and page == "Model Validation":
 elif st.session_state.view_mode == "Examiner" and page == "Placement Zones":
     st.title("Placement Zones")
     section(None, f"5 zones derived from MBA association rules and co-occurrence clustering (silhouette {KPI['cooccurrence_silhouette_k3']} at k=3).")
+    artifact_freshness()
     st.markdown("---")
 
     section("Cross-Sell Before / After (RQ2)", f"Strong rules (lift >= {CROSS['lift_floor']:.0f}) whose category pairs become co-located.")
@@ -1023,15 +1167,19 @@ elif st.session_state.view_mode == "Examiner" and page == "Placement Zones":
     st.markdown("---")
     kpi_row([
         {"label": "Zones Designed", "value": "5"},
-        {"label": "Moderate Uplift (5%)", "value": crore(AVG_BASKET * 0.05 * DAILY_CUSTOMERS * 365)},
-        {"label": "Basis", "value": "Projection", "help": "not a measured result"},
+        {"label": f"Benchmark Scenario ({M.UPLIFT_SCENARIO_PCT}%)", "value": crore(AVG_BASKET * M.UPLIFT_SCENARIO_PCT / 100 * DAILY_CUSTOMERS * 365)},
+        {"label": "Basis", "value": "Scenario", "help": "industry benchmark scenario, not a prediction or measured result"},
     ])
-    st.caption("The rupee uplift is a PROJECTION based on a 3-8% retail benchmark, not a live-experiment result.")
+    st.caption(f"The rupee figure is an INDUSTRY BENCHMARK SCENARIO ({M.UPLIFT_SCENARIO_PCT}% within the published 3-8% retail range), not a prediction or a live-experiment result.")
 
     section("Store Layout", "The 5 zones. Hover a zone to see its categories.")
     zone_names = [z["name"] for z in ZONES]
     chosen = st.selectbox("Highlight a zone", ["(none)"] + zone_names)
     show_chart(chart_planogram(highlight=None if chosen == "(none)" else chosen))
+    insight(
+        "Zone 1 in the centre anchors the layout: FOOD STAPLES appears in 42.2% of baskets, so central placement "
+        "pulls most customers past neighbouring shelves, while cold storage on the back wall draws them through the whole store."
+    )
     if chosen != "(none)":
         z = next(z for z in ZONES if z["name"] == chosen)
         render_html(
@@ -1059,6 +1207,7 @@ elif st.session_state.view_mode == "Examiner" and page == "Placement Zones":
 elif st.session_state.view_mode == "Examiner" and page == "Ethics & Data":
     st.title("Ethics & Data")
     section(None, "Objective 5 -- responsible use of real store data.")
+    artifact_freshness()
     st.markdown("---")
 
     kpi_row([
@@ -1084,7 +1233,7 @@ elif st.session_state.view_mode == "Examiner" and page == "Ethics & Data":
     info_card(
         "Honest reporting",
         "All association, clustering and basket figures are measured from the data. The 3% / 5% / 8% revenue uplift is "
-        "clearly labelled as a <b>projection</b> based on retail-industry benchmarks, not the result of a live in-store "
-        "experiment. The cross-sell before/after on the Placement Zones page is a data-driven result computed from the "
-        "association rules; only the rupee conversion is a projection.",
+        "clearly labelled as an <b>industry benchmark scenario</b>, not a prediction, a model output or the result of a "
+        "live in-store experiment. The cross-sell before/after on the Placement Zones page is a data-driven result "
+        "computed from the association rules; only the rupee conversion is a benchmark scenario.",
     )
