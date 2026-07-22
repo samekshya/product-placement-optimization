@@ -463,3 +463,4 @@
 - 2026-07-21 03:58:19: fix truncated placement recommendations table wider column display
 - 2026-07-21 11:04:40: add revenue impact explanation lift alone does not equal revenue
 - 2026-07-21 18:11:02: add revenue impact calculation support x transactions x basket value
+- 2026-07-22 01:17:24: add finding revenue impact rules must pass lift support and confidence thresholds
