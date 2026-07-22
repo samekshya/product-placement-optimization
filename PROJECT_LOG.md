@@ -466,3 +466,4 @@
 - 2026-07-22 01:17:24: add finding revenue impact rules must pass lift support and confidence thresholds
 - 2026-07-22 08:23:45: add product level revenue impact analysis sugar rato dal outranks high lift rare pairs
 - 2026-07-22 15:30:07: fix month count 1 to 11 not 1 to 10 in ml explanation
+- 2026-07-22 22:36:28: explain july 2025 partial month only 14 days data from july 17
