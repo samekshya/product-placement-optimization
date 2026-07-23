@@ -467,3 +467,4 @@
 - 2026-07-22 08:23:45: add product level revenue impact analysis sugar rato dal outranks high lift rare pairs
 - 2026-07-22 15:30:07: fix month count 1 to 11 not 1 to 10 in ml explanation
 - 2026-07-22 22:36:28: explain july 2025 partial month only 14 days data from july 17
+- 2026-07-23 05:42:50: explain negative r-squared expected with 11 data points prophet handles this better
