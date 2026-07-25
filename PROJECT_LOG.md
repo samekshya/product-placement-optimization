@@ -475,3 +475,4 @@
 - 2026-07-24 17:14:38: add physical constraints note data driven zones must consider refrigeration entry points aisle width
 - 2026-07-25 00:21:00: add controlled testing recommendation start small measure then expand
 - 2026-07-25 07:27:21: add 4 step controlled testing implementation guide to seasonal planning page
+- 2026-07-25 14:33:43: create notebook 10 demand forecasting title and purpose
