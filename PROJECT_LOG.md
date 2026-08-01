@@ -497,3 +497,4 @@
 - 2026-07-31 05:34:33: add support to recommendation cards now shows all three metrics lift confidence support
 - 2026-07-31 12:40:55: add zone methodology note and fix zone cards to use theme colours
 - 2026-07-31 19:47:16: fix seasonal page theme colours add 4 step controlled testing implementation guide
+- 2026-08-01 02:53:38: rebuild dashboard with owner mode and examiner mode practical tool not just charts
