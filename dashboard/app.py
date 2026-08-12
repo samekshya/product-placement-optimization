@@ -1,5 +1,5 @@
 """
-Baniya Shopping Center -- Product Placement Optimisation dashboard.
+The case study store -- Product Placement Optimisation dashboard.
 
 Runs entirely from small precomputed files in dashboard/artifacts/ (built by
 precompute_artifacts.py). No dependency on the confidential 114 MB CSV and no
@@ -28,7 +28,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ARTIFACTS = os.path.join(HERE, "artifacts")
 
 st.set_page_config(
-    page_title="Baniya Shopping Center",
+    page_title="The case study store",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -350,7 +350,7 @@ ZONES = [
 
 with st.sidebar:
     st.markdown(
-        f"<div style='font-size:18px;font-weight:800;color:{T['header']};margin-bottom:2px;'>Baniya Shopping Center</div>"
+        f"<div style='font-size:18px;font-weight:800;color:{T['header']};margin-bottom:2px;'>The case study store</div>"
         f"<div style='font-size:12px;color:{T['subtext']};margin-bottom:14px;'>Product Placement Optimisation</div>",
         unsafe_allow_html=True,
     )
@@ -668,7 +668,7 @@ elif st.session_state.view_mode == "Owner" and page == "Monthly Stock Plan":
     current_month = datetime.datetime.now().strftime("%B")
 
     st.title("Monthly Stock Plan")
-    section(None, "Stock recommendations based on 10 months of real sales data from Baniya Shopping Center.")
+    section(None, "Stock recommendations based on 10 months of real sales data from the case study store.")
     st.markdown("---")
 
     month_data = SEASONAL_STOCK.get(current_month, SEASONAL_STOCK["June"])
@@ -723,7 +723,7 @@ elif st.session_state.view_mode == "Owner" and page == "Monthly Stock Plan":
 
 elif st.session_state.view_mode == "Owner" and page == "Store Performance":
     st.title("Store Performance")
-    section(None, "Based on 10 months of real sales data from Baniya Shopping Center, Pokhara.")
+    section(None, "Based on 10 months of real sales data from the case study store, Pokhara.")
     st.markdown("---")
 
     kpi_row([
@@ -1069,8 +1069,8 @@ elif st.session_state.view_mode == "Examiner" and page == "Ethics & Data":
 
     info_card(
         "Data provenance &amp; consent",
-        "This is <b>primary data</b> collected from the student's own family-run store, Baniya Shopping Center "
-        "(Lamachour-16, Pokhara), used <b>with the explicit permission of store management</b> for academic research "
+        "This is <b>primary data</b> collected from the student's own family-run store "
+        "(Pokhara), used <b>with the explicit permission of store management</b> for academic research "
         "only. It was <b>not provided by faculty</b>; the earlier methodology note describing it as faculty-provided "
         "was incorrect and is superseded by this statement.",
     )

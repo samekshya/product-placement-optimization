@@ -1,5 +1,5 @@
 # Data Analytics and ML Based Product Placement Optimisation
-### Baniya Shopping Center, Lamachour-16, Pokhara, Nepal
+### The case study store, Pokhara, Nepal
 
 **Student:** Samikshya Baniya | **ID:** 230360
 **Module:** ST6001CEM Individual Project
@@ -30,7 +30,7 @@ This project analyses 10 months of real Point of Sale data from a Nepali grocery
 
 | Property | Value |
 |----------|-------|
-| Source | Real POS data, Baniya Shopping Center Pokhara |
+| Source | Real POS data, the case study store, Pokhara |
 | Raw Size | 768,222 rows, 14 columns |
 | After Cleaning | 767,180 rows, 14 columns |
 | Period | July 2025 to May 2026 (10 months) |
@@ -45,7 +45,7 @@ This project analyses 10 months of real Point of Sale data from a Nepali grocery
 ## Ethics and Data Use (Objective 5)
 
 **Data provenance and consent.** This study uses **primary data** collected from the
-student's own family-run store, Baniya Shopping Center (Lamachour-16, Pokhara). The data was
+student's own family-run store (Pokhara). The data was
 obtained and used **with the explicit permission of store management**, for academic research
 only. It is **not faculty-provided / secondary data** — any earlier note describing it that way
 is incorrect and is corrected here: the dataset is primary data gathered directly from the store's
