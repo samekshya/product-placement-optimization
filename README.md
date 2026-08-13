@@ -9,7 +9,7 @@
 
 ## Project Overview
 
-This project analyses 10 months of real Point of Sale data from a Nepali grocery store to find which products are bought together and recommend how to rearrange shelves to increase sales.
+This project analyses 11 calendar months of real Point of Sale data (17 July 2025 to 20 May 2026, both ends partial) from a Nepali grocery store to find which products are bought together and recommend how to rearrange shelves to increase sales.
 
 **Primary KPI:** Average basket value baseline = Rs 1,001
 **Projected impact:** Rs 1.30 Crore additional annual revenue at 5% uplift
@@ -33,7 +33,8 @@ This project analyses 10 months of real Point of Sale data from a Nepali grocery
 | Source | Real POS data, the case study store, Pokhara |
 | Raw Size | 768,222 rows, 14 columns |
 | After Cleaning | 767,180 rows, 14 columns |
-| Period | July 2025 to May 2026 (10 months) |
+| Period | 17 July 2025 to 20 May 2026 (11 calendar months, both ends partial) |
+| Span | 307 days, of which 304 had sales |
 | Unique Transactions | 218,037 shopping trips |
 | Unique Products | 5,681 |
 | Categories | 25 standardized |
@@ -47,13 +48,13 @@ This project analyses 10 months of real Point of Sale data from a Nepali grocery
 **Data provenance and consent.** This study uses **primary data** collected from the
 student's own family-run store (Pokhara). The data was
 obtained and used **with the explicit permission of store management**, for academic research
-only. It is **not faculty-provided / secondary data** — any earlier note describing it that way
+only. It is **not faculty-provided / secondary data** - any earlier note describing it that way
 is incorrect and is corrected here: the dataset is primary data gathered directly from the store's
 Point of Sale system.
 
 **Privacy and anonymisation.** 98% of transactions are cash sales (`CASH A/C`) with no customer
 identity attached, so no individual can be re-identified. No names, phone numbers, addresses or
-loyalty IDs are stored or analysed — only product-level basket contents and amounts. The raw Excel
+loyalty IDs are stored or analysed - only product-level basket contents and amounts. The raw Excel
 file and the 114 MB cleaned CSV are kept out of version control (gitignored); only small aggregated
 artifacts are published with the dashboard.
 
@@ -80,13 +81,31 @@ product-placement-optimization/
 │   ├── 07_placement_simulation.ipynb   (includes ADDED cross-sell before/after)
 │   ├── 08_evaluation.ipynb
 │   ├── 09_ml_recommendation.ipynb
-│   └── 10_demand_forecasting.ipynb
+│   ├── 10_demand_forecasting.ipynb
+│   ├── 11_basket_classifier.ipynb      (Decision Tree)
+│   └── 12_neural_network.ipynb         (MLP, compared against the tree)
+├── sql/
+│   ├── 01_create_oltp.sql      (products, transactions, transaction_items)
+│   └── 02_create_warehouse.sql (star schema + 7 serving views)
+├── scripts/
+│   └── load_to_postgres.py     (cleaned CSV -> OLTP)
+├── etl/
+│   ├── load_warehouse.py       (OLTP -> star schema)
+│   ├── quality_checks.py       (32 data quality checks)
+│   └── refresh_artifacts.py    (warehouse -> dashboard artifacts)
+├── dags/
+│   └── product_placement_pipeline.py   (Airflow DAG, 5 tasks)
+├── config/
+│   ├── db.py                   (database connection settings)
+│   └── metrics.py              (single source of truth for verified numbers)
 ├── dashboard/
-│   ├── app.py                  (Streamlit dashboard, loads only artifacts/)
+│   ├── app.py                  (Streamlit dashboard, live Postgres or artifacts)
 │   ├── precompute_artifacts.py (builds the small artifacts from processed data)
 │   └── artifacts/              (small precomputed files committed for the dashboard)
 ├── reports/
 │   └── figures/                (all charts and visualizations)
+├── docker-compose.yml          (Postgres 16 + Airflow 3.3.0 LocalExecutor)
+├── reproduce_all_results.py    (verifies every reported number, one command)
 ├── requirements.txt
 └── README.md
 ---
@@ -108,7 +127,7 @@ Place sales_data_raw.xlsx inside the data/raw/ folder.
 This file is not on GitHub as it contains confidential store data.
 
 **Step 5: Run notebooks in order**
-Run from 01_data_audit.ipynb through to 10_demand_forecasting.ipynb.
+Run from 01_data_audit.ipynb through to 12_neural_network.ipynb.
 Each notebook builds on the previous one.
 
 ---
@@ -137,6 +156,55 @@ python dashboard/precompute_artifacts.py
 
 ---
 
+## Run the Data Platform (Postgres + Airflow)
+
+The project also ships a full data platform: a Postgres OLTP schema, a star schema warehouse and an
+Airflow DAG that orchestrates the load. This is optional for viewing the dashboard, which falls back
+to the committed artifacts, but it is what feeds the dashboard's live mode.
+
+**Start everything** (needs Docker Desktop):
+
+```
+docker compose up -d
+```
+
+| Service | URL | Login |
+|---------|-----|-------|
+| Airflow UI | http://localhost:8082 | airflow / airflow |
+| Postgres | localhost:5435 | postgres / postgres |
+
+Ports are non-default on purpose to avoid clashing with other stacks.
+
+**Run the pipeline.** The DAG `product_placement_pipeline` is unpaused and runs daily, or trigger it
+from the Airflow UI. Five tasks run in order:
+
+```
+load_raw_to_oltp >> oltp_to_warehouse >> run_quality_checks >> update_artifacts >> done
+```
+
+Re-running is safe. Every load uses `ON CONFLICT DO NOTHING` against a natural key, so a second run
+inserts nothing and no row count moves.
+
+**Or run each step by hand**, without Airflow:
+
+```
+python scripts/load_to_postgres.py     # cleaned CSV  -> OLTP     (767,180 line items)
+python etl/load_warehouse.py           # OLTP         -> warehouse (star schema)
+python etl/quality_checks.py           # 32 data quality checks
+python etl/refresh_artifacts.py        # warehouse    -> dashboard artifacts
+```
+
+**Verify every number in the report with one command:**
+
+```
+python reproduce_all_results.py
+```
+
+It runs 12 checks across 8 steps, prints a full report, saves a timestamped log to `reports/`, and
+exits 0 only if every check passes.
+
+---
+
 ## Algorithms Used
 
 | Algorithm | Type | Purpose |
@@ -144,6 +212,10 @@ python dashboard/precompute_artifacts.py
 | Apriori | Unsupervised ML | Find frequent itemsets and association rules |
 | FP-Growth | Unsupervised ML | Faster association rule mining for comparison |
 | K-Means | Unsupervised ML | Group categories into natural placement zones |
+| Linear Regression | Supervised ML | Forecast monthly revenue from the trend |
+| Prophet | Supervised ML | Forecast revenue including the Dashain seasonal peak |
+| Decision Tree | Supervised ML | Identify which categories predict basket value |
+| MLP Neural Network | Supervised ML | Test whether more model capacity beats the tree |
 
 ---
 
@@ -162,7 +234,7 @@ python dashboard/precompute_artifacts.py
 
 **Cross-sell before/after (RQ2 / Objective 4, data-driven):** the optimised 5-zone layout
 co-locates **56** strong cross-sell rules (lift ≥ 3) versus **28** for the current
-frequency-driven layout — a **2.0x** increase, raising captured strong-rule support from
+frequency-driven layout - a **2.0x** increase, raising captured strong-rule support from
 8.2% to 16.3%. This result is measured from the association rules; the rupee uplift above
 remains a projection.
 
@@ -187,7 +259,7 @@ Based on MBA analysis of 218,037 real transactions:
 - Revenue projections are based on retail industry benchmarks not a live experiment
 - 98 percent of customers are anonymous so individual tracking is not possible
 - Single store dataset may not generalize to other Nepali grocery stores
-- Data covers 10 months only, June 2026 is missing for full year analysis
+- Data covers 11 calendar months (17 July 2025 to 20 May 2026), with July 2025 and May 2026 both partial, so a full 12 month cycle and a second Dashain season are not available
 
 ---
 
