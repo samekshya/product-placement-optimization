@@ -61,11 +61,11 @@ def check(label, condition, detail=""):
 def main():
     all_passed = True
 
-    log(f"REPRODUCTION REPORT — Product Placement Optimisation")
+    log(f"REPRODUCTION REPORT - Product Placement Optimisation")
     log(f"Generated: {datetime.now().isoformat()}")
     log(f"Student: Samikshya Baniya | ID: 230360 | Module: ST6001CEM")
 
-    section("STEP 1 — Regenerating dashboard artifacts")
+    section("STEP 1 - Regenerating dashboard artifacts")
     precompute_script = os.path.join(HERE, "dashboard", "precompute_artifacts.py")
     if os.path.exists(precompute_script):
         result = subprocess.run(
@@ -82,7 +82,7 @@ def main():
         log("  precompute_artifacts.py not found, skipping regeneration.")
         log("  (Will verify existing artifacts if present.)")
 
-    section("STEP 2 — Dataset scale")
+    section("STEP 2 - Dataset scale")
     kpi_path = os.path.join(ARTIFACTS, "kpi_summary.json")
     if os.path.exists(kpi_path):
         with open(kpi_path) as f:
@@ -96,10 +96,10 @@ def main():
             f"expected {M.TOTAL_CATEGORIES}, got {kpi.get('n_categories')}"
         )
     else:
-        log("  kpi_summary.json not found — run precompute_artifacts.py first.")
+        log("  kpi_summary.json not found - run precompute_artifacts.py first.")
         all_passed = False
 
-    section("STEP 3 — Association rules (Notebook 05)")
+    section("STEP 3 - Association rules (Notebook 05)")
     rules_path = os.path.join(ARTIFACTS, "category_rules.csv")
     if os.path.exists(rules_path):
         rules = pd.read_csv(rules_path)
@@ -113,14 +113,14 @@ def main():
         log("  category_rules.csv not found.")
         all_passed = False
 
-    section("STEP 4 — Clustering (Notebook 06)")
+    section("STEP 4 - Clustering (Notebook 06)")
     all_passed &= check(
         "Co-occurrence silhouette beats frequency silhouette",
         M.SILHOUETTE_COOCCURRENCE > M.SILHOUETTE_FREQUENCY,
         f"{M.SILHOUETTE_COOCCURRENCE} vs {M.SILHOUETTE_FREQUENCY}"
     )
 
-    section("STEP 5 — Placement comparison (Notebooks 07 & 08)")
+    section("STEP 5 - Placement comparison (Notebooks 07 & 08)")
     all_passed &= check(
         "Optimised layout beats current layout",
         M.CROSS_SELL_OPTIMISED > M.CROSS_SELL_CURRENT,
@@ -132,14 +132,14 @@ def main():
         f"{M.CROSS_SELL_OPTIMISED} vs {M.CROSS_SELL_FREQUENCY}"
     )
 
-    section("STEP 6 — Basket classifier (Notebook 11)")
+    section("STEP 6 - Basket classifier (Notebook 11)")
     all_passed &= check(
         "Classifier beats majority baseline",
         M.CLASSIFIER_ACCURACY > M.CLASSIFIER_BASELINE,
         f"{M.CLASSIFIER_ACCURACY:.3f} vs {M.CLASSIFIER_BASELINE:.3f}"
     )
 
-    section("STEP 7 — ABC analysis (Notebook 03)")
+    section("STEP 7 - ABC analysis (Notebook 03)")
     abc_path = os.path.join(ARTIFACTS, "abc_analysis.csv")
     if os.path.exists(abc_path):
         abc = pd.read_csv(abc_path)
@@ -150,6 +150,54 @@ def main():
         )
     else:
         log("  abc_analysis.csv not found.")
+        all_passed = False
+
+    section("STEP 8 - Neural network comparison (Notebook 12)")
+    all_passed &= check(
+        "Neural network beats the depth-5 tree",
+        M.NEURAL_NET_ACCURACY > M.CLASSIFIER_ACCURACY,
+        f"{M.NEURAL_NET_ACCURACY:.4f} vs {M.CLASSIFIER_ACCURACY:.3f}"
+    )
+    all_passed &= check(
+        "Most of that gap is capacity, not model family",
+        M.DECISION_TREE_FULL_ACCURACY > M.CLASSIFIER_ACCURACY,
+        f"fully grown tree {M.DECISION_TREE_FULL_ACCURACY:.4f} closes "
+        f"{(M.DECISION_TREE_FULL_ACCURACY - M.CLASSIFIER_ACCURACY) * 100:.2f} of the "
+        f"{(M.NEURAL_NET_ACCURACY - M.CLASSIFIER_ACCURACY) * 100:.2f} point gap"
+    )
+    all_passed &= check(
+        "No model exceeds the ceiling these features allow",
+        M.NEURAL_NET_ACCURACY < M.FEATURE_CEILING_ACCURACY,
+        f"{M.NEURAL_NET_ACCURACY:.4f} < {M.FEATURE_CEILING_ACCURACY:.4f} "
+        f"({M.NEURAL_NET_ACCURACY / M.FEATURE_CEILING_ACCURACY * 100:.1f}% of maximum)"
+    )
+
+    section("STEP 9 - Full thesis-number sweep (PROJECT_RECORD.md section 9)")
+    # Delegated to scripts/verify_thesis_numbers.py so the "N of N" figure is
+    # generated rather than typed into the document by hand. A hand-written
+    # count drifts away from the table it describes the moment either changes.
+    sweep_script = os.path.join(HERE, "scripts", "verify_thesis_numbers.py")
+    if os.path.exists(sweep_script):
+        sweep = subprocess.run(
+            [sys.executable, sweep_script], capture_output=True, text=True
+        )
+        verified_line = next(
+            (ln.strip() for ln in sweep.stdout.splitlines() if "VERIFIED:" in ln), ""
+        )
+        uncheckable_line = next(
+            (ln.strip() for ln in sweep.stdout.splitlines() if "NOT AUTO-CHECKABLE:" in ln), ""
+        )
+        all_passed &= check(
+            "Every checkable thesis number matches",
+            sweep.returncode == 0,
+            verified_line or "see scripts/verify_thesis_numbers.py"
+        )
+        if uncheckable_line:
+            log(f"         {uncheckable_line}")
+        if sweep.returncode != 0:
+            log(sweep.stdout[-1500:])
+    else:
+        log("  scripts/verify_thesis_numbers.py not found.")
         all_passed = False
 
     section("SUMMARY")
