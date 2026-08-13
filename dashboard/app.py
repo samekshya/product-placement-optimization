@@ -26,6 +26,7 @@ import streamlit as st
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ARTIFACTS = os.path.join(HERE, "artifacts")
+PROJECT_ROOT = os.path.dirname(HERE)  # so config/db.py is importable
 
 st.set_page_config(
     page_title="The case study store",
@@ -227,14 +228,126 @@ SERIES = PRIMARY if not st.session_state.dark_mode else "#7C9CD6"
 
 
 # ============================================================
-# DATA LOADING (artifacts only)
+# DATA SOURCE: live Postgres warehouse, falling back to artifacts
 # ============================================================
+# The dashboard prefers the warehouse built by the Airflow pipeline, so what is
+# on screen is what the data platform actually produced. If Postgres is not
+# running, it falls back to the committed CSV artifacts and keeps working.
+#
+# That fallback is not a nicety. A marker cloning this repo has no Postgres and
+# no 114 MB CSV, and the dashboard still has to run for them. The sidebar states
+# which source is in use so the two are never confused.
+#
+# Association rules, clustering and cross-sell always come from artifacts: they
+# are Apriori and K-Means outputs from the notebooks, and the warehouse has no
+# way to derive them.
+
+
+@st.cache_resource(show_spinner=False)
+def warehouse_status():
+    """Probe the warehouse once. Returns (available, human readable detail)."""
+    try:
+        import sys
+
+        import psycopg2
+
+        if PROJECT_ROOT not in sys.path:
+            sys.path.insert(0, PROJECT_ROOT)
+        from config import db
+
+        conn = psycopg2.connect(connect_timeout=3, **db.connection_kwargs())
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM warehouse.fact_sales")
+        rows = cur.fetchone()[0]
+        cur.close()
+        conn.close()
+        if rows == 0:
+            return False, "warehouse reachable but empty"
+        return True, f"{db.describe()} ({rows:,} fact rows)"
+    except Exception as exc:  # noqa: BLE001 - any failure means fall back
+        return False, type(exc).__name__
+
+
+WAREHOUSE_LIVE, WAREHOUSE_DETAIL = warehouse_status()
+
+
+@st.cache_data(show_spinner=False)
+def sql_df(query):
+    """Run a query against the warehouse and return a DataFrame."""
+    import sys
+    import warnings
+
+    import psycopg2
+
+    if PROJECT_ROOT not in sys.path:
+        sys.path.insert(0, PROJECT_ROOT)
+    from config import db
+
+    conn = psycopg2.connect(connect_timeout=5, **db.connection_kwargs())
+    try:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="pandas only supports SQLAlchemy")
+            return pd.read_sql(query, conn)
+    finally:
+        conn.close()
+
+
+@st.cache_data
+def load_csv(name):
+    return pd.read_csv(os.path.join(ARTIFACTS, name))
+
+
+def from_warehouse_or_csv(query, csv_name, rename=None):
+    """Serve a table from the warehouse when it is live, else from artifacts.
+
+    Any SQL failure falls back rather than breaking the page: a dashboard that
+    goes blank because a database blinked is worse than one showing yesterday's
+    committed numbers.
+    """
+    if WAREHOUSE_LIVE:
+        try:
+            df = sql_df(query)
+            return df.rename(columns=rename) if rename else df
+        except Exception:  # noqa: BLE001
+            pass
+    return load_csv(csv_name)
 
 
 @st.cache_data
 def load_kpi():
+    """KPI summary: mining metrics from the artifact, live metrics from SQL.
+
+    kpi_summary.json holds two kinds of number. Transactions, revenue and basket
+    values are warehouse facts and are refreshed from SQL when it is available.
+    Max lift, rule counts and the silhouette score come from Apriori and K-Means
+    in the notebooks, so they are always read from the file.
+    """
     with open(os.path.join(ARTIFACTS, "kpi_summary.json")) as f:
-        return json.load(f)
+        kpi = json.load(f)
+
+    if WAREHOUSE_LIVE:
+        try:
+            row = sql_df("SELECT * FROM warehouse.v_kpi_summary").iloc[0]
+            top_cat = sql_df(
+                "SELECT category_name FROM warehouse.v_category_performance "
+                "ORDER BY baskets DESC LIMIT 1"
+            ).iloc[0]["category_name"]
+            total_revenue = float(row["total_revenue"])
+            total_baskets = int(row["total_transactions"])
+            kpi.update({
+                "total_transactions": total_baskets,
+                "total_revenue": round(total_revenue, 2),
+                "avg_basket_value": round(float(row["avg_basket_value"]), 2),
+                "median_basket_value": round(float(row["median_basket_value"]), 2),
+                "n_categories": int(row["n_categories"]),
+                "n_products": int(row["n_products"]),
+                "daily_revenue": round(total_revenue / kpi["data_days"], 2),
+                "daily_customers": round(total_baskets / kpi["data_days"]),
+                "top_category": top_cat,
+            })
+        except Exception:  # noqa: BLE001
+            pass
+    return kpi
 
 
 @st.cache_data
@@ -244,8 +357,23 @@ def load_cross_sell():
 
 
 @st.cache_data
-def load_csv(name):
-    return pd.read_csv(os.path.join(ARTIFACTS, name))
+def load_zone_performance():
+    """Revenue by placement zone. Only the warehouse can answer this.
+
+    The zone assignment is a dimension attribute in dim_category, so this is a
+    GROUP BY rather than a separate analysis. There is no artifact equivalent,
+    so this returns None when the warehouse is not running.
+    """
+    if not WAREHOUSE_LIVE:
+        return None
+    try:
+        return sql_df(
+            "SELECT zone_assignment, zone_label, zone_location, n_categories, "
+            "revenue, revenue_share_pct, baskets FROM warehouse.v_zone_performance "
+            "ORDER BY zone_assignment"
+        )
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def get_recommendations(product_name, rules_df, top_n=5):
@@ -277,8 +405,42 @@ def get_recommendations(product_name, rules_df, top_n=5):
 
 KPI = load_kpi()
 CROSS = load_cross_sell()
-monthly_revenue = load_csv("monthly_revenue.csv")
-category_dist = load_csv("category_distribution.csv")
+ZONE_PERF = load_zone_performance()
+
+# Served from the warehouse when it is running, from artifacts otherwise.
+monthly_revenue = from_warehouse_or_csv(
+    "SELECT year_month AS month, revenue, transactions AS baskets, avg_basket "
+    "FROM warehouse.v_monthly_revenue ORDER BY year_month",
+    "monthly_revenue.csv",
+)
+category_dist = from_warehouse_or_csv(
+    "SELECT category_name AS category, baskets, "
+    "basket_penetration_pct AS pct_of_baskets "
+    "FROM warehouse.v_category_performance ORDER BY baskets DESC",
+    "category_distribution.csv",
+)
+day_of_week = from_warehouse_or_csv(
+    "SELECT TRIM(day_name) AS day_name, revenue, "
+    "transactions AS transaction_count, avg_basket "
+    "FROM warehouse.v_day_of_week ORDER BY day_of_week",
+    "day_of_week.csv",
+)
+abc_analysis = from_warehouse_or_csv(
+    "SELECT product_name AS product, revenue FROM warehouse.v_top_products "
+    "ORDER BY revenue DESC, product_name",
+    "abc_analysis.csv",
+)
+if WAREHOUSE_LIVE and "cumulative_pct" not in abc_analysis.columns:
+    # The view returns ranked revenue; the ABC banding is presentation logic,
+    # applied here so the same thresholds as notebook 03 Chart 10 are used.
+    _cum = abc_analysis["revenue"].astype(float).cumsum() / \
+        abc_analysis["revenue"].astype(float).sum() * 100
+    abc_analysis["cumulative_pct"] = _cum.round(4)
+    abc_analysis["abc_category"] = pd.cut(
+        _cum, bins=[-0.1, 70, 90, 100.1], labels=["A", "B", "C"]
+    ).astype(str)
+
+# Always from artifacts: these are Apriori / K-Means outputs, not warehouse facts.
 basket_hist = load_csv("basket_value_hist.csv")
 category_rules = load_csv("category_rules.csv")
 product_rules = load_csv("product_rules.csv")
@@ -287,8 +449,6 @@ cooc_matrix.index.name = "category"
 top_pairs = load_csv("top_pairs.csv")
 top_products = load_csv("top_products.csv")
 cluster_assign = load_csv("cluster_assignments.csv")
-abc_analysis = load_csv("abc_analysis.csv")
-day_of_week = load_csv("day_of_week.csv")
 
 DAILY_CUSTOMERS = KPI["total_transactions"] / KPI["data_days"]
 AVG_BASKET = KPI["avg_basket_value"]
@@ -388,9 +548,30 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
+
+    # Which data source is feeding this page. Stated plainly so live warehouse
+    # numbers are never mistaken for the committed static ones.
+    if WAREHOUSE_LIVE:
+        _dot, _label, _sub = POSITIVE, "Live: Postgres warehouse", WAREHOUSE_DETAIL
+    else:
+        _dot, _label, _sub = HIGHLIGHT, "Static: CSV artifacts", (
+            f"Postgres not reachable ({WAREHOUSE_DETAIL}). "
+            "Start it with: docker compose up -d postgres"
+        )
+    st.markdown(
+        f"<div style='display:flex;align-items:center;gap:7px;margin-bottom:3px;'>"
+        f"<span style='width:8px;height:8px;border-radius:50%;background:{_dot};"
+        f"display:inline-block;flex:none;'></span>"
+        f"<span style='font-size:11.5px;font-weight:700;color:{T['header']};'>{_label}</span>"
+        f"</div>"
+        f"<div style='font-size:10.5px;color:{T['subtext']};line-height:1.45;"
+        f"margin-bottom:10px;'>{_sub}</div>",
+        unsafe_allow_html=True,
+    )
+
     st.caption(
         f"{KPI['total_transactions']:,} transactions · {KPI['n_categories']} categories · "
-        f"10 months of real POS data.\n\nSamikshya Baniya · 230360 · ST6001CEM · Coventry University"
+        f"11 calendar months of real POS data.\n\nSamikshya Baniya · 230360 · ST6001CEM · Coventry University"
     )
 
 
@@ -668,7 +849,7 @@ elif st.session_state.view_mode == "Owner" and page == "Monthly Stock Plan":
     current_month = datetime.datetime.now().strftime("%B")
 
     st.title("Monthly Stock Plan")
-    section(None, "Stock recommendations based on 10 months of real sales data from the case study store.")
+    section(None, "Stock recommendations based on 11 calendar months of real sales data from the case study store.")
     st.markdown("---")
 
     month_data = SEASONAL_STOCK.get(current_month, SEASONAL_STOCK["June"])
@@ -723,7 +904,7 @@ elif st.session_state.view_mode == "Owner" and page == "Monthly Stock Plan":
 
 elif st.session_state.view_mode == "Owner" and page == "Store Performance":
     st.title("Store Performance")
-    section(None, "Based on 10 months of real sales data from the case study store, Pokhara.")
+    section(None, "Based on 11 calendar months of real sales data from the case study store, Pokhara.")
     st.markdown("---")
 
     kpi_row([
@@ -801,7 +982,7 @@ elif st.session_state.view_mode == "Examiner" and page == "Project Overview":
         ("03", "EDA", "9 charts. FOOD STAPLES in 42.2% of baskets. Average basket Rs 1,000.81. Kalo Dal and Rato Dal co-occur 3,989 times. Large baskets (13.7% of trips) drive 52.1% of revenue."),
         ("04", "Transaction Encoding", "Converted to basket matrix: 218,037 rows x 25 columns. True/False per category per invoice."),
         ("05", "Market Basket Analysis", "Apriori and FP-Growth both found 1,228 rules. Max lift 6.81. 48 rules above lift 5."),
-        ("06", "Clustering", "Frequency K-Means: silhouette 0.19. Co-occurrence K-Means: silhouette 0.554 at k=3. 189% improvement."),
+        ("06", "Clustering", "Frequency K-Means: silhouette 0.190. Co-occurrence K-Means: silhouette 0.554 at k=3, an increase of 0.364."),
         ("07", "Placement Simulation", "5 zones designed. Cross-sell capture doubles vs current layout. 5% uplift projects Rs 1.30 crore (projection)."),
         ("08", "Evaluation", "Algorithm comparison, 6 limitations, 7 future recommendations."),
         ("09", "ML Recommendation", "Product level MBA on top 100 products. 70/30 train test split. 28% hit rate on unseen data. Max lift 22.41."),
@@ -928,7 +1109,8 @@ elif st.session_state.view_mode == "Examiner" and page == "Clustering Results":
     kpi_row([
         {"label": "Frequency K-Means", "value": "0.19", "help": "Silhouette at k=5 -- weak"},
         {"label": "Co-occurrence K-Means", "value": str(KPI["cooccurrence_silhouette_k3"]), "help": "Silhouette at k=3 -- strong"},
-        {"label": "Improvement", "value": "189%", "delta": "right question asked"},
+        {"label": "Improvement", "value": "+0.364", "delta": "0.190 to 0.554, right question asked",
+         "help": "Absolute increase. Silhouette is bounded -1 to 1, so a percentage change between two silhouette scores has no interpretation."},
     ])
 
     info_card(
@@ -1039,6 +1221,45 @@ elif st.session_state.view_mode == "Examiner" and page == "Placement Zones":
             f"<div style='color:{z['color']};font-size:15px;font-weight:700;'>{z['name']} -- {z['label']}</div>"
             f"<div class='c-sub' style='color:{T['text']};margin:8px 0;'>{', '.join(z['categories'])}</div>"
             f"<div class='c-sub'>{z['reason']}</div></div>"
+        )
+
+    # Revenue by zone. This section only appears when the warehouse is live,
+    # because it is a GROUP BY on dim_category.zone_assignment and there is no
+    # artifact equivalent. It is the clearest demonstration of why the research
+    # finding was stored as a dimension attribute rather than kept in a notebook.
+    if ZONE_PERF is not None and not ZONE_PERF.empty:
+        section(
+            "Revenue by Placement Zone",
+            "Live from the warehouse. The zone assignment is a column on dim_category, "
+            "so this is a single GROUP BY rather than a separate analysis.",
+        )
+        zone_colour = {z["name"]: z["color"] for z in ZONES}
+        zp = ZONE_PERF.copy()
+        zp["revenue"] = zp["revenue"].astype(float)
+        zp["revenue_share_pct"] = zp["revenue_share_pct"].astype(float)
+        zfig = go.Figure(go.Bar(
+            x=zp["revenue"] / 10_000_000,
+            y=zp["zone_assignment"],
+            orientation="h",
+            marker_color=[zone_colour.get(n, ACCENT) for n in zp["zone_assignment"]],
+            text=[f"Rs {v:.2f} Cr ({p:.1f}%)" for v, p in
+                  zip(zp["revenue"] / 10_000_000, zp["revenue_share_pct"])],
+            textposition="outside",
+            customdata=zp[["zone_label", "n_categories", "baskets"]].values,
+            hovertemplate=(
+                "%{y} (%{customdata[0]})<br>Revenue: Rs %{x:.2f} Crore"
+                "<br>%{customdata[1]} categories<br>%{customdata[2]:,} baskets<extra></extra>"
+            ),
+        ))
+        zfig.update_xaxes(title_text="Revenue (Rs Crore)")
+        zfig.update_yaxes(autorange="reversed")
+        show_chart(style_fig(zfig, height=330, legend=False))
+        _top = zp.loc[zp["revenue"].idxmax()]
+        insight(
+            f"{_top['zone_assignment']} carries {_top['revenue_share_pct']:.1f}% of all revenue from "
+            f"{int(_top['n_categories'])} categories, which is what makes it the anchor zone. "
+            "This query is only possible because the placement zones from notebook 07 are stored "
+            "in the warehouse rather than living only in the analysis."
         )
 
     section("All Zones")
