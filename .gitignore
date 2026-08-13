@@ -9,3 +9,11 @@ data/processed/
 
 agent_promt.md
 changes.txt
+
+# Airflow runtime logs, written into the repo by the container bind mount.
+# These are machine state, not project work, and grow with every DAG run.
+logs/
+
+# Timestamped verification reports. A new one is written every time
+# reproduce_all_results.py runs, so they are regenerated rather than stored.
+reports/reproduction_log_*.txt
