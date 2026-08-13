@@ -1,0 +1,154 @@
+# Data platform for the Product Placement Optimisation project.
+#
+# Ports are deliberately non-default because this machine already runs several
+# other Postgres and Airflow stacks (5432, 5433, 5434, 8080, 8081 are taken).
+#
+#   docker compose up -d postgres      start just the database
+#   docker compose up -d               start the database and Airflow
+#   docker compose down                stop, keeping data
+#   docker compose down -v             stop and wipe data
+#
+# Airflow UI:  http://localhost:8082   (login airflow / airflow)
+# Database:    localhost:5435          (postgres / postgres)
+#
+# LocalExecutor rather than CeleryExecutor: this pipeline is five tasks against
+# one database, so Redis, workers and Flower would be moving parts with nothing
+# to do.
+#
+# Airflow's own metadata lives in a SEPARATE container from the project data.
+# Sharing one Postgres between the warehouse and the scheduler's bookkeeping
+# means a mistake in one can take out the other.
+
+name: product_placement
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:3.3.0
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow_metadata/airflow
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow_apiserver:8080/execution/'
+    AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET:-pp_airflow_jwt_secret}
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    # Makes config/, etl/ and scripts/ importable from the DAG
+    PYTHONPATH: /opt/airflow/project
+    # The pipeline code reads these to find the project database. Inside the
+    # container the host is the compose service name and the port is the
+    # CONTAINER port 5432, not the 5435 published to Windows.
+    PP_PG_HOST: postgres
+    PP_PG_PORT: '5432'
+    PP_PG_DATABASE: product_placement
+    PP_PG_USER: postgres
+    PP_PG_PASSWORD: postgres
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs/airflow:/opt/airflow/logs
+    # The project itself, mounted so the DAG runs the same code the student
+    # runs by hand. Nothing is copied or duplicated into the image.
+    - ./config:/opt/airflow/project/config
+    - ./etl:/opt/airflow/project/etl
+    - ./scripts:/opt/airflow/project/scripts
+    - ./sql:/opt/airflow/project/sql
+    - ./data:/opt/airflow/project/data
+    - ./dashboard:/opt/airflow/project/dashboard
+  user: "${AIRFLOW_UID:-50000}:0"
+  depends_on:
+    airflow_metadata:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: pp_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: product_placement
+    ports:
+      - "5435:5432"
+    volumes:
+      - pp_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d product_placement"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  airflow_metadata:
+    image: postgres:16
+    container_name: pp_airflow_metadata
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - pp_airflow_metadata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  airflow_init:
+    <<: *airflow-common
+    container_name: pp_airflow_init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username "${_AIRFLOW_WWW_USER_USERNAME:-airflow}" \
+          --password "${_AIRFLOW_WWW_USER_PASSWORD:-airflow}" \
+          --firstname Samikshya --lastname Baniya --role Admin \
+          --email admin@example.com || true
+    restart: on-failure
+
+  airflow_apiserver:
+    <<: *airflow-common
+    container_name: pp_airflow_apiserver
+    command: api-server
+    ports:
+      - "8082:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    depends_on:
+      airflow_init:
+        condition: service_completed_successfully
+
+  airflow_scheduler:
+    <<: *airflow-common
+    container_name: pp_airflow_scheduler
+    command: scheduler
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    depends_on:
+      airflow_init:
+        condition: service_completed_successfully
+
+  airflow_dag_processor:
+    <<: *airflow-common
+    container_name: pp_airflow_dag_processor
+    command: dag-processor
+    restart: unless-stopped
+    depends_on:
+      airflow_init:
+        condition: service_completed_successfully
+
+volumes:
+  pp_pgdata:
+  pp_airflow_metadata:
