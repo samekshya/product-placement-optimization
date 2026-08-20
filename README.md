@@ -108,9 +108,9 @@ The 32 automated quality checks could not have caught it. They verify completene
 
 Two layers rather than one. A normalised transactional layer mirroring how a till records a sale, then a star schema derived from it entirely with set-based SQL inside the database.
 
-Placement zones are stored as a column on the category dimension, which turns "how much revenue does the anchor zone carry" into a single GROUP BY rather than a separate analysis. The answer is 48.5 per cent from six categories.
+Placement zones are stored as a column on the category dimension, which turns "how much revenue does the anchor zone carry" into a single GROUP BY rather than a separate analysis. The answer is a single number, and it comes back as a share rather than an amount.
 
-Monetary values are stored at NUMERIC scale six rather than four. At scale four the rounding moves two baskets across a segmentation boundary and shifts total revenue by one paisa, which was enough to make the SQL layer disagree with the notebooks.
+Monetary values are stored at NUMERIC scale six rather than four. At scale four the rounding moved two baskets across a segmentation boundary and shifted the revenue total by the smallest possible unit, which was enough to make the SQL layer disagree with the notebooks.
 
 ### Analyse
 
@@ -162,7 +162,7 @@ Costs are not additive, because all three restrictions compete for the same peri
 
 Stated plainly, so the result above is read at its actual size.
 
-**The revenue figure is projected.** Applying the 4 to 6 per cent range from Drèze, Hoch and Purk (1994) gives Rs 1.04 to Rs 1.56 crore per year. No shelf was moved. Customer response was never observed.
+**The revenue figure is projected.** A published uplift range from Drèze, Hoch and Purk (1994) is applied to the store's measured average basket. No shelf was moved. Customer response was never observed. Absolute revenue figures are not published here.
 
 **The baseline is a proxy.** The 22-rule current layout is a frequency-driven arrangement standing in for the store's real layout, which was never available in digital form.
 
