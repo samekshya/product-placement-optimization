@@ -6,7 +6,7 @@ __pycache__/
 data/raw/
 SamikshyaBaniya_230360.pdf
 data/processed/
-
+.claude/
 agent_promt.md
 changes.txt
 
@@ -17,3 +17,8 @@ logs/
 # Timestamped verification reports. A new one is written every time
 # reproduce_all_results.py runs, so they are regenerated rather than stored.
 reports/reproduction_log_*.txt
+
+# Shelf layout tool build and test artefacts.
+node_modules/
+.pytest_cache/
+app/web/dist/
