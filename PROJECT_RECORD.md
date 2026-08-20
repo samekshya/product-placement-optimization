@@ -4,11 +4,12 @@
 **Student:** Samikshya Baniya | **ID:** 230360
 **Module:** ST6001CEM Individual Project, Softwarica College / Coventry University
 **Case study:** A family-run grocery store in Pokhara, Nepal
-**Record compiled:** 2026-08-13, revised 2026-08-14
+**Record compiled:** 2026-08-13, revised 2026-08-14 and 2026-08-15
 **Repository state:** branch `main`, 818 commits, first commit 2026-05-28, latest commit 2026-08-12
 (`486b14d removed the names`). **The data platform, notebook 12 and every fix described in sections
 4b and 8 are uncommitted working-tree changes**, so `git log` will not show them until they are
-committed.
+committed. So are the three extension studies of 2026-08-15 described in section 3c (the
+`analysis/` package, notebooks 13 and 14, charts 25 and 26, and the four new artifacts).
 
 ---
 
@@ -53,7 +54,8 @@ characterise buying behaviour, mine association rules, derive placement zones, a
 
 ### 1.4 Planned pipeline
 
-Twelve notebooks, each one branch, each one feeding the next:
+Twelve notebooks, each one branch, each one feeding the next (notebooks 13 and 14, added
+2026-08-15, extend 10 and 11/12 respectively; see section 3c):
 
 ```
 01 audit  ->  02 clean  ->  03 EDA  ->  04 encode  ->  05 MBA  ->  06 cluster
@@ -326,26 +328,209 @@ usefulness to this project. Notebook 11 existed to identify *which categories ca
 independent method could confirm the placement zones, and only the tree can state that as readable
 rules. The network predicts better and explains nothing. Output: `chart24_model_comparison.png`.
 
+
+---
+
+## 3c. Extensions completed 2026-08-15
+
+Three follow-up studies were built after the main analysis was complete. Each extends a reported
+result and none replaces one: the 56-rule layout, the monthly forecast and the 71.67 per cent
+ceiling all stay in the dissertation exactly as reported, and each extension recomputes the figure
+it extends inside its own run as a like-for-like check. Every new number lives in
+`config/metrics.py`, is written to an artifact under `dashboard/artifacts/`, and is checked by
+`scripts/verify_thesis_numbers.py` and by `reproduce_all_results.py`. The analysis code lives in the
+`analysis/` package so the notebooks, the sweep and the tests all run one implementation.
+
+Standing rule for all three: a negative result is reported as a negative result.
+
+### 3c.1 Computed zone assignment (Part 1)
+
+**Question.** The five placement zones were derived by hand. `analysis/cross_sell.py` scores any
+assignment of the 25 categories to the 5 zones. What is the best possible assignment, and how does
+the hand-built layout compare?
+
+**Method.** `analysis/optimise_zones.py`. Greedy local search with random restarts (single-category
+moves, plus swaps when zone sizes are fixed; best improving move per pass; 200 restarts from one
+master seed, 42; restart 0 starts from the hand-built layout so the path away from it is recorded).
+The objective is `score_layout` itself, called on every candidate move; there is no second scorer.
+A separate exhaustive routine (dynamic programming over zones, still scoring blocks with
+`score_layout`) certifies the true optimum, so every result below is a proven optimum, not a
+best-found. Community detection on the rule network was considered and not built: the true
+objective is cheap and exact, only 12 categories can move the score, and constraints are natural in
+local search and awkward in graph partitioning, so a proxy objective would add nothing.
+
+**Runs.** Unconstrained (any category in any zone); constrained (DAIRY PRODUCTS and FROZEN FOODS
+locked to the back-wall cold zone, ALCOHOLIC BEVERAGES and CIGARETTE AND TOBACCO barred from the
+entrance zone, the section 13.5 boundary); and, because the metric has no notion of shelf capacity,
+both again with each zone held to its hand-built size (5/6/3/4/7).
+
+| Layout | Rules captured | Support | Capture rate | Delta vs hand-built |
+|---|---|---|---|---|
+| Hand-built (notebook 07) | 56 | 0.8130 | 16.3% | reference |
+| Unconstrained optimum | 360 | 4.9860 | 100.0% | +304 rules, +4.1730, +83.7 pts |
+| Constrained optimum | 360 | 4.9860 | 100.0% | +304 rules, +4.1730, +83.7 pts |
+| Capacity-matched optimum (either constraint set) | 250 | 3.5599 | 71.4% | +194 rules, +2.7469, +55.1 pts |
+
+Out of 360 strong rules carrying 4.986 support. All four runs reached the certified optimum
+(200 of 200 restarts for the unlimited runs, 54 and 73 of 200 for the capacity-matched runs).
+
+**What the numbers mean.**
+
+- The unlimited-size optimum is one zone holding all 12 rule-bearing categories. It captures every
+  rule because the metric rewards concentration and nothing in it penalises a 12-category zone.
+  That is a finding about the metric, reported as such, and not a shelf plan.
+- With the hand-built zone sizes, the optimum is the hand-built Daily Essentials group plus
+  CANNED AND PACKAGED FOODS and PERSONAL CARE, seven categories in the seven-slot zone. Those two
+  moves are the first two steps of the greedy path out of the hand-built layout (+100 rules and
+  +94 rules) and account for the entire 194-rule gain. Where the other five rule-bearing categories
+  sit makes no difference, because no strong rule lies entirely within them.
+- The hand-built layout captures 22.8 per cent of what the capacity-matched optimum captures.
+- **No constraint binds.** The constrained and unconstrained optima are identical under both size
+  settings, so the measured price of the physical and ethical constraints is exactly zero. The
+  reason is structural: none of the four constrained categories appears in any strong rule, so
+  wherever they sit the score cannot change.
+
+Files: `analysis/optimise_zones.py`, `analysis/tests/test_optimise_zones.py`,
+`dashboard/artifacts/zone_optimisation.json`. The shelf tool's `/api/layout/optimal` endpoint now
+serves this artifact.
+
+### 3c.2 Daily granularity forecasting (Part 2)
+
+**Question.** Notebook 10 aggregated the record to eleven monthly observations and Linear
+Regression scored R squared -2.377 on a three-point test set. The diagnosis was too few
+observations. The same eleven months hold 304 trading days. Does daily granularity fix it?
+
+**Method.** `analysis/daily_forecast.py`, notebook 13, chart 25. Daily revenue summed per date
+(304 days; the four missing calendar days are closures, two of them Vijaya Dashami and Bhai Tika).
+Chronological split, never random: the first 243 days train (17 July 2025 to 20 March 2026), the
+last 61 test (21 March to 20 May 2026). Two framings on the same 61 days: fixed origin (train once,
+forecast the whole window) and rolling one step ahead (each day from everything before it, the
+framing "yesterday's value" belongs to). Prophet: weekly seasonality on, yearly and daily off,
+default trend, told nothing about festivals. Daily errors are never set against the monthly errors
+in notebook 10; they are different quantities.
+
+| Model | Framing | R squared | MAE (Rs) | MAPE |
+|---|---|---|---|---|
+| Naive flat (last training day repeated) | fixed | -0.000 | 74,994 | 12.10% |
+| Historical mean (training mean repeated) | fixed | -0.000 | 74,959 | 12.11% |
+| Seasonal naive (last training week repeated) | fixed | -0.523 | 101,417 | 16.65% |
+| Linear regression, day-of-week dummies | fixed | -0.022 | **69,473** | 11.37% |
+| Linear regression, day-of-week plus trend | fixed | -0.078 | 76,461 | 12.74% |
+| Prophet, weekly seasonality | fixed | -0.063 | 75,114 | 12.50% |
+| Naive persistence (yesterday's value) | rolling | -1.600 | 119,611 | 18.17% |
+| Expanding mean | rolling | -0.004 | 75,074 | 12.12% |
+| Seasonal naive (same weekday last week) | rolling | -0.596 | 97,759 | 15.24% |
+| Linear regression, day-of-week, refit daily | rolling | -0.015 | **69,794** | 11.39% |
+| Prophet, weekly seasonality, refit daily | rolling | -0.044 | 73,423 | 12.14% |
+
+**What the numbers mean.**
+
+- Every fitted model beats naive persistence: the best by 41.6 per cent in MAE, and seasonal
+  naive by 28.6 per cent. Persistence is a weak baseline for a series whose day-to-day swing is
+  about 19 per cent of its level. Against the demanding baseline, a constant at the training mean,
+  the best model gains 7.3 per cent.
+- No model, in either framing, reaches a positive R squared. The highest of any fitted model is
+  -0.015. Nothing explains the day-to-day variation of the held-out window better than that
+  window's own mean. Adding a trend makes the regression worse. Two Nepali New Year days (13 and
+  14 April 2026) carry 51 per cent of the best model's squared error; excluding them the MAE falls
+  to Rs 56,873 but the R squared stays negative.
+- Prophet does not detect the Dashain peak at daily granularity with the specified settings: its
+  fitted curve inside the festival window (Rs 716,206) sits at the level outside it (Rs 717,894)
+  while the actual mean inside is Rs 988,038, and its fitted peak lands at the end of the training
+  window (18 March 2026), not at the festival. With a trend flexible enough to chase the spike
+  (`changepoint_prior_scale` 0.5) it does peak inside the window and forecasts worse
+  (MAE Rs 102,647, R squared -0.521). The festival is a spike, not a trend.
+- Day-of-week effects at daily granularity: Saturday is clearly the quietest (mean Rs 652,803),
+  Wednesday has the highest per-day mean (Rs 750,109) with Friday within one per cent
+  (Rs 745,545); Friday keeps the highest total (Rs 32.8M) because the record holds 44 Fridays and
+  43 Wednesdays.
+- **Verdict.** Daily granularity fixed the instability (stable models, a real hold-out, every model
+  beating persistence) and did not fix the underlying problem: the predictable structure in eleven
+  months of one shop's revenue is a stable mean of about Rs 718,000 and a weekday pattern, and that
+  rule forecasts to within about 11 per cent. As a model of variation it fails, and it needs a
+  second Dashain to do better. Usable for level planning; not a forecast that explains anything.
+
+Files: `analysis/daily_forecast.py`, `analysis/tests/test_daily_forecast.py`,
+`notebooks/13_daily_forecasting.ipynb`, `dashboard/artifacts/daily_revenue.csv`,
+`dashboard/artifacts/daily_forecast_summary.json`, `reports/figures/chart25_daily_forecast.png`.
+
+### 3c.3 Richer features for the basket value classifier (Part 3)
+
+**Question.** Notebooks 11 and 12 predict basket value class from 25 binary category flags, where
+the ceiling is 71.67 per cent and the MLP reaches 69.05 per cent (96.3 per cent of it). How much
+does the ceiling move with better features, and do the models follow?
+
+**Method.** `analysis/basket_features.py`, notebook 14, chart 26. Same labels, same split
+(`test_size` 0.30, `random_state` 42, stratified, 152,625 train and 65,412 test), same seed and
+hyperparameters. New features: item count (distinct products), category count, quantity bought per
+category (replacing the flag; presence is recoverable as quantity above zero), day of week (7
+one-hot) and month (11 one-hot). 45 features. **Hour of day does not exist in the source**: every
+one of the 768,221 raw timestamps is 00:00:00. The 25-flag rows are recomputed in the same run and
+reproduce exactly (61.30, 69.05, 71.67, 17,532), which is what makes the new rows like for like.
+
+| | 25 binary flags (reported) | Flags + counts + day + month | Quantities + counts + day + month |
+|---|---|---|---|
+| Ceiling, same method | 71.67% | 84.62% | **91.27%** |
+| Distinct patterns | 17,532 | 90,048 | 122,891 |
+| Baskets with a unique pattern | 5.1% | 32.9% | 49.1% |
+| Pattern lookup, out of sample | 64.44% | 52.63% | 51.63% |
+| Decision tree, depth 5 | 61.30% (85.5% of ceiling) | 70.59% (83.4%) | **71.98%** (78.9%) |
+| MLP 64-32 | 69.05% (96.3% of ceiling) | 72.52% (85.7%) | **75.75%** (83.0%) |
+
+**What the numbers mean.**
+
+- Both models improve materially on the same test baskets: the tree by 10.68 points, the MLP by
+  6.70 points. Medium recall for the MLP rises from 0.550 to 0.664 and Large recall from 0.472 to
+  0.551, the two classes that carry the revenue.
+- The ceiling by the same method rises 19.60 points to 91.27 per cent, and both models' share of it
+  falls. That is the ceiling inflating, not the models weakening: on the full feature set 49 per
+  cent of baskets have a pattern nobody else shares, and a lookup that memorises the training
+  patterns scores 51.63 per cent out of sample (51.5 per cent of test baskets have an unseen
+  pattern), barely above the 49.69 per cent majority baseline. The new ceiling is a memorisation
+  bound and should be reported with that caveat; the held-out accuracies are the honest measure of
+  what the features bought.
+- Item count displaces COOKING OIL as the top tree feature (0.735 against COOKING OIL's fall from
+  0.280 to 0.010, rank 5). RICE quantity stays second (0.215 to 0.147). ALCOHOLIC BEVERAGES and
+  FOOD STAPLES quantities follow. Day and month contribute almost nothing to the tree. Item count is
+  a "how much" feature rather than a "what" feature: it makes the tree more accurate and less
+  useful for the placement argument, which still rests on the binary-flag tree.
+
+Files: `analysis/basket_features.py`, `analysis/tests/test_basket_features.py`,
+`notebooks/14_richer_basket_features.ipynb`, `dashboard/artifacts/basket_features_summary.json`,
+`reports/figures/chart26_richer_features.png`.
+
+### 3c.4 Which of the three belongs in the dissertation
+
+Part 1 produces a result worth a section: a certified optimum, a measured price of the physical
+constraints (zero, with the structural reason), and a clear statement of what the metric rewards.
+Part 3 produces a result worth reporting with its caveat: real accuracy gains, and a demonstration
+that the pattern-majority ceiling stops meaning anything once features are rich. Part 2 is a
+negative result and belongs in the dissertation as one: it closes the story notebook 10 opened, and
+its verdict (usable planning rule, failed forecast) is more useful than a flattering table.
+
 ---
 
 ## 4. The dashboard
 
-`dashboard/app.py`, roughly 1,100 lines of Streamlit. Rebuilt on 2026-08-01 from a chart gallery into
-a practical two-mode tool.
+`dashboard/app.py`, roughly 2,050 lines of Streamlit. Rebuilt on 2026-08-01 from a chart gallery into
+a practical two-mode tool, then extended on 2026-08-14 with a landing page ("The Result"), a
+verification page, and page titles phrased as the question each answers; the former topic name and
+the dissertation section number remain as each page's subtitle.
 
 **Store Owner mode** (three pages, built for the person who runs the shop):
-- **Shelf Planner** - pick a product, get its co-purchase recommendations with lift, confidence and support
-- **Monthly Stock Plan** - pick a month, get a seasonal stocking plan
-- **Store Performance** - headline KPIs and trends
+- **What should go next to what?** (Shelf Planner) - pick a product, get its co-purchase recommendations with lift, confidence and support
+- **What happened each month?** (Monthly Stock Plan) - the observed monthly record: revenue and category mix per month, each labelled as a single observation
+- **How is the store doing?** (Store Performance) - headline KPIs and trends
 
-**Examiner mode** (seven pages, built for marking):
-- Project Overview
-- Store Analytics (ABC analysis, day of week)
-- Association Rules
-- Clustering Results
-- Model Validation
-- Placement Zones (carries the RQ2 cross-sell before/after result)
-- Ethics and Data (Objective 5)
+**Examiner mode** (eight pages, built for marking):
+- What was done? (Project Overview)
+- What drives the store's revenue? (Store Analytics: ABC analysis, day of week)
+- What do customers buy together? (Association Rules)
+- Which categories belong near each other? (Clustering Results)
+- Do the recommendations actually work? (Model Validation)
+- Where should everything go? (Placement Zones, carries the RQ2 cross-sell before/after result)
+- How do I know these numbers are right? (verification status and the five-error record)
+- Was this done responsibly? (Ethics and Data, Objective 5)
 
 **Design and engineering decisions:**
 - Runs **entirely from `dashboard/artifacts/`**, thirteen small precomputed files. A marker can clone
@@ -518,23 +703,26 @@ command** instead of re-executing twelve notebooks and hunting through outputs. 
 artifacts, prints a full verification report, saves a timestamped log to `reports/`, and exits 0 if
 every check passes or 1 if any fails.
 
-**Status: working (fixed 2026-08-13).** It runs 12 checks across 8 steps and exits 0. The missing
-`config/metrics.py` it depends on was rebuilt; see section 8, item 1 for how.
+**Status: working (fixed 2026-08-13, extended 2026-08-15).** It now runs 26 checks across 12 steps
+and exits 0; steps 9 to 11 regenerate the three extension studies of section 3c before the final
+sweep. The missing `config/metrics.py` it depends on was rebuilt; see section 8, item 1 for how.
 
 There are now three independent verification layers, which check different things:
 
 | Command | Checks | Verifies against |
 |---|---|---|
 | `python etl/quality_checks.py` | 32 | the live warehouse (completeness, integrity, consistency, accuracy) |
-| `python reproduce_all_results.py` | 13 across 9 steps | the committed artifacts and the notebook figures; calls the sweep below as its final step |
-| `python scripts/verify_thesis_numbers.py` | 60 checkable, 6 declared uncheckable | every figure in section 9, against the warehouse, the artifacts and `config/metrics.py` |
+| `python reproduce_all_results.py` | 26 across 12 steps | the committed artifacts and the notebook figures; regenerates the extension artifacts; calls the sweep below as its final step |
+| `python scripts/verify_thesis_numbers.py` | 263 checkable, 6 declared uncheckable | every figure in section 9, against the warehouse, the artifacts, `config/metrics.py`, and live re-runs of the optimiser certificate and the daily models (77 original checks unchanged, 186 added on 2026-08-15) |
+| `python -m pytest` | 54 tests | the shelf tool, the dashboard's shared zone definitions, and the three analysis modules |
 | the Airflow DAG's `run_quality_checks` task | 32 | the warehouse, on every pipeline run |
 
 ---
 
 ## 6. Charts produced
 
-28 figures in `reports/figures/`, covering products by count and revenue, category distribution,
+30 figures in `reports/figures/` (28 from the notebooks 01 to 12, plus chart 25 daily forecast and
+chart 26 richer features from 2026-08-15), covering products by count and revenue, category distribution,
 basket value and size distributions, category co-occurrence, top product pairs, association rule
 scatter, elbow and silhouette plots, network graph, ABC analysis, day of week, store planogram,
 before/after layout, revenue impact, monthly trends, algorithm comparison, product rule scatter and
@@ -729,12 +917,28 @@ Everything an examiner is likely to ask about, with its source.
 | Warehouse trading days | 304 (span is 307 days) | warehouse |
 | Zone 1 share of revenue | 40.6% from 5 categories | warehouse |
 | Warehouse quality checks | 32 of 32 pass | `etl/quality_checks.py` |
-| Reproduction checks | 13 of 13 pass across 9 steps, exit 0 | `reproduce_all_results.py` |
-| Section 9 sweep | 60 of 60 checkable figures, 6 declared uncheckable | `scripts/verify_thesis_numbers.py` |
+| Reproduction checks | 26 of 26 pass across 12 steps, exit 0 | `reproduce_all_results.py` |
+| Section 9 sweep | 263 of 263 checkable figures (77 original + 186 added 2026-08-15), 6 declared uncheckable | `scripts/verify_thesis_numbers.py` |
+| Test suite | 54 pass | `python -m pytest` |
 | Large baskets share of revenue | 13.7% of trips, 52.1% of revenue | nb03 chart 9 |
 | Class A products | 342 (6.0%) for 70% of revenue | nb03 chart 10 |
 | Busiest day | Friday, Rs 32.8M | nb03 chart 11 |
 | Peak month | September 2025 (Dashain), Rs 23.3M | nb07 |
+| Rule-bearing categories | 12 of 25 | zone_optimisation.json |
+| Zone optimum, unlimited zone size | 360 rules, 4.986, 100% (constrained and unconstrained) | analysis/optimise_zones.py |
+| Zone optimum, hand-built zone sizes | 250 rules, 3.5599, 71.4%, certified exact | analysis/optimise_zones.py |
+| Price of the physical and ethical constraints | 0 rules, 0.0000 support | analysis/optimise_zones.py |
+| Two moves accounting for the capacity-matched gain | CANNED AND PACKAGED FOODS +100, PERSONAL CARE +94 | zone_optimisation.json |
+| Daily split | 243 train / 61 test, test from 2026-03-21 | daily_forecast_summary.json |
+| Daily naive persistence MAE | Rs 119,611 | nb13 |
+| Best daily model MAE | Rs 69,794 (LR day-of-week, refit daily), 41.6% below persistence | nb13 |
+| Best daily R squared | -0.015, no model positive | nb13 |
+| Prophet detects Dashain at daily granularity | No (default trend); yes with flexible trend at MAE Rs 102,647 | nb13 |
+| Ceiling, full feature set | 91.27% (122,891 patterns, 49.1% unique) | nb14 |
+| Tree, depth 5, full features | 71.98% (was 61.30%) | nb14 |
+| MLP, full features | 75.75% (was 69.05%) | nb14 |
+| New tree top feature | item count 0.735; COOKING OIL 0.280 to 0.010 | nb14 |
+| Hour of day in source | not available (all timestamps 00:00:00) | raw export |
 
 ---
 
@@ -751,7 +955,10 @@ Eight models, deliberately spanning supervised, unsupervised, pattern-based and 
 | Linear Regression | Supervised, regression | 10 | MAE Rs 3.40M |
 | Prophet | Supervised, time series | 10 | MAE Rs 2.91M, 14.3% better |
 | Decision Tree | Supervised, classification | 11 | 61.3% vs 49.7% baseline |
-| **MLP neural network** | **Supervised, neural** | **12** | **69.05%, best accuracy in the project** |
+| **MLP neural network** | **Supervised, neural** | **12** | **69.05%, best accuracy in the project on the 25 flags** |
+| Greedy local search + exhaustive certificate | Optimisation | analysis/optimise_zones.py | 250-rule certified optimum at hand-built zone sizes |
+| Daily baselines, day-of-week regression, Prophet | Supervised, time series | 13 | best MAE Rs 69,794, no positive R squared |
+| Tree and MLP on richer features | Supervised, classification | 14 | 71.98% and 75.75%, ceiling 91.27% (memorisation bound) |
 
 ---
 

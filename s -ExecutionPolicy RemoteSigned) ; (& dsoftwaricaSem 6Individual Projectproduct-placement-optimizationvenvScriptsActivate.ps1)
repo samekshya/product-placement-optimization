@@ -1,0 +1,218 @@
+[33m819ac16[m[33m ([m[1;31morigin/11-basket-classifier[m[33m, [m[1;32m11-basket-classifier[m[33m)[m results
+[33mc20a3a3[m test metrics corected
+[33meb7796b[m test atrifacts added metrics removed
+[33mf867175[m test atrifacts added v
+[33mb144d90[m tests folders added
+[33m88b6906[m  new notebook added
+[33mc1c1823[m fix kalo dal rato dal count 3989 not 4000 matches actual output
+[33m05b2891[m add specific transaction numbers to chart 1 finding sugar 23083 rato dal 12533
+[33m5f8e62c[m add top 10 products by revenue table with actual numbers
+[33m0128069[m delete empty code cell 3 from notebook 03
+[33me30a2d6[m Merge branch '01-data-audit'
+[33m9336081[m[33m ([m[1;31morigin/01-data-audit[m[33m, [m[1;32m01-data-audit[m[33m)[m merge import and print cells into single cell 3
+[33ma01f81b[m fix Student id to Student ID capitalisation in notebook 01
+[33m8f73e8b[m Merge branch '08-evaluation'
+[33m5430d4b[m[33m ([m[1;31morigin/08-evaluation[m[33m, [m[1;32m08-evaluation[m[33m)[m add timing varies by hardware note to algorithm comparison finding
+[33m3fe6c29[m add notebook 09 and 10 results to final evaluation summary
+[33mc13b69c[m add notebooks 09 and 10 to evaluation scope
+[33m214f285[m Merge branch '10-demand-forecasting'
+[33md69faba[m[33m ([m[1;31morigin/10-demand-forecasting[m[33m, [m[1;32m10-demand-forecasting[m[33m)[m explain negative r-squared expected with 11 data points prophet handles seasonality
+[33mf0b4e37[m save all changes on main before switching branches
+[33me40abf4[m Merge branch '10-demand-forecasting'
+[33mef61de2[m fix summary 11 months not 10 months of revenue data
+[33m61b84b8[m explain negative r-squared expected with 11 data points prophet handles this better
+[33m91e4fdd[m explain july 2025 partial month only 14 days data from july 17
+[33m5080886[m fix month count 1 to 11 not 1 to 10 in ml explanation
+[33m646cdc7[m resolve merge conflict in notebook 05 keep branch version
+[33mc858dc5[m fix truncated placement recommendations table wider column display
+[33m99d0398[m fix truncated rules table now shows full antecedents and consequents
+[33m7939b81[m Merge branch '06-clustering'
+[33me5061be[m[33m ([m[1;31morigin/06-clustering[m[33m, [m[1;32m06-clustering[m[33m)[m save all uncommitted changes before switching branch
+[33m88fced4[m fix cell order notebook 06 now runs clean top to bottom
+[33me6429b2[m fix silhouette score to exact value 0.554 matches actual output
+[33m29310e3[m remove abandoned k=4 clustering cell no finding no purpose
+[33m225f211[m fix cell ordering basket_numeric must run before cooccurrence_scaled
+[33md117d9a[m add final summary 4 ml models in project linear regression prophet clustering recommendations
+[33m037debc[m add business interpretation how store owner uses forecasts for stock planning
+[33mbe0a2bb[m compare linear regression vs prophet mae and rmse prophet handles seasonality better
+[33m3a4b078[m add prophet forecast chart21 shows actual vs predicted with confidence interval
+[33m6db39d5[m generate prophet forecast for next 3 months with confidence intervals
+[33ma1768f7[m train prophet model on 10 months of monthly revenue data
+[33m9b5897e[m add prophet installation cell
+[33m269a6fd[m add prophet explanation why it handles seasonality better than linear regression
+[33m1a9af8a[m forecast next 3 months revenue using linear regression chart20 saved
+[33mb62ddab[m evaluate linear regression model mae rmse r2 score on test data
+[33m1698ddb[m train linear regression model on monthly revenue data learns sales trend
+[33m26651cb[m linear model
+[33m82c95d5[m add monthly revenue trend chart19 shows dashain peak september 2025
+[33mc1b132c[m create monthly revenue dataset 10 months training data for forecasting model
+[33m8fba657[m add step headers to match format of other notebooks
+[33m390b92c[m add imports
+[33m112c84e[m add imports for linear regression sklearn and matplotlib
+[33m674c158[m explain why linear regression and prophet count as supervised machine learning
+[33m9d53671[m create notebook 10 demand forecasting title and purpose
+[33m6dac8ac[m add revenue impact analysis support x transactions x basket value ranks rules by money
+[33m0217a48[m rebuild dashboard
+[33m808acdf[m[33m ([m[1;31morigin/10-dashboard[m[33m, [m[1;32m10-dashboard[m[33m)[m updated dashboard
+[33m6da1772[m themes updated
+[33m3dd017f[m themes updated
+[33m43a5f5f[m themes updated
+[33m237feeb[m zones updated
+[33m7bae0cf[m add support to recommendation cards now shows all three metrics lift confidence support
+[33m8081201[m fix all charts to use theme colors works
+[33m4a29ae3[m fix all charts to use theme colors works in both light and dark mode
+[33mcaa9740[m add dark mode toggle button in sidebar light theme is default
+[33mf641cca[m set sugar as default product in recommendation engine avoids empty state
+[33m8ebb3d3[m add light theme as default with dark mode toggle button in sidebar
+[33m350adfe[m add controlled testing recommendation start small measure then expand
+[33m517e758[m add physical constraints note data driven zones must consider refrigeration entry points aisle width
+[33m55f9bac[m create streamlit dashboard with 5 tabs kpis products rules recommendations zones
+[33m1fc7b07[m clarify 130 percent means multiple top products per basket not an error
+[33m1bdbfbe[m add future improvements expand products seasonal model dashboard integration
+[33m1c098e7[m add limitations section product level covers only top 100 products
+[33m673ab7c[m explain how recommendation function searches rules and ranks by lift
+[33md08ccfe[m add missing step 9 header for model validation section
+[33mff4bf0d[m add step headers to all sections in notebook 09
+[33mabd87b9[m add interpretation for chart 18 heatmap rato dal kalo dal 4236 times place side by side
+[33md8f2b20[m add interpretation for chart 17 product rules scatter plot
+[33mf15d268[m add validation finding 28 percent hit rate 28x better than random chance
+[33m474fac3[m add recommendation findings kalo dal rato dal 69 percent confidence dal bhat pattern
+[33m5675109[m add training findings lift 22.41 surya shikhar ice strongest product pair
+[33ma549105[m explain 70 30 train test split prevents model from memorising data
+[33m7838d1a[m explain encoding step binary matrix required for apriori algorithm
+[33m340e192[m add finding after top 100 products sugar leads with 23083 transactions
+[33me60e6cf[m add notebook 09 summary 28 percent hit rate rato dal kalo dal strongest pair
+[33mb352a6d[m add product co-occurrence heatmap chart18 rato dal kalo dal strongest pair 4236 times
+[33m547598c[m add product rules scatter chart17 shows lift 22.41 as strongest rule
+[33m61c9b23[m model validation 28 percent hit rate on 30 percent unseen test data 28x better than random
+[33m508a91b[m recommendation system correctly identifies dal bhat cooking pattern sugar rato dal kalo dal
+[33m4e78fd9[m build recommendation function input any product get top 5 recommendations
+[33mc4407ea[m train model on 70 percent data found 100 rules max lift 22.41 surya shikhar ice
+[33m8424a4a[m add 70 30 train test split 95570 training 40959 testing baskets
+[33mc01400b[m encode top 100 products into basket matrix 136529 baskets 100 columns
+[33m40a64a1[m top 100 products found sugar leads with 23083 transactions
+[33mae29afa[m add data loading cell 767180 rows 5680 products 218037 invoices
+[33ma980570[m separate data loading into own cell after imports
+[33m1828c83[m separate imports into own cell for clarity
+[33m3aeff0b[m explain why product level analysis needed for shelf recommendations
+[33m4aba819[m create notebook 09 ml recommendation system title and purpose
+[33m14cdae0[m Merge branch '08-evaluation'
+[33mbdfe73a[m Merge branch '07-placement-simulation'
+[33mcbf2f6a[m Merge branch '06-clustering'
+[33mc5bc7a4[m save uncommitted changes before merging to main
+[33m727c3a1[m Merge branch '07-placement-simulation' into 08-evaluation
+[33m8d78f87[m Merge branch '06-clustering' into 08-evaluation
+[33m7f9a3c4[m fix algorithm timing description remove hardcoded wrong values
+[33mc8ba25d[m move limitations to markdown cell visible without running notebook
+[33mb466b50[m fix algorithm timing description to not hardcode values that change each run
+[33m8965f92[m remove duplicate empty final summary header cell
+[33maf57e6c[m fix cooccurrence scaled variable missing caused notebook to crash on run
+[33mb2463c7[m rewrite final cell with clear summary of what evaluation proved
+[33m9931d38[m add markdown evaluation summary readable without running code
+[33m764dd83[m move future recommendations to markdown cell visible without running code
+[33me3cb8b6[m add interpretation explaining why identical apriori fp-growth results validate findings
+[33mb818b72[m fix intro clustering question to match actual k=3 co-occurrence result
+[33madff834[m add student id 230360 to evaluation notebook
+[33m209f0e2[m[33m ([m[1;31morigin/07-placement-simulation[m[33m, [m[1;32m07-placement-simulation[m[33m)[m move uplift explanation above revenue code so examiner reads it first
+[33m96123e9[m rewrite summary with full placement zones seasonal insights and revenue projections
+[33me3cd72b[m explain how 3 clusters from notebook 06 became 5 placement zones
+[33mf025eec[m add disclaimer before layout is hypothetical baseline actual layout unavailable
+[33mc3f683a[m flag may 2026 data is partial not a full month affects trend chart
+[33m93943c7[m justify 3 5 8 percent uplift scenarios using retail industry benchmarks
+[33m48f9ec9[m add student id 230360 to placement simulation notebook
+[33m7ae3c79[m update silhouette score to exact value 0.554 matches actual output
+[33m7f55054[m fix frequency clustering finding silhouette stays flat 0.19 across all k values
+[33mcd9e716[m add final k=3 co-occurrence clustering code with actual silhouette score output
+[33m836d247[m add co-occurrence silhouette comparison code proves improvement over frequency clustering
+[33m9167165[m rewrite summary silhouette improved 0.19 to 0.55 three placement clusters defined
+[33m7bd3e5a[m interpret three clusters as daily essentials occasional and core staples zones
+[33m0d61924[m add final k=3 co-occurrence clustering with cluster assignments
+[33me46b8c4[m add step 7 header explaining co-occurrence clustering approach
+[33md144806[m add finding frequency clustering silhouette 0.19 too weak for placement
+[33m9bbce74[m add note explaining frequency clustering limitation before running it
+[33m313ed22[m add student id 230360 to clustering notebook
+[33mc53e9c6[m Merge branch '05-market-basket-analysis'
+[33me1e0fb1[m add finding lift 6.81 top rule cleaning supplies central connector category
+[33m839e146[m rewrite summary with all key findings lift 6.81 and placement implications
+[33m20d7384[m add finding lift 6.81 top rule cleaning supplies central connector category
+[33m6d57778[m add finding fp-growth identical results validates correctness of apriori
+[33md3c8a9a[m add finding after apriori 243 frequent itemsets found in 0.47 seconds
+[33m8ab30de[m explain support confidence and lift in plain terms before running algorithms
+[33m55d0c3b[m  added introduction
+[33m59c89dc[m Merge branch '04-transaction-encoding'
+[33m1da3950[m[33m ([m[1;31morigin/04-transaction-encoding[m[33m, [m[1;32m04-transaction-encoding[m[33m)[m keyfindings managed
+[33m7bbd892[m added keyfindings
+[33m5b46a4f[m strengthen summary with support values and minimum support decision for notebook 05
+[33mfdc361e[m add key finding category support levels inform minimum support threshold in notebook 05
+[33m9323545[m explain binary matrix format and sparsity required for apriori fp-growth
+[33m7047feb[m add interpretation after step 2 single vs multi category baskets
+[33m44fe7d7[m add student id 230360
+[33m42edb68[m Merge branch '03-eda'
+[33mce6da75[m rewrite eda summary with specific numbers and placement implications
+[33m5587e38[m chart 8 finding kalo dal rato dal bought together 4000 times strongest pair
+[33m3ea9a0e[m chart 7 finding co-occurrence heatmap shows cleaning supplies connects many categories
+[33m757f484[m chart 6 finding most baskets have 1 to 2 categories confirms top-up shopping behaviour
+[33meefe3c9[m chart 5 finding average 3.51 items per basket customers do quick top-up visits
+[33m5705503[m chart 4 finding basket value skewed median rs 500 mean rs 1000 kpi target
+[33m4e8eb5e[m chart 3 findings
+[33m2bc7195[m chart 1 finding sugar salt dal drive foot traffic placed strategically
+[33m7e121a7[m add student id 230360 to eda notebook title
+[33mdf7849a[m Update module name in README.md
+[33m89ebae6[m resolve gitignore merge conflict keep data folders ignored
+[33mfa590b2[m clarify 1001.59 is raw baseline final kpi confirmed after cleaning
+[33m8e84951[m flag 1040 duplicates and 2 bad rows to be removed in notebook 02
+[33mdbbc638[m add interpretation after key numbers section
+[33m635cce6[m confirm header 7 gives correct 768222 rows not 768223
+[33m6711a0d[m explain why header row
+[33m6670c20[m add data ethics statement to notebook 01
+[33m6c2b3f1[m ignore all raw and processed data folders to keep confidential files off github
+[33m5bc5c29[m polishing the notrebook
+[33m11ca8b0[m chnages made
+[33mde96620[m add complete readme
+[33m6cf7e3f[m readme updated
+[33m2c21a54[m readme file updatess
+[33mbadd945[m readme file updates
+[33m5aff811[m readme file updatedd
+[33m9912804[m readme file updated
+[33mb4a0eb0[m readme file
+[33m27b0394[m create README file
+[33mae52614[m COMPLETE: 08_evaluation all sections done project ready
+[33m1d8932d[m complete evaluation summary - project ready for submission
+[33mf55b39a[m add final evaluation summary section
+[33mb3f97a6[m add 6 honest limitations and 7 future recommendations
+[33m4182f5e[m add limitations section
+[33md0a893a[m clustering comparison confirms 3 natural zones matching MBA findings
+[33mbd8ce83[m show improved cluster assignments based on co-purchase patterns
+[33m0742bc5[m show improved cluster assignments based on co-purchase patterns
+[33m51fbc9a[m fix boolean to int conversion for proper co-occurrence counts
+[33md998738[m fix co-occurrence clustering using raw counts not normalized
+[33m01762db[m fix array readonly error in co-occurrence clustering
+[33m87792d1[m co-occurrence clustering improves on frequency based approach
+[33mc928b42[m add improved clustering approach using co-occurrence
+[33m6e5a6e2[m clustering evaluation shows weak structure - MBA rules stronger signal
+[33m5511eb6[m add clustering evaluation section
+[33m4d20626[m rule quality check shows lift 6.81 is strong signal for placement
+[33mb21f4ad[m add rules quality check section
+[33m302c440[m create algorithm comparison chart showing identical results
+[33mcb79659[m add visual comparison section
+[33me2c26f2[m compare apriori vs fpgrowth
+[33m8391165[m compare apriori vs fpgrowth - both find identical 243 itemsets
+[33mbb96637[m add algorithm comparison section
+[33maf0b3fd[m both datasets loaded successfully for evaluation
+[33mf47889b[m load all data for evaluation
+[33m647cfaa[m add setup section
+[33mfea956a[m explain importance of evaluation
+[33medf6c51[m add evaluation notebook title
+[33m22eea6b[m create 08_evaluation notebook
+[33m84a601c[m COMPLETE: placement simulation with revenue projections and stock recommendations
+[33m3918e15[m stock recommendations show food staples top seller every month
+[33mda04a34[m stock recommendations show festival season needs more food staples
+[33md08f9a3[m add stock recommendation section
+[33m8699ae0[m monthly revenue trend shows seasonal patterns for stock planning
+[33mb28c648[m add monthly sales trend section
+[33m05af429[m create before vs after store layout comparison chart
+[33mcee096d[m add before vs after layout section
+[33m78a829b[m create revenue impact bar chart showing up to Rs 2 crore extra
+[33md68e03c[m add revenue visualization section
+[33m88a4594[m calculate projected revenue - 5 percent increase adds Rs 35000 daily
+[33mad3eac0[m create visual store planogram showing 5 placement zones

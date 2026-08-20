@@ -8,10 +8,11 @@
   "daily_revenue": 710796.28,
   "daily_customers": 710,
   "top_category": "FOOD STAPLES",
-  "n_category_rules": 1228,
-  "max_lift_category": 6.81,
+  "n_category_rules": 1320,
+  "max_lift_category": 7.44,
   "max_lift_product": 22.41,
-  "rules_lift_above_5": 48,
-  "cooccurrence_silhouette_k3": 0.554,
-  "data_days": 307
+  "rules_lift_above_5": 62,
+  "cooccurrence_silhouette_k3": 0.493,
+  "data_days": 307,
+  "source": "warehouse"
 }

@@ -1,0 +1,338 @@
+{
+  "feature_sets": {
+    "binary": {
+      "n_features": 25,
+      "columns": [
+        "ALCOHOLIC BEVERAGES",
+        "BABY CARE",
+        "BAKERY",
+        "BISCUITS AND COOKIES",
+        "BREAKFAST CEREALS",
+        "CANNED AND PACKAGED FOODS",
+        "CIGARETTE AND TOBACCO",
+        "CLEANING SUPPLIES",
+        "CONFECTIONERY",
+        "COOKING OIL",
+        "DAIRY PRODUCTS",
+        "ELECTRICAL SUPPLIES",
+        "FOOD STAPLES",
+        "FRESH PRODUCE",
+        "FROZEN FOODS",
+        "HOUSEHOLD ITEMS",
+        "NOODLES",
+        "PARTY SUPPLIES",
+        "PERSONAL CARE",
+        "POOJA ITEMS",
+        "RICE",
+        "SNACKS",
+        "SOFT DRINKS AND JUICES",
+        "STATIONERY",
+        "TEA AND SPICES"
+      ]
+    },
+    "discrete": {
+      "n_features": 45,
+      "columns": [
+        "ALCOHOLIC BEVERAGES",
+        "BABY CARE",
+        "BAKERY",
+        "BISCUITS AND COOKIES",
+        "BREAKFAST CEREALS",
+        "CANNED AND PACKAGED FOODS",
+        "CIGARETTE AND TOBACCO",
+        "CLEANING SUPPLIES",
+        "CONFECTIONERY",
+        "COOKING OIL",
+        "DAIRY PRODUCTS",
+        "ELECTRICAL SUPPLIES",
+        "FOOD STAPLES",
+        "FRESH PRODUCE",
+        "FROZEN FOODS",
+        "HOUSEHOLD ITEMS",
+        "NOODLES",
+        "PARTY SUPPLIES",
+        "PERSONAL CARE",
+        "POOJA ITEMS",
+        "RICE",
+        "SNACKS",
+        "SOFT DRINKS AND JUICES",
+        "STATIONERY",
+        "TEA AND SPICES",
+        "n_items",
+        "n_categories",
+        "dow Monday",
+        "dow Tuesday",
+        "dow Wednesday",
+        "dow Thursday",
+        "dow Friday",
+        "dow Saturday",
+        "dow Sunday",
+        "month 2025-07",
+        "month 2025-08",
+        "month 2025-09",
+        "month 2025-10",
+        "month 2025-11",
+        "month 2025-12",
+        "month 2026-01",
+        "month 2026-02",
+        "month 2026-03",
+        "month 2026-04",
+        "month 2026-05"
+      ]
+    },
+    "full": {
+      "n_features": 45,
+      "columns": [
+        "ALCOHOLIC BEVERAGES qty",
+        "BABY CARE qty",
+        "BAKERY qty",
+        "BISCUITS AND COOKIES qty",
+        "BREAKFAST CEREALS qty",
+        "CANNED AND PACKAGED FOODS qty",
+        "CIGARETTE AND TOBACCO qty",
+        "CLEANING SUPPLIES qty",
+        "CONFECTIONERY qty",
+        "COOKING OIL qty",
+        "DAIRY PRODUCTS qty",
+        "ELECTRICAL SUPPLIES qty",
+        "FOOD STAPLES qty",
+        "FRESH PRODUCE qty",
+        "FROZEN FOODS qty",
+        "HOUSEHOLD ITEMS qty",
+        "NOODLES qty",
+        "PARTY SUPPLIES qty",
+        "PERSONAL CARE qty",
+        "POOJA ITEMS qty",
+        "RICE qty",
+        "SNACKS qty",
+        "SOFT DRINKS AND JUICES qty",
+        "STATIONERY qty",
+        "TEA AND SPICES qty",
+        "n_items",
+        "n_categories",
+        "dow Monday",
+        "dow Tuesday",
+        "dow Wednesday",
+        "dow Thursday",
+        "dow Friday",
+        "dow Saturday",
+        "dow Sunday",
+        "month 2025-07",
+        "month 2025-08",
+        "month 2025-09",
+        "month 2025-10",
+        "month 2025-11",
+        "month 2025-12",
+        "month 2026-01",
+        "month 2026-02",
+        "month 2026-03",
+        "month 2026-04",
+        "month 2026-05"
+      ]
+    }
+  },
+  "ceilings": {
+    "binary": {
+      "ceiling": 0.723396,
+      "distinct_patterns": 21032,
+      "singleton_patterns": 13813,
+      "singleton_basket_share": 0.063352,
+      "n_features": 25,
+      "pattern_lookup": {
+        "test_accuracy": 0.636794,
+        "test_baskets_with_unseen_pattern": 0.071822
+      }
+    },
+    "discrete": {
+      "ceiling": 0.854827,
+      "distinct_patterns": 95521,
+      "singleton_patterns": 76966,
+      "singleton_basket_share": 0.352995,
+      "n_features": 45,
+      "pattern_lookup": {
+        "test_accuracy": 0.519905,
+        "test_baskets_with_unseen_pattern": 0.380098
+      }
+    },
+    "full": {
+      "ceiling": 0.918674,
+      "distinct_patterns": 126437,
+      "singleton_patterns": 110687,
+      "singleton_basket_share": 0.507652,
+      "n_features": 45,
+      "pattern_lookup": {
+        "test_accuracy": 0.516618,
+        "test_baskets_with_unseen_pattern": 0.532242
+      }
+    }
+  },
+  "models": {
+    "binary_tree_depth5": {
+      "accuracy": 0.613817,
+      "leaves": 32,
+      "recall": {
+        "Small": 0.931949,
+        "Medium": 0.285631,
+        "Large": 0.33691
+      },
+      "importances": {
+        "COOKING OIL": 0.278271,
+        "RICE": 0.211806,
+        "CLEANING SUPPLIES": 0.152355,
+        "CANNED AND PACKAGED FOODS": 0.132962,
+        "ALCOHOLIC BEVERAGES": 0.129521,
+        "FOOD STAPLES": 0.057884,
+        "TEA AND SPICES": 0.019898,
+        "PERSONAL CARE": 0.014906,
+        "CIGARETTE AND TOBACCO": 0.001575,
+        "BISCUITS AND COOKIES": 0.00071,
+        "HOUSEHOLD ITEMS": 0.000112
+      },
+      "n_features_used": 11,
+      "share_of_ceiling": 0.848522
+    },
+    "binary_mlp": {
+      "accuracy": 0.691662,
+      "parameters": 3843,
+      "epochs": 12,
+      "recall": {
+        "Small": 0.825165,
+        "Medium": 0.598723,
+        "Large": 0.455511
+      },
+      "scaled_columns": 0,
+      "share_of_ceiling": 0.956133
+    },
+    "discrete_tree_depth5": {
+      "accuracy": 0.705268,
+      "leaves": 32,
+      "recall": {
+        "Small": 0.882849,
+        "Medium": 0.536622,
+        "Large": 0.511737
+      },
+      "importances": {
+        "n_items": 0.77535,
+        "RICE": 0.118006,
+        "ALCOHOLIC BEVERAGES": 0.068491,
+        "CIGARETTE AND TOBACCO": 0.027409,
+        "COOKING OIL": 0.008423,
+        "month 2026-01": 0.000469,
+        "month 2025-12": 0.000467,
+        "CLEANING SUPPLIES": 0.000406,
+        "n_categories": 0.000384,
+        "FOOD STAPLES": 0.000359,
+        "DAIRY PRODUCTS": 0.000169,
+        "month 2025-09": 6.6e-05
+      },
+      "n_features_used": 12,
+      "share_of_ceiling": 0.825042
+    },
+    "discrete_mlp": {
+      "accuracy": 0.723644,
+      "parameters": 5123,
+      "epochs": 14,
+      "recall": {
+        "Small": 0.857714,
+        "Medium": 0.613205,
+        "Large": 0.532305
+      },
+      "scaled_columns": 27,
+      "share_of_ceiling": 0.846538
+    },
+    "full_tree_depth5": {
+      "accuracy": 0.722818,
+      "leaves": 32,
+      "recall": {
+        "Small": 0.900723,
+        "Medium": 0.558282,
+        "Large": 0.517103
+      },
+      "importances": {
+        "n_items": 0.729881,
+        "RICE qty": 0.140742,
+        "ALCOHOLIC BEVERAGES qty": 0.067405,
+        "FOOD STAPLES qty": 0.050865,
+        "COOKING OIL qty": 0.009957,
+        "month 2026-01": 0.000673,
+        "NOODLES qty": 0.000363,
+        "DAIRY PRODUCTS qty": 0.000113
+      },
+      "n_features_used": 8,
+      "share_of_ceiling": 0.786806
+    },
+    "full_mlp": {
+      "accuracy": 0.758745,
+      "parameters": 5123,
+      "epochs": 31,
+      "recall": {
+        "Small": 0.885248,
+        "Medium": 0.661408,
+        "Large": 0.559803
+      },
+      "scaled_columns": 27,
+      "share_of_ceiling": 0.825912
+    }
+  },
+  "feature_importance": {
+    "old_top": [
+      "COOKING OIL",
+      "RICE",
+      "CLEANING SUPPLIES",
+      "CANNED AND PACKAGED FOODS",
+      "ALCOHOLIC BEVERAGES"
+    ],
+    "old_top_values": {
+      "COOKING OIL": 0.278271,
+      "RICE": 0.211806,
+      "CLEANING SUPPLIES": 0.152355,
+      "CANNED AND PACKAGED FOODS": 0.132962,
+      "ALCOHOLIC BEVERAGES": 0.129521
+    },
+    "new_top": [
+      "n_items",
+      "RICE qty",
+      "ALCOHOLIC BEVERAGES qty",
+      "FOOD STAPLES qty",
+      "COOKING OIL qty",
+      "month 2026-01",
+      "NOODLES qty",
+      "DAIRY PRODUCTS qty"
+    ],
+    "new_top_values": {
+      "n_items": 0.729881,
+      "RICE qty": 0.140742,
+      "ALCOHOLIC BEVERAGES qty": 0.067405,
+      "FOOD STAPLES qty": 0.050865,
+      "COOKING OIL qty": 0.009957,
+      "month 2026-01": 0.000673,
+      "NOODLES qty": 0.000363,
+      "DAIRY PRODUCTS qty": 0.000113
+    },
+    "cooking_oil_new_rank": 5,
+    "cooking_oil_new_importance": 0.009957,
+    "rice_new_rank": 2,
+    "rice_new_importance": 0.140742,
+    "new_features_in_top_5": [
+      "n_items"
+    ],
+    "displaced": true
+  },
+  "split": {
+    "train_baskets": 152625,
+    "test_baskets": 65412,
+    "test_size": 0.3,
+    "random_state": 42,
+    "stratified": true,
+    "majority_baseline": 0.496927
+  },
+  "labels": {
+    "Small": 108349,
+    "Medium": 79868,
+    "Large": 29820
+  },
+  "hour_of_day": {
+    "available": false,
+    "why": "every timestamp in the raw export is 00:00:00; the source records the date only"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "generated": "2026-08-20T02:18:58",
+  "parameters": {
+    "top_products": 100,
+    "test_size": 0.3,
+    "split_seed": 42,
+    "min_support": 0.005,
+    "min_lift": 1.0,
+    "top_n_recs": 5,
+    "random_seed": 42
+  },
+  "split": {
+    "train_baskets": 95570,
+    "test_baskets": 40959
+  },
+  "rules": 100,
+  "products_with_rules": 28,
+  "test_baskets_scored": 19808,
+  "model_hits": 5554,
+  "model_hit_pct": 28.04,
+  "popularity_matched_pct": 23.74,
+  "popularity_top5_pct": 34.81,
+  "random_matched_pct": 2.55,
+  "random_top5_pct": 5.04,
+  "avg_recs_per_basket": 2.5,
+  "avg_recs_when_covered": 3.96,
+  "covered_baskets": 12536,
+  "uncovered_baskets": 7272,
+  "covered_model_pct": 44.3,
+  "covered_popularity_pct": 37.52
+}

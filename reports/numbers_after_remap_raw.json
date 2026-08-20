@@ -1,0 +1,1907 @@
+{
+  "label": "after_remap_pre_constant_update",
+  "captured_at": "2026-08-17T21:14:59",
+  "source_script": "scripts/verify_thesis_numbers.py",
+  "exit_code": 1,
+  "n_checkable": 263,
+  "n_passed": 188,
+  "n_uncheckable": 6,
+  "duplicate_labels": {
+    "Recommender test baskets": 2
+  },
+  "by_source": {
+    "ARTIFACT": {
+      "total": 16,
+      "passed": 6
+    },
+    "CONSTANT": {
+      "total": 42,
+      "passed": 42
+    },
+    "FEATURES": {
+      "total": 61,
+      "passed": 24
+    },
+    "FORECAST": {
+      "total": 81,
+      "passed": 81
+    },
+    "LIVE": {
+      "total": 21,
+      "passed": 20
+    },
+    "OPTIMISER": {
+      "total": 42,
+      "passed": 15
+    }
+  },
+  "figures": [
+    {
+      "source": "CONSTANT",
+      "label": "Raw rows",
+      "value": 768222,
+      "expected": 768222,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Cleaned rows / line items",
+      "value": 767180,
+      "expected": 767180,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Transactions",
+      "value": 218037,
+      "expected": 218037,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Total revenue",
+      "value": 218214456.88,
+      "expected": 218214456.88,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Products with sales",
+      "value": 5680,
+      "expected": 5680,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Categories",
+      "value": 25,
+      "expected": 25,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Mean basket",
+      "value": 1000.81,
+      "expected": 1000.81,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Median basket",
+      "value": 500.0,
+      "expected": 500.0,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Warehouse trading days",
+      "value": 304,
+      "expected": 304,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Items per basket (mean)",
+      "value": 3.52,
+      "expected": 3.51,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Daily revenue",
+      "value": 710796.28,
+      "expected": 710796.28,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Daily customers",
+      "value": 710,
+      "expected": 710,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Large baskets share of trips",
+      "value": 13.7,
+      "expected": 13.7,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Large baskets share of revenue",
+      "value": 52.1,
+      "expected": 52.1,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Busiest day",
+      "value": "Friday",
+      "expected": "Friday",
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Friday revenue (Rs M)",
+      "value": 32.8,
+      "expected": 32.8,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Peak month",
+      "value": "2025-09",
+      "expected": "2025-09",
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Peak month revenue (Rs M)",
+      "value": 23.3,
+      "expected": 23.3,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Zone 1 share of revenue",
+      "value": 37.41,
+      "expected": 40.6,
+      "passed": false
+    },
+    {
+      "source": "LIVE",
+      "label": "Zone 1 category count",
+      "value": 5,
+      "expected": 5,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Days of data (span)",
+      "value": 307,
+      "expected": 307,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Products raw audit count",
+      "value": 5681,
+      "expected": 5681,
+      "passed": true
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Association rules",
+      "value": 1320,
+      "expected": 1228,
+      "passed": false
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Rules with lift above 5",
+      "value": 62,
+      "expected": 48,
+      "passed": false
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Strong rules (lift >= 3)",
+      "value": 368,
+      "expected": 360,
+      "passed": false
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Max category lift",
+      "value": 7.44,
+      "expected": 6.81,
+      "passed": false
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Max product lift",
+      "value": 22.41,
+      "expected": 22.41,
+      "passed": true
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Top product pair count",
+      "value": 3989,
+      "expected": 3989,
+      "passed": true
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Top product pair identity",
+      "value": "Kalo Dal + Rato Dal",
+      "expected": "Kalo Dal + Rato Dal",
+      "passed": true
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Co-occurrence silhouette",
+      "value": 0.493,
+      "expected": 0.554,
+      "passed": false
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Frequency silhouette",
+      "value": 0.19,
+      "expected": 0.19,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Silhouette increase (absolute)",
+      "value": 0.364,
+      "expected": 0.364,
+      "passed": true
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Cross-sell captured, current",
+      "value": 22,
+      "expected": 28,
+      "passed": false
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Cross-sell captured, optimised",
+      "value": 16,
+      "expected": 56,
+      "passed": false
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Cross-sell capture pct, current",
+      "value": 5.7,
+      "expected": 8.2,
+      "passed": false
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Cross-sell capture pct, optimised",
+      "value": 5.7,
+      "expected": 16.3,
+      "passed": false
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Cross-sell improvement (x)",
+      "value": 0.7,
+      "expected": 2.0,
+      "passed": false
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Revenue projection at 5% (Rs Crore)",
+      "value": 1.3,
+      "expected": 1.3,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Recommender hit rate",
+      "value": 0.28,
+      "expected": 0.28,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Recommender training baskets",
+      "value": 95570,
+      "expected": 95570,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Recommender test baskets",
+      "value": 40959,
+      "expected": 40959,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Linear Regression MAE",
+      "value": 3395703,
+      "expected": 3395703,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Prophet MAE",
+      "value": 2909633,
+      "expected": 2909633,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Prophet improvement pct",
+      "value": 14.3,
+      "expected": 14.3,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Prophet actually beats Linear Regression",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Linear Regression R squared",
+      "value": -2.377,
+      "expected": -2.377,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Classifier accuracy",
+      "value": 0.613,
+      "expected": 0.613,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Classifier baseline",
+      "value": 0.497,
+      "expected": 0.497,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Classifier test baskets",
+      "value": 65412,
+      "expected": 65412,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Classifier beats baseline",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Neural network accuracy",
+      "value": 0.6905,
+      "expected": 0.6905,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Neural network parameters",
+      "value": 3843,
+      "expected": 3843,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Fully grown tree accuracy",
+      "value": 0.6785,
+      "expected": 0.6785,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Fully grown tree leaves",
+      "value": 10231,
+      "expected": 10231,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "MLP model family advantage (points)",
+      "value": 1.2,
+      "expected": 1.2,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Feature ceiling",
+      "value": 0.7167,
+      "expected": 0.7167,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Distinct feature patterns",
+      "value": 17532,
+      "expected": 17532,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "No model exceeds the ceiling",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Recommender test baskets",
+      "value": 19808,
+      "expected": 19808,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Model hit rate",
+      "value": 28.04,
+      "expected": 28.04,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Popularity, matched budget",
+      "value": 23.74,
+      "expected": 23.74,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Popularity, unconstrained top 5",
+      "value": 34.81,
+      "expected": 34.81,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Random, matched budget",
+      "value": 2.51,
+      "expected": 2.51,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Random, unconstrained top 5",
+      "value": 5.09,
+      "expected": 5.09,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Avg recommendations per basket",
+      "value": 2.5,
+      "expected": 2.5,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Avg recommendations when covered",
+      "value": 3.96,
+      "expected": 3.96,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Products with at least one rule",
+      "value": 28,
+      "expected": 28,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Covered baskets",
+      "value": 12536,
+      "expected": 12536,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Uncovered baskets",
+      "value": 7272,
+      "expected": 7272,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Covered plus uncovered equals test baskets",
+      "value": 19808,
+      "expected": 19808,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Model where covered",
+      "value": 44.3,
+      "expected": 44.3,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Popularity where covered",
+      "value": 37.52,
+      "expected": 37.52,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Model beats popularity at matched budget",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Model loses to unconstrained popularity",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "CONSTANT",
+      "label": "Model beats popularity where it has coverage",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Class A products",
+      "value": 342,
+      "expected": 342,
+      "passed": true
+    },
+    {
+      "source": "ARTIFACT",
+      "label": "Class A share of products",
+      "value": 6.0,
+      "expected": 6.0,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Rule-bearing categories",
+      "value": 14,
+      "expected": 12,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Optimiser restarts",
+      "value": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Optimiser restarts at least 100",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Optimiser master seed",
+      "value": 42,
+      "expected": 42,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Hand-built layout in optimiser artifact",
+      "value": 16,
+      "expected": 56,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Unconstrained optimum, rules (artifact)",
+      "value": 368,
+      "expected": 360,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Unconstrained optimum, support (artifact)",
+      "value": 4.9157,
+      "expected": 4.986,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Unconstrained optimum, capture pct (artifact)",
+      "value": 100.0,
+      "expected": 100.0,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Unconstrained optimum, search certified exact",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Unconstrained optimum, rules (live certificate)",
+      "value": 368,
+      "expected": 360,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Unconstrained optimum, support (live certificate)",
+      "value": 4.9157,
+      "expected": 4.986,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constrained optimum, rules (artifact)",
+      "value": 368,
+      "expected": 360,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constrained optimum, support (artifact)",
+      "value": 4.9157,
+      "expected": 4.986,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constrained optimum, capture pct (artifact)",
+      "value": 100.0,
+      "expected": 100.0,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constrained optimum, search certified exact",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constrained optimum, rules (live certificate)",
+      "value": 368,
+      "expected": 360,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constrained optimum, support (live certificate)",
+      "value": 4.9157,
+      "expected": 4.986,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched optimum, rules (artifact)",
+      "value": 286,
+      "expected": 250,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched optimum, support (artifact)",
+      "value": 3.9878,
+      "expected": 3.5599,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched optimum, capture pct (artifact)",
+      "value": 81.1,
+      "expected": 71.4,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched optimum, search certified exact",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched optimum, rules (live certificate)",
+      "value": 286,
+      "expected": 250,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched optimum, support (live certificate)",
+      "value": 3.9878,
+      "expected": 3.5599,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched constrained optimum, rules (artifact)",
+      "value": 286,
+      "expected": 250,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched constrained optimum, support (artifact)",
+      "value": 3.9878,
+      "expected": 3.5599,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched constrained optimum, capture pct (artifact)",
+      "value": 81.1,
+      "expected": 71.4,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched constrained optimum, search certified exact",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched constrained optimum, rules (live certificate)",
+      "value": 286,
+      "expected": 250,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched constrained optimum, support (live certificate)",
+      "value": 3.9878,
+      "expected": 3.5599,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constraint cost, rules (unlimited_zones)",
+      "value": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constraint cost, support (unlimited_zones)",
+      "value": 0.0,
+      "expected": 0.0,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constraint cost, rules (capacity_matched)",
+      "value": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constraint cost, support (capacity_matched)",
+      "value": 0.0,
+      "expected": 0.0,
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Constrained categories in strong rules",
+      "value": 1,
+      "expected": 0,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Unconstrained gain over hand-built (rules)",
+      "value": 352,
+      "expected": 304,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Capacity-matched gain over hand-built (rules)",
+      "value": 270,
+      "expected": 194,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Hand-built share of capacity optimum (pct)",
+      "value": 7.1,
+      "expected": 22.8,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "First move from hand-built",
+      "value": "CANNED AND PACKAGED FOODS",
+      "expected": "CANNED AND PACKAGED FOODS",
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "First move gain (rules)",
+      "value": 70,
+      "expected": 100,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Second move from hand-built",
+      "value": "PERSONAL CARE",
+      "expected": "PERSONAL CARE",
+      "passed": true
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Second move gain (rules)",
+      "value": 110,
+      "expected": 94,
+      "passed": false
+    },
+    {
+      "source": "OPTIMISER",
+      "label": "Two moves reach the capacity optimum",
+      "value": 196,
+      "expected": 250,
+      "passed": false
+    },
+    {
+      "source": "FORECAST",
+      "label": "Daily series trading days",
+      "value": 304,
+      "expected": 304,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Daily series total revenue",
+      "value": 218214456.85,
+      "expected": 218214456.88,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Daily mean revenue (304 days)",
+      "value": 717810.71,
+      "expected": 717810.71,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Daily series first date",
+      "value": "2025-07-17",
+      "expected": "2025-07-17",
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Daily series last date",
+      "value": "2026-05-20",
+      "expected": "2026-05-20",
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Daily series days match warehouse",
+      "value": 304,
+      "expected": 304,
+      "passed": true
+    },
+    {
+      "source": "LIVE",
+      "label": "Daily series revenue matches warehouse (max abs diff)",
+      "value": 0.0,
+      "expected": 0.0,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Chronological split, train days",
+      "value": 243,
+      "expected": 243,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Chronological split, test days",
+      "value": 61,
+      "expected": 61,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Training ends",
+      "value": "2026-03-20",
+      "expected": "2026-03-20",
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Test starts",
+      "value": "2026-03-21",
+      "expected": "2026-03-21",
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Test window mean revenue",
+      "value": 717954.24,
+      "expected": 717954.24,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Split in artifact, train days",
+      "value": 243,
+      "expected": 243,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Split in artifact, test days",
+      "value": 61,
+      "expected": 61,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Naive flat (last training day repeated), MAE (artifact)",
+      "value": 74994,
+      "expected": 74994,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Naive flat (last training day repeated), R2 (artifact)",
+      "value": -0.0,
+      "expected": -0.0,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Naive flat (last training day repeated), MAE (live refit)",
+      "value": 74994,
+      "expected": 74994,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Naive flat (last training day repeated), R2 (live refit)",
+      "value": -0.0,
+      "expected": -0.0,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Historical mean (training mean repeated), MAE (artifact)",
+      "value": 74959,
+      "expected": 74959,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Historical mean (training mean repeated), R2 (artifact)",
+      "value": -0.0,
+      "expected": -0.0,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Historical mean (training mean repeated), MAE (live refit)",
+      "value": 74959,
+      "expected": 74959,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Historical mean (training mean repeated), R2 (live refit)",
+      "value": -0.0,
+      "expected": -0.0,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Seasonal naive (last training week repeated), MAE (artifact)",
+      "value": 101417,
+      "expected": 101417,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Seasonal naive (last training week repeated), R2 (artifact)",
+      "value": -0.523,
+      "expected": -0.523,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Seasonal naive (last training week repeated), MAE (live refit)",
+      "value": 101417,
+      "expected": 101417,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Seasonal naive (last training week repeated), R2 (live refit)",
+      "value": -0.523,
+      "expected": -0.523,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week dummies, MAE (artifact)",
+      "value": 69473,
+      "expected": 69473,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week dummies, R2 (artifact)",
+      "value": -0.022,
+      "expected": -0.022,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week dummies, MAPE (artifact)",
+      "value": 11.37,
+      "expected": 11.37,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week dummies, MAE (live refit)",
+      "value": 69473,
+      "expected": 69473,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week dummies, R2 (live refit)",
+      "value": -0.022,
+      "expected": -0.022,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week plus trend, MAE (artifact)",
+      "value": 76461,
+      "expected": 76461,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week plus trend, R2 (artifact)",
+      "value": -0.078,
+      "expected": -0.078,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week plus trend, MAE (live refit)",
+      "value": 76461,
+      "expected": 76461,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week plus trend, R2 (live refit)",
+      "value": -0.078,
+      "expected": -0.078,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet, weekly seasonality, MAE (artifact)",
+      "value": 75114,
+      "expected": 75114,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet, weekly seasonality, R2 (artifact)",
+      "value": -0.063,
+      "expected": -0.063,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet, weekly seasonality, MAPE (artifact)",
+      "value": 12.5,
+      "expected": 12.5,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet, weekly seasonality, MAE (live refit)",
+      "value": 75114,
+      "expected": 75114,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet, weekly seasonality, R2 (live refit)",
+      "value": -0.063,
+      "expected": -0.063,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Naive persistence (yesterday's value), MAE (artifact)",
+      "value": 119611,
+      "expected": 119611,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Naive persistence (yesterday's value), R2 (artifact)",
+      "value": -1.6,
+      "expected": -1.6,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Naive persistence (yesterday's value), MAPE (artifact)",
+      "value": 18.17,
+      "expected": 18.17,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Naive persistence (yesterday's value), MAE (live refit)",
+      "value": 119611,
+      "expected": 119611,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Naive persistence (yesterday's value), R2 (live refit)",
+      "value": -1.6,
+      "expected": -1.6,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Expanding mean (all days observed so far), MAE (artifact)",
+      "value": 75074,
+      "expected": 75074,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Expanding mean (all days observed so far), R2 (artifact)",
+      "value": -0.004,
+      "expected": -0.004,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Expanding mean (all days observed so far), MAE (live refit)",
+      "value": 75074,
+      "expected": 75074,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Expanding mean (all days observed so far), R2 (live refit)",
+      "value": -0.004,
+      "expected": -0.004,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Seasonal naive (same weekday last week), MAE (artifact)",
+      "value": 97759,
+      "expected": 97759,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Seasonal naive (same weekday last week), R2 (artifact)",
+      "value": -0.596,
+      "expected": -0.596,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Seasonal naive (same weekday last week), MAPE (artifact)",
+      "value": 15.24,
+      "expected": 15.24,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Seasonal naive (same weekday last week), MAE (live refit)",
+      "value": 97759,
+      "expected": 97759,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Seasonal naive (same weekday last week), R2 (live refit)",
+      "value": -0.596,
+      "expected": -0.596,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week, refit daily, MAE (artifact)",
+      "value": 69794,
+      "expected": 69794,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week, refit daily, R2 (artifact)",
+      "value": -0.015,
+      "expected": -0.015,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week, refit daily, MAPE (artifact)",
+      "value": 11.39,
+      "expected": 11.39,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week, refit daily, MAE (live refit)",
+      "value": 69794,
+      "expected": 69794,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Linear regression, day-of-week, refit daily, R2 (live refit)",
+      "value": -0.015,
+      "expected": -0.015,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet, weekly seasonality, refit daily, MAE (artifact)",
+      "value": 73423,
+      "expected": 73423,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet, weekly seasonality, refit daily, R2 (artifact)",
+      "value": -0.044,
+      "expected": -0.044,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet, weekly seasonality, refit daily, MAPE (artifact)",
+      "value": 12.14,
+      "expected": 12.14,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Best model MAE reduction vs persistence (pct)",
+      "value": 41.6,
+      "expected": 41.6,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Best model MAE reduction vs seasonal naive (pct)",
+      "value": 28.6,
+      "expected": 28.6,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Best model MAE reduction vs historical mean (pct)",
+      "value": 7.3,
+      "expected": 7.3,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Best R2 of any fitted daily model",
+      "value": -0.015,
+      "expected": -0.015,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "No daily model or baseline has positive R2",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Every model beats naive persistence on MAE",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet fitted peak inside Dashain window",
+      "value": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet fitted peak day",
+      "value": "2026-03-18",
+      "expected": "2026-03-18",
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Actual peak day",
+      "value": "2025-10-01",
+      "expected": "2025-10-01",
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Actual Dashain window mean",
+      "value": 988038,
+      "expected": 988038,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Prophet fitted Dashain window mean",
+      "value": 716206,
+      "expected": 716206,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Flexible-trend Prophet peaks in Dashain window",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Flexible-trend Prophet MAE",
+      "value": 102647,
+      "expected": 102647,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Flexible-trend Prophet R2",
+      "value": -0.521,
+      "expected": -0.521,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Flexible trend forecasts worse than default",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Highest mean-revenue weekday",
+      "value": "Wednesday",
+      "expected": "Wednesday",
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Highest total-revenue weekday",
+      "value": "Friday",
+      "expected": "Friday",
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Lowest mean-revenue weekday",
+      "value": "Saturday",
+      "expected": "Saturday",
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "Friday total revenue (Rs)",
+      "value": 32803986,
+      "expected": 32803986,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "New Year days share of LR SSE (pct)",
+      "value": 51.2,
+      "expected": 51.2,
+      "passed": true
+    },
+    {
+      "source": "FORECAST",
+      "label": "LR MAE excluding New Year days",
+      "value": 56873,
+      "expected": 56873,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Split, training baskets",
+      "value": 152625,
+      "expected": 152625,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Split, test baskets",
+      "value": 65412,
+      "expected": 65412,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Split seed",
+      "value": 42,
+      "expected": 42,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Majority baseline",
+      "value": 0.497,
+      "expected": 0.497,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Small baskets",
+      "value": 108349,
+      "expected": 108349,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Large baskets",
+      "value": 29820,
+      "expected": 29820,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Hour of day available",
+      "value": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Binary flags: tree depth 5 accuracy (nb11 figure)",
+      "value": 0.614,
+      "expected": 0.613,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Binary flags: MLP accuracy (nb12 figure)",
+      "value": 0.6917,
+      "expected": 0.6905,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Binary flags: MLP parameters (nb12 figure)",
+      "value": 3843,
+      "expected": 3843,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Binary flags: ceiling (nb12 figure)",
+      "value": 0.7234,
+      "expected": 0.7167,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Binary flags: distinct patterns (nb12 figure)",
+      "value": 21032,
+      "expected": 17532,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Binary flags: tree top feature (nb11 figure)",
+      "value": "COOKING OIL",
+      "expected": "COOKING OIL",
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Binary flags: tree top importance (nb11 figure)",
+      "value": 0.278,
+      "expected": 0.28,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Full feature count",
+      "value": 45,
+      "expected": 45,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Discrete feature count",
+      "value": 45,
+      "expected": 45,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Ceiling, binary features",
+      "value": 0.7234,
+      "expected": 0.7167,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Distinct patterns, binary features",
+      "value": 21032,
+      "expected": 17532,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Singleton basket share, binary features (pct)",
+      "value": 6.3,
+      "expected": 5.1,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Ceiling, discrete features",
+      "value": 0.8548,
+      "expected": 0.8462,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Distinct patterns, discrete features",
+      "value": 95521,
+      "expected": 90048,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Singleton basket share, discrete features (pct)",
+      "value": 35.3,
+      "expected": 32.9,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Ceiling, full features",
+      "value": 0.9187,
+      "expected": 0.9127,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Distinct patterns, full features",
+      "value": 126437,
+      "expected": 122891,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Singleton basket share, full features (pct)",
+      "value": 50.8,
+      "expected": 49.1,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Pattern lookup out of sample, binary",
+      "value": 0.6368,
+      "expected": 0.6444,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Pattern lookup out of sample, full",
+      "value": 0.5166,
+      "expected": 0.5163,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Test baskets with unseen pattern, full (pct)",
+      "value": 53.2,
+      "expected": 51.5,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Ceiling gain, binary to full (points)",
+      "value": 19.53,
+      "expected": 19.6,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Accuracy, binary_tree_depth5",
+      "value": 0.6138,
+      "expected": 0.613,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Accuracy, binary_mlp",
+      "value": 0.6917,
+      "expected": 0.6905,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Accuracy, discrete_tree_depth5",
+      "value": 0.7053,
+      "expected": 0.7059,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Accuracy, discrete_mlp",
+      "value": 0.7236,
+      "expected": 0.7252,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Accuracy, full_tree_depth5",
+      "value": 0.7228,
+      "expected": 0.7198,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Accuracy, full_mlp",
+      "value": 0.7587,
+      "expected": 0.7575,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "MLP parameters, full features",
+      "value": 5123,
+      "expected": 5123,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Tree leaves, full features (depth 5)",
+      "value": 32,
+      "expected": 32,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Share of ceiling, binary_tree_depth5 (pct)",
+      "value": 84.9,
+      "expected": 85.5,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Share of ceiling, binary_mlp (pct)",
+      "value": 95.6,
+      "expected": 96.3,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Share of ceiling, full_tree_depth5 (pct)",
+      "value": 78.7,
+      "expected": 78.9,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Share of ceiling, full_mlp (pct)",
+      "value": 82.6,
+      "expected": 83.0,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "Tree gain, binary to full (points)",
+      "value": 10.9,
+      "expected": 10.68,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "MLP gain, binary to full (points)",
+      "value": 6.71,
+      "expected": 6.7,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "New MLP beats old MLP",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "New tree beats old tree",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "New MLP still below its ceiling",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Ceiling rose more than either model",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "New tree top feature",
+      "value": "n_items",
+      "expected": "n_items",
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "New tree top importance",
+      "value": 0.73,
+      "expected": 0.735,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "New tree second feature",
+      "value": "RICE qty",
+      "expected": "RICE qty",
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "New tree second importance",
+      "value": 0.141,
+      "expected": 0.147,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "COOKING OIL rank on new tree",
+      "value": 5,
+      "expected": 5,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "COOKING OIL importance on new tree",
+      "value": 0.01,
+      "expected": 0.01,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "RICE rank on new tree",
+      "value": 2,
+      "expected": 2,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "RICE importance on new tree",
+      "value": 0.141,
+      "expected": 0.147,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "COOKING OIL and RICE displaced from the top",
+      "value": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "Features used by the new tree",
+      "value": 8,
+      "expected": 8,
+      "passed": true
+    },
+    {
+      "source": "FEATURES",
+      "label": "New MLP recall, Medium",
+      "value": 0.661,
+      "expected": 0.664,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "New MLP recall, Large",
+      "value": 0.56,
+      "expected": 0.551,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "New tree recall, Medium",
+      "value": 0.558,
+      "expected": 0.554,
+      "passed": false
+    },
+    {
+      "source": "FEATURES",
+      "label": "New tree recall, Large",
+      "value": 0.517,
+      "expected": 0.524,
+      "passed": false
+    }
+  ],
+  "uncheckable": [
+    {
+      "label": "Frequent itemsets (243, both algorithms)",
+      "why": "Apriori/FP-Growth counts are not stored in any artifact; re-run notebook 05 or 08"
+    },
+    {
+      "label": "Network connections (38 unique)",
+      "why": "derived inside notebook 05 chart 10; not stored in an artifact"
+    },
+    {
+      "label": "Rule temporal stability (median 1.011)",
+      "why": "requires the notebook 05 Step 9 dev/validation split to be re-run"
+    },
+    {
+      "label": "Top classifier feature (COOKING OIL 0.280)",
+      "why": "feature importances are not exported; re-run notebook 11"
+    },
+    {
+      "label": "Warehouse quality checks (32 of 32)",
+      "why": "self-referential; run etl/quality_checks.py, which reports its own count"
+    },
+    {
+      "label": "Reproduction checks (12 of 12)",
+      "why": "self-referential; run reproduce_all_results.py, which reports its own count"
+    }
+  ]
+}

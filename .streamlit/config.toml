@@ -1,0 +1,10 @@
+# Streamlit theme for the dashboard. primaryColor drives all interactive
+# chrome (buttons, sliders, active nav, focus rings, links); it is the same
+# teal the app uses for measured results, so the interface never shows the
+# default Streamlit red, which read as an error state.
+[theme]
+primaryColor = "#0F766E"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F5F5F4"
+textColor = "#1C1917"
+font = "sans serif"

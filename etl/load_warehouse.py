@@ -19,9 +19,10 @@ Idempotency:
     a task must never double the fact table.
 
 The zone assignments:
-    ZONE_MAP below is the placement recommendation from notebook 07, derived
-    from the association rules (notebook 05) and co-occurrence clustering
-    (notebook 06). It is the one piece of the warehouse that is not mechanical
+    ZONE_MAP below is the placement recommendation, re-derived on 17 August
+    2026 by analysis/optimise_zones.py from the post-remap association rules
+    (notebook 05), capacity-matched and certified against exhaustive
+    enumeration. It is the one piece of the warehouse that is not mechanical
     restructuring of the source data: it is the research finding itself,
     stored as a queryable dimension attribute.
 """
@@ -48,39 +49,41 @@ EXPECTED = {
     "warehouse.fact_sales": 767180,
 }
 
-# The 5 placement zones from notebook 07.
+# The 5 placement zones, RE-DERIVED 17 August 2026 from the post-remap
+# association rules. Membership and the reasoning are in analysis/zones.py;
+# this map is the same content in the shape dim_category stores.
 # category -> (zone_assignment, zone_label, zone_location)
 ZONE_MAP = {
-    # Zone 1: the high traffic anchor, centre of the store
-    "FOOD STAPLES":              ("Zone 1 - Center", "High Traffic Anchor", "Store Center"),
-    "COOKING OIL":               ("Zone 1 - Center", "High Traffic Anchor", "Store Center"),
-    "CLEANING SUPPLIES":         ("Zone 1 - Center", "High Traffic Anchor", "Store Center"),
-    "TEA AND SPICES":            ("Zone 1 - Center", "High Traffic Anchor", "Store Center"),
-    "HOUSEHOLD ITEMS":           ("Zone 1 - Center", "High Traffic Anchor", "Store Center"),
+    # Zone 1: the anchor cluster the strong rules bind together, centre of store
+    "FOOD STAPLES":               ("Zone 1 - Center", "Anchor Cluster", "Store Center"),
+    "CANNED AND PACKAGED FOODS":  ("Zone 1 - Center", "Anchor Cluster", "Store Center"),
+    "CLEANING SUPPLIES":          ("Zone 1 - Center", "Anchor Cluster", "Store Center"),
+    "TEA AND SPICES":             ("Zone 1 - Center", "Anchor Cluster", "Store Center"),
+    "PERSONAL CARE":              ("Zone 1 - Center", "Anchor Cluster", "Store Center"),
+    "COOKING OIL":                ("Zone 1 - Center", "Anchor Cluster", "Store Center"),
     # Zone 2: impulse categories, near the entrance
-    "NOODLES":                   ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
-    "SOFT DRINKS AND JUICES":    ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
-    "BISCUITS AND COOKIES":      ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
-    "CONFECTIONERY":             ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
-    "NAMKEEN AND SNACKS":        ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
-    "CANNED AND PACKAGED FOODS": ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
-    # Zone 3: destination personal care, off the main flow
-    "PERSONAL CARE":             ("Zone 3 - Side Aisle", "Destination", "Side Aisle"),
-    "BABY CARE":                 ("Zone 3 - Side Aisle", "Destination", "Side Aisle"),
-    "STATIONERY":                ("Zone 3 - Side Aisle", "Destination", "Side Aisle"),
+    "CONFECTIONERY":              ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
+    "SNACKS":                     ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
+    "NOODLES":                    ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
+    "HOUSEHOLD ITEMS":            ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
+    "POOJA ITEMS":                ("Zone 2 - Entrance", "Impulse Purchase", "Near Entrance"),
+    # Zone 3: destination, off the main flow
+    "BISCUITS AND COOKIES":       ("Zone 3 - Side Aisle", "Destination", "Side Aisle"),
+    "BABY CARE":                  ("Zone 3 - Side Aisle", "Destination", "Side Aisle"),
+    "STATIONERY":                 ("Zone 3 - Side Aisle", "Destination", "Side Aisle"),
     # Zone 4: refrigeration constrained, back wall
-    "DAIRY PRODUCTS":            ("Zone 4 - Back Wall", "Cold Storage", "Back Wall"),
-    "FROZEN FOODS":              ("Zone 4 - Back Wall", "Cold Storage", "Back Wall"),
-    "FRUITS AND VEGETABLES":     ("Zone 4 - Back Wall", "Cold Storage", "Back Wall"),
-    "BAKERY":                    ("Zone 4 - Back Wall", "Cold Storage", "Back Wall"),
-    # Zone 5: speciality and destination, perimeter
-    "RICE":                      ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
-    "ALCOHOLIC BEVERAGES":       ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
-    "CIGARETTE AND TOBACCO":     ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
-    "POOJA ITEMS":               ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
-    "BREAKFAST CEREALS":         ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
-    "ELECTRICAL SUPPLIES":       ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
-    "PARTY SUPPLIES":            ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
+    "DAIRY PRODUCTS":             ("Zone 4 - Back Wall", "Cold Storage", "Back Wall"),
+    "FROZEN FOODS":               ("Zone 4 - Back Wall", "Cold Storage", "Back Wall"),
+    "FRESH PRODUCE":              ("Zone 4 - Back Wall", "Cold Storage", "Back Wall"),
+    "BAKERY":                     ("Zone 4 - Back Wall", "Cold Storage", "Back Wall"),
+    # Zone 5: speciality and restricted, perimeter
+    "RICE":                       ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
+    "ALCOHOLIC BEVERAGES":        ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
+    "CIGARETTE AND TOBACCO":      ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
+    "SOFT DRINKS AND JUICES":     ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
+    "BREAKFAST CEREALS":          ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
+    "ELECTRICAL SUPPLIES":        ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
+    "PARTY SUPPLIES":             ("Zone 5 - Perimeter", "Speciality", "Perimeter"),
 }
 
 
@@ -115,7 +118,7 @@ def load_dim_date(cur):
 
 
 def load_dim_category(cur):
-    """The 25 categories, each carrying its notebook 07 zone assignment."""
+    """The 25 categories, each carrying its re-derived zone assignment."""
     rows = [(name,) + zones for name, zones in sorted(ZONE_MAP.items())]
     args = ",".join(cur.mogrify("(%s,%s,%s,%s)", r).decode() for r in rows)
     cur.execute(f"""

@@ -1,0 +1,187 @@
+:root {
+  --ink: #16181d;
+  --muted: #6b7280;
+  --line: #e3e5ea;
+  --surface: #ffffff;
+  --bg: #f5f6f8;
+  --accent: #0e7c66;
+  --warn: #9a5b00;
+  --bad: #b3261e;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+main { max-width: 1180px; margin: 0 auto; padding: 24px 20px 72px; }
+
+h1 { font-size: 22px; margin: 0 0 2px; }
+h3 { font-size: 14px; margin: 0; }
+.sub { color: var(--muted); font-size: 13px; margin: 0; max-width: 62ch; }
+.top { margin-bottom: 16px; }
+
+code { background: #ececf0; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+/* ---------------------------------------------------------------- score */
+.score-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.score-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.score-big { font-size: 40px; font-weight: 700; line-height: 1; }
+.score-big .pct { font-size: 22px; font-weight: 600; color: var(--muted); }
+.score-sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.score-numbers { text-align: right; font-size: 13px; color: #444; line-height: 1.7; }
+.delta-up { color: var(--accent); font-weight: 600; }
+.delta-down { color: var(--bad); font-weight: 600; }
+
+.bar-wrap { margin: 26px 0 10px; }
+.bar {
+  position: relative;
+  height: 12px;
+  background: #eceef2;
+  border-radius: 6px;
+}
+.bar-fill { height: 100%; background: var(--accent); border-radius: 6px; transition: width .25s ease; }
+.marker { position: absolute; top: -6px; height: 24px; }
+.marker-line { width: 2px; height: 24px; background: #30343c; }
+.marker-label {
+  position: absolute; top: 26px; left: 0; transform: translateX(-50%);
+  white-space: nowrap; font-size: 11px; color: #30343c; background: var(--bg);
+  padding: 0 4px;
+}
+.bar-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 30px; }
+
+.ethics-summary {
+  font-size: 13px; color: #333; border-top: 1px solid var(--line);
+  padding-top: 12px; margin: 14px 0 0;
+}
+
+.lost {
+  margin-top: 12px; padding: 10px 12px; font-size: 13px;
+  background: #fff5f4; border-left: 3px solid var(--bad); border-radius: 0 6px 6px 0;
+}
+.lost ul { margin: 6px 0 0; padding-left: 18px; }
+.lost li { margin: 2px 0; }
+.lost-meta { color: var(--muted); font-size: 12px; }
+.lost-more { color: var(--muted); margin: 4px 0 0; }
+
+/* -------------------------------------------------------------- toolbar */
+.toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.toolbar .sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+button {
+  font: inherit; font-size: 13px; padding: 7px 12px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: #c3c7cf; }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+button.link { background: none; border: none; color: var(--muted); text-decoration: underline; padding: 4px 0; }
+
+/* ----------------------------------------------------------------- diff */
+.diff {
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--ink);
+  border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 14px; font-size: 13px;
+}
+.diff table { border-collapse: collapse; margin: 10px 0 4px; width: 100%; }
+.diff th, .diff td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+.diff th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.diff-inert td { color: var(--muted); }
+
+/* ---------------------------------------------------------------- zones */
+/* Three columns by default, five only on a genuinely wide screen. The old
+   auto-fit at a 210px minimum packed all five zones into one 1180px row and
+   left every chip list too narrow to read. Column counts are explicit rather
+   than auto-fit because auto-fit at a 240px minimum lands on four here, and
+   the design calls for three. */
+.zones {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+/* Three 240px columns plus gaps and the page padding need about 785px. Below
+   that, fall back to as many as fit so the page never scrolls sideways. The
+   min() keeps a single column from overflowing a very narrow phone. */
+@media (max-width: 820px) {
+  .zones { grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
+}
+
+/* Five columns at a 240px minimum need more room than the 1180px main
+   container allows, so the container widens at the same breakpoint. */
+@media (min-width: 1600px) {
+  main { max-width: 1560px; }
+  .zones { grid-template-columns: repeat(5, minmax(240px, 1fr)); }
+}
+
+.zone, .pool {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; padding: 12px; min-height: 150px;
+  display: flex; flex-direction: column;
+}
+.pool { margin-top: 12px; min-height: 90px; }
+.zone-over { border-color: var(--accent); background: #f2fbf8; }
+.zone-creates { border-top: 3px solid var(--warn); }
+.zone-assists { border-top: 3px solid var(--accent); }
+
+.zone-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.zone-role { font-size: 11px; color: var(--muted); margin: 2px 0 0; }
+.zone-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.zone-count {
+  font-size: 12px; color: var(--muted); background: #f0f1f4;
+  border-radius: 10px; padding: 1px 8px;
+}
+.zone-captured { font-size: 11px; color: var(--accent); font-weight: 600; }
+
+/* Bottom margin is zero so the 14px on .zone-body below is the whole gap
+   before the first chip, rather than 6px + 14px. Margins do not collapse
+   here because .zone is a flex column. */
+.ethics-tag {
+  font-size: 11px; margin: 8px 0 0; padding: 3px 7px;
+  border-radius: 4px; display: inline-block; cursor: help;
+}
+.ethics-assists { background: #eaf6f2; color: #0b5f4e; }
+.ethics-creates { background: #fdf1e0; color: #8a5200; }
+
+/* Row gap 10px, column gap left at the original 5px: the brief asked for
+   vertical separation only. margin-top gives 14px clear above the first chip. */
+.zone-body {
+  display: flex; flex-wrap: wrap; gap: 10px 5px;
+  align-content: flex-start; flex: 1; margin-top: 14px;
+}
+.zone-empty { font-size: 12px; color: #aab; margin: 6px 2px; }
+
+/* ---------------------------------------------------------------- chips */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 6px; padding: 12px; font-size: 11.5px;
+  cursor: grab; user-select: none; border: 1px solid transparent;
+  touch-action: none;
+}
+.chip-active { background: #eef4fb; border-color: #d3e2f2; color: #17324d; }
+.chip-inert { background: #f3f3f5; border-color: #e2e2e6; color: #8b8f97; }
+.chip-dragging { opacity: .4; }
+.chip-moved { outline: 2px solid var(--ink); outline-offset: 1px; }
+/* Regular weight, not 600. The zone title is the only bold text in the card. */
+.chip-name { font-size: 13px; font-weight: 400; color: #57534E; }
+.chip-pct { font-size: 11px; color: #A8A29E; }
+.chip-flag {
+  font-size: 9.5px; text-transform: uppercase; letter-spacing: .03em;
+  background: #e4e4e8; color: #6a6e77; border-radius: 3px; padding: 1px 4px; margin-left: 4px;
+}
+
+/* --------------------------------------------------------------- footer */
+.foot { margin-top: 26px; font-size: 12px; color: var(--muted); }
+
+.error {
+  background: #fff2f2; border-left: 4px solid var(--bad);
+  padding: 12px 16px; margin: 16px 0; font-size: 14px;
+}

@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-08-20T19:13:37",
+  "generated_at_human": "20 Aug 2026, 19:13",
+  "all_passed": true,
+  "checks": {
+    "verify_thesis_numbers": {
+      "description": "Every reported figure checked against a live source",
+      "passed": 299,
+      "failed": 0,
+      "total": 299,
+      "exit_code": 0,
+      "ok": true,
+      "verified": 299,
+      "checkable": 299,
+      "not_auto_checkable": 5
+    },
+    "quality_checks": {
+      "description": "Warehouse checked against the OLTP source and the thesis figures",
+      "passed": 32,
+      "failed": 0,
+      "total": 32,
+      "exit_code": 0,
+      "ok": true
+    },
+    "reproduce_all_results": {
+      "description": "Artifacts regenerated and every stage re-checked",
+      "passed": 26,
+      "failed": 0,
+      "total": 26,
+      "exit_code": 0,
+      "ok": true,
+      "verified": 263,
+      "checkable": 263,
+      "not_auto_checkable": 6,
+      "stages": 12
+    }
+  },
+  "partial_rerun": {
+    "reran": [
+      "verify_thesis_numbers"
+    ],
+    "not_reran": [
+      "quality_checks",
+      "reproduce_all_results"
+    ],
+    "note": "Only verify_thesis_numbers.py was re-run on 2026-08-20 against the live warehouse. The other two blocks still hold their 2026-08-15 results. Run scripts/run_verifications.py to refresh all three."
+  }
+}

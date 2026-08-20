@@ -149,6 +149,47 @@ services:
       airflow_init:
         condition: service_completed_successfully
 
+  # ---------------------------------------------------------------------
+  # Shelf layout tool. Additive only: nothing above this line is modified.
+  # Ports 5435 (postgres) and 8082 (airflow) are untouched.
+  # ---------------------------------------------------------------------
+  api:
+    build: ./app/api
+    container_name: pp_api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Live code for reload, and the analysis artifacts READ ONLY. The :ro
+      # flag is deliberate: this service must never write to the artifacts
+      # that the dissertation numbers come from.
+      - ./app/api:/app
+      - ./dashboard/artifacts:/data/artifacts:ro
+      # The shared scoring module. Read only: the app consumes the analysis,
+      # it never modifies it.
+      - ./analysis:/app/analysis:ro
+    environment:
+      PP_ARTIFACTS_DIR: /data/artifacts
+      PP_CORS_ORIGINS: "http://localhost:5173,http://127.0.0.1:5173"
+    restart: unless-stopped
+
+  web:
+    build: ./app/web
+    container_name: pp_web
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./app/web:/app
+      # Keeps the image's node_modules; without this the bind mount hides it.
+      - /app/node_modules
+    environment:
+      # Read by the BROWSER, which is outside the compose network and cannot
+      # resolve "api". Inside the network the API is http://api:8000, but no
+      # code here runs inside the network, so localhost is correct.
+      VITE_API_BASE: "http://localhost:8000"
+    depends_on:
+      - api
+    restart: unless-stopped
+
 volumes:
   pp_pgdata:
   pp_airflow_metadata:

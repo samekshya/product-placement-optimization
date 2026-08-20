@@ -1,0 +1,888 @@
+{
+  "method": "greedy local search with random restarts (200 restarts, master seed 42), objective analysis.cross_sell.score_layout, certified against exhaustive enumeration",
+  "total_rules": 368,
+  "total_support": 4.9157,
+  "rule_bearing_categories": [
+    "BISCUITS AND COOKIES",
+    "CANNED AND PACKAGED FOODS",
+    "CLEANING SUPPLIES",
+    "CONFECTIONERY",
+    "COOKING OIL",
+    "DAIRY PRODUCTS",
+    "FOOD STAPLES",
+    "HOUSEHOLD ITEMS",
+    "NOODLES",
+    "PERSONAL CARE",
+    "POOJA ITEMS",
+    "RICE",
+    "SNACKS",
+    "TEA AND SPICES"
+  ],
+  "n_rule_bearing_categories": 14,
+  "n_inert_categories": 11,
+  "constraints": {
+    "locked": {
+      "DAIRY PRODUCTS": "zone_4",
+      "FROZEN FOODS": "zone_4",
+      "ALCOHOLIC BEVERAGES": "zone_5",
+      "CIGARETTE AND TOBACCO": "zone_5",
+      "RICE": "zone_5"
+    },
+    "forbidden": {},
+    "constrained_categories_in_strong_rules": [
+      "DAIRY PRODUCTS",
+      "RICE"
+    ]
+  },
+  "capacities": {
+    "zone_1": 6,
+    "zone_2": 5,
+    "zone_3": 3,
+    "zone_4": 4,
+    "zone_5": 7
+  },
+  "hand_built": {
+    "assignment": {
+      "FOOD STAPLES": "zone_1",
+      "CANNED AND PACKAGED FOODS": "zone_1",
+      "CLEANING SUPPLIES": "zone_1",
+      "TEA AND SPICES": "zone_1",
+      "PERSONAL CARE": "zone_1",
+      "COOKING OIL": "zone_1",
+      "CONFECTIONERY": "zone_2",
+      "SNACKS": "zone_2",
+      "NOODLES": "zone_2",
+      "HOUSEHOLD ITEMS": "zone_2",
+      "POOJA ITEMS": "zone_2",
+      "BISCUITS AND COOKIES": "zone_3",
+      "BABY CARE": "zone_3",
+      "STATIONERY": "zone_3",
+      "DAIRY PRODUCTS": "zone_4",
+      "FROZEN FOODS": "zone_4",
+      "FRESH PRODUCE": "zone_4",
+      "BAKERY": "zone_4",
+      "RICE": "zone_5",
+      "ALCOHOLIC BEVERAGES": "zone_5",
+      "CIGARETTE AND TOBACCO": "zone_5",
+      "SOFT DRINKS AND JUICES": "zone_5",
+      "BREAKFAST CEREALS": "zone_5",
+      "ELECTRICAL SUPPLIES": "zone_5",
+      "PARTY SUPPLIES": "zone_5"
+    },
+    "rules_captured": 180,
+    "support_captured": 2.661438,
+    "capture_rate": 54.141919,
+    "groups": {
+      "zone_1": [
+        "CANNED AND PACKAGED FOODS",
+        "CLEANING SUPPLIES",
+        "COOKING OIL",
+        "FOOD STAPLES",
+        "PERSONAL CARE",
+        "TEA AND SPICES"
+      ],
+      "zone_2": [
+        "CONFECTIONERY",
+        "HOUSEHOLD ITEMS",
+        "NOODLES",
+        "POOJA ITEMS",
+        "SNACKS"
+      ],
+      "zone_3": [
+        "BABY CARE",
+        "BISCUITS AND COOKIES",
+        "STATIONERY"
+      ],
+      "zone_4": [
+        "BAKERY",
+        "DAIRY PRODUCTS",
+        "FRESH PRODUCE",
+        "FROZEN FOODS"
+      ],
+      "zone_5": [
+        "ALCOHOLIC BEVERAGES",
+        "BREAKFAST CEREALS",
+        "CIGARETTE AND TOBACCO",
+        "ELECTRICAL SUPPLIES",
+        "PARTY SUPPLIES",
+        "RICE",
+        "SOFT DRINKS AND JUICES"
+      ]
+    }
+  },
+  "unconstrained": {
+    "assignment": {
+      "BISCUITS AND COOKIES": "zone_1",
+      "CANNED AND PACKAGED FOODS": "zone_1",
+      "CLEANING SUPPLIES": "zone_1",
+      "CONFECTIONERY": "zone_1",
+      "COOKING OIL": "zone_1",
+      "DAIRY PRODUCTS": "zone_1",
+      "FOOD STAPLES": "zone_1",
+      "HOUSEHOLD ITEMS": "zone_1",
+      "NOODLES": "zone_1",
+      "PERSONAL CARE": "zone_1",
+      "POOJA ITEMS": "zone_1",
+      "RICE": "zone_1",
+      "SNACKS": "zone_1",
+      "TEA AND SPICES": "zone_1",
+      "ALCOHOLIC BEVERAGES": "zone_5",
+      "BABY CARE": "zone_3",
+      "BAKERY": "zone_4",
+      "BREAKFAST CEREALS": "zone_5",
+      "CIGARETTE AND TOBACCO": "zone_5",
+      "ELECTRICAL SUPPLIES": "zone_5",
+      "FRESH PRODUCE": "zone_4",
+      "FROZEN FOODS": "zone_4",
+      "PARTY SUPPLIES": "zone_5",
+      "SOFT DRINKS AND JUICES": "zone_5",
+      "STATIONERY": "zone_3"
+    },
+    "rules_captured": 368,
+    "support_captured": 4.91567,
+    "capture_rate": 100.0,
+    "total_rules": 368,
+    "total_support": 4.91567,
+    "restarts": 200,
+    "seed": 42,
+    "restarts_reaching_best": 200,
+    "trace_from_reference": [
+      {
+        "step": 1,
+        "kind": "move",
+        "delta_rules": 106,
+        "delta_support": 1.3264,
+        "rules_after": 286,
+        "support_after": 3.9878,
+        "category": "BISCUITS AND COOKIES",
+        "from_zone": "zone_3",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 2,
+        "kind": "move",
+        "delta_rules": 30,
+        "delta_support": 0.3289,
+        "rules_after": 316,
+        "support_after": 4.3167,
+        "category": "SNACKS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 3,
+        "kind": "move",
+        "delta_rules": 24,
+        "delta_support": 0.2635,
+        "rules_after": 340,
+        "support_after": 4.5803,
+        "category": "NOODLES",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 4,
+        "kind": "move",
+        "delta_rules": 16,
+        "delta_support": 0.2044,
+        "rules_after": 356,
+        "support_after": 4.7847,
+        "category": "HOUSEHOLD ITEMS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 5,
+        "kind": "move",
+        "delta_rules": 4,
+        "delta_support": 0.042,
+        "rules_after": 360,
+        "support_after": 4.8266,
+        "category": "POOJA ITEMS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 6,
+        "kind": "move",
+        "delta_rules": 4,
+        "delta_support": 0.0403,
+        "rules_after": 364,
+        "support_after": 4.8669,
+        "category": "DAIRY PRODUCTS",
+        "from_zone": "zone_4",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 7,
+        "kind": "move",
+        "delta_rules": 2,
+        "delta_support": 0.0279,
+        "rules_after": 366,
+        "support_after": 4.8948,
+        "category": "RICE",
+        "from_zone": "zone_5",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 8,
+        "kind": "move",
+        "delta_rules": 2,
+        "delta_support": 0.0209,
+        "rules_after": 368,
+        "support_after": 4.9157,
+        "category": "CONFECTIONERY",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      }
+    ],
+    "movable": [
+      "BISCUITS AND COOKIES",
+      "CANNED AND PACKAGED FOODS",
+      "CLEANING SUPPLIES",
+      "CONFECTIONERY",
+      "COOKING OIL",
+      "DAIRY PRODUCTS",
+      "FOOD STAPLES",
+      "HOUSEHOLD ITEMS",
+      "NOODLES",
+      "PERSONAL CARE",
+      "POOJA ITEMS",
+      "RICE",
+      "SNACKS",
+      "TEA AND SPICES"
+    ],
+    "locked": {},
+    "forbidden": {},
+    "capacities": null,
+    "exact_optimum_support": 4.91567,
+    "exact_optimum_rules": 368,
+    "local_search_is_exact": true,
+    "delta_vs_hand_built": {
+      "rules": 188,
+      "support": 2.2542,
+      "capture_rate_points": 45.9
+    },
+    "moves_vs_hand_built": [
+      {
+        "category": "BISCUITS AND COOKIES",
+        "from_zone": "zone_3",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "CONFECTIONERY",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "DAIRY PRODUCTS",
+        "from_zone": "zone_4",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "HOUSEHOLD ITEMS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "NOODLES",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "POOJA ITEMS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "RICE",
+        "from_zone": "zone_5",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "SNACKS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      }
+    ],
+    "groups": {
+      "zone_1": [
+        "BISCUITS AND COOKIES",
+        "CANNED AND PACKAGED FOODS",
+        "CLEANING SUPPLIES",
+        "CONFECTIONERY",
+        "COOKING OIL",
+        "DAIRY PRODUCTS",
+        "FOOD STAPLES",
+        "HOUSEHOLD ITEMS",
+        "NOODLES",
+        "PERSONAL CARE",
+        "POOJA ITEMS",
+        "RICE",
+        "SNACKS",
+        "TEA AND SPICES"
+      ],
+      "zone_2": [],
+      "zone_3": [
+        "BABY CARE",
+        "STATIONERY"
+      ],
+      "zone_4": [
+        "BAKERY",
+        "FRESH PRODUCE",
+        "FROZEN FOODS"
+      ],
+      "zone_5": [
+        "ALCOHOLIC BEVERAGES",
+        "BREAKFAST CEREALS",
+        "CIGARETTE AND TOBACCO",
+        "ELECTRICAL SUPPLIES",
+        "PARTY SUPPLIES",
+        "SOFT DRINKS AND JUICES"
+      ]
+    }
+  },
+  "constrained": {
+    "assignment": {
+      "HOUSEHOLD ITEMS": "zone_4",
+      "CONFECTIONERY": "zone_4",
+      "COOKING OIL": "zone_4",
+      "TEA AND SPICES": "zone_4",
+      "PERSONAL CARE": "zone_4",
+      "BISCUITS AND COOKIES": "zone_4",
+      "POOJA ITEMS": "zone_4",
+      "CANNED AND PACKAGED FOODS": "zone_4",
+      "SNACKS": "zone_4",
+      "CLEANING SUPPLIES": "zone_4",
+      "FOOD STAPLES": "zone_4",
+      "NOODLES": "zone_4",
+      "DAIRY PRODUCTS": "zone_4",
+      "FROZEN FOODS": "zone_4",
+      "ALCOHOLIC BEVERAGES": "zone_5",
+      "CIGARETTE AND TOBACCO": "zone_5",
+      "RICE": "zone_5",
+      "BABY CARE": "zone_3",
+      "BAKERY": "zone_4",
+      "BREAKFAST CEREALS": "zone_5",
+      "ELECTRICAL SUPPLIES": "zone_5",
+      "FRESH PRODUCE": "zone_4",
+      "PARTY SUPPLIES": "zone_5",
+      "SOFT DRINKS AND JUICES": "zone_5",
+      "STATIONERY": "zone_3"
+    },
+    "rules_captured": 366,
+    "support_captured": 4.887785,
+    "capture_rate": 99.432729,
+    "total_rules": 368,
+    "total_support": 4.91567,
+    "restarts": 200,
+    "seed": 42,
+    "restarts_reaching_best": 38,
+    "trace_from_reference": [
+      {
+        "step": 1,
+        "kind": "move",
+        "delta_rules": 106,
+        "delta_support": 1.3264,
+        "rules_after": 286,
+        "support_after": 3.9878,
+        "category": "BISCUITS AND COOKIES",
+        "from_zone": "zone_3",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 2,
+        "kind": "move",
+        "delta_rules": 30,
+        "delta_support": 0.3289,
+        "rules_after": 316,
+        "support_after": 4.3167,
+        "category": "SNACKS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 3,
+        "kind": "move",
+        "delta_rules": 24,
+        "delta_support": 0.2635,
+        "rules_after": 340,
+        "support_after": 4.5803,
+        "category": "NOODLES",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 4,
+        "kind": "move",
+        "delta_rules": 16,
+        "delta_support": 0.2044,
+        "rules_after": 356,
+        "support_after": 4.7847,
+        "category": "HOUSEHOLD ITEMS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 5,
+        "kind": "move",
+        "delta_rules": 4,
+        "delta_support": 0.042,
+        "rules_after": 360,
+        "support_after": 4.8266,
+        "category": "POOJA ITEMS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      },
+      {
+        "step": 6,
+        "kind": "move",
+        "delta_rules": 2,
+        "delta_support": 0.0209,
+        "rules_after": 362,
+        "support_after": 4.8475,
+        "category": "CONFECTIONERY",
+        "from_zone": "zone_2",
+        "to_zone": "zone_1"
+      }
+    ],
+    "movable": [
+      "BISCUITS AND COOKIES",
+      "CANNED AND PACKAGED FOODS",
+      "CLEANING SUPPLIES",
+      "CONFECTIONERY",
+      "COOKING OIL",
+      "FOOD STAPLES",
+      "HOUSEHOLD ITEMS",
+      "NOODLES",
+      "PERSONAL CARE",
+      "POOJA ITEMS",
+      "SNACKS",
+      "TEA AND SPICES"
+    ],
+    "locked": {
+      "DAIRY PRODUCTS": "zone_4",
+      "FROZEN FOODS": "zone_4",
+      "ALCOHOLIC BEVERAGES": "zone_5",
+      "CIGARETTE AND TOBACCO": "zone_5",
+      "RICE": "zone_5"
+    },
+    "forbidden": {},
+    "capacities": null,
+    "exact_optimum_support": 4.887785,
+    "exact_optimum_rules": 366,
+    "local_search_is_exact": true,
+    "delta_vs_hand_built": {
+      "rules": 186,
+      "support": 2.2263,
+      "capture_rate_points": 45.3
+    },
+    "moves_vs_hand_built": [
+      {
+        "category": "BISCUITS AND COOKIES",
+        "from_zone": "zone_3",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "CANNED AND PACKAGED FOODS",
+        "from_zone": "zone_1",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "CLEANING SUPPLIES",
+        "from_zone": "zone_1",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "CONFECTIONERY",
+        "from_zone": "zone_2",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "COOKING OIL",
+        "from_zone": "zone_1",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "FOOD STAPLES",
+        "from_zone": "zone_1",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "HOUSEHOLD ITEMS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "NOODLES",
+        "from_zone": "zone_2",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "PERSONAL CARE",
+        "from_zone": "zone_1",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "POOJA ITEMS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "SNACKS",
+        "from_zone": "zone_2",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "TEA AND SPICES",
+        "from_zone": "zone_1",
+        "to_zone": "zone_4"
+      }
+    ],
+    "groups": {
+      "zone_1": [],
+      "zone_2": [],
+      "zone_3": [
+        "BABY CARE",
+        "STATIONERY"
+      ],
+      "zone_4": [
+        "BAKERY",
+        "BISCUITS AND COOKIES",
+        "CANNED AND PACKAGED FOODS",
+        "CLEANING SUPPLIES",
+        "CONFECTIONERY",
+        "COOKING OIL",
+        "DAIRY PRODUCTS",
+        "FOOD STAPLES",
+        "FRESH PRODUCE",
+        "FROZEN FOODS",
+        "HOUSEHOLD ITEMS",
+        "NOODLES",
+        "PERSONAL CARE",
+        "POOJA ITEMS",
+        "SNACKS",
+        "TEA AND SPICES"
+      ],
+      "zone_5": [
+        "ALCOHOLIC BEVERAGES",
+        "BREAKFAST CEREALS",
+        "CIGARETTE AND TOBACCO",
+        "ELECTRICAL SUPPLIES",
+        "PARTY SUPPLIES",
+        "RICE",
+        "SOFT DRINKS AND JUICES"
+      ]
+    }
+  },
+  "capacity_unconstrained": {
+    "assignment": {
+      "NOODLES": "zone_2",
+      "CANNED AND PACKAGED FOODS": "zone_5",
+      "COOKING OIL": "zone_5",
+      "SNACKS": "zone_2",
+      "RICE": "zone_4",
+      "BISCUITS AND COOKIES": "zone_5",
+      "PERSONAL CARE": "zone_5",
+      "POOJA ITEMS": "zone_2",
+      "FOOD STAPLES": "zone_5",
+      "TEA AND SPICES": "zone_5",
+      "CONFECTIONERY": "zone_2",
+      "CLEANING SUPPLIES": "zone_5",
+      "HOUSEHOLD ITEMS": "zone_2",
+      "DAIRY PRODUCTS": "zone_4",
+      "ALCOHOLIC BEVERAGES": "zone_1",
+      "BABY CARE": "zone_3",
+      "BAKERY": "zone_4",
+      "BREAKFAST CEREALS": "zone_1",
+      "CIGARETTE AND TOBACCO": "zone_1",
+      "ELECTRICAL SUPPLIES": "zone_1",
+      "FRESH PRODUCE": "zone_4",
+      "FROZEN FOODS": "zone_1",
+      "PARTY SUPPLIES": "zone_1",
+      "SOFT DRINKS AND JUICES": "zone_3",
+      "STATIONERY": "zone_3"
+    },
+    "rules_captured": 286,
+    "support_captured": 3.9878,
+    "capture_rate": 81.124242,
+    "total_rules": 368,
+    "total_support": 4.91567,
+    "restarts": 200,
+    "seed": 42,
+    "restarts_reaching_best": 39,
+    "trace_from_reference": [],
+    "movable": [
+      "BISCUITS AND COOKIES",
+      "CANNED AND PACKAGED FOODS",
+      "CLEANING SUPPLIES",
+      "CONFECTIONERY",
+      "COOKING OIL",
+      "DAIRY PRODUCTS",
+      "FOOD STAPLES",
+      "HOUSEHOLD ITEMS",
+      "NOODLES",
+      "PERSONAL CARE",
+      "POOJA ITEMS",
+      "RICE",
+      "SNACKS",
+      "TEA AND SPICES"
+    ],
+    "locked": {},
+    "forbidden": {},
+    "capacities": {
+      "zone_1": 6,
+      "zone_2": 5,
+      "zone_3": 3,
+      "zone_4": 4,
+      "zone_5": 7
+    },
+    "exact_optimum_support": 3.9878,
+    "exact_optimum_rules": 286,
+    "local_search_is_exact": true,
+    "delta_vs_hand_built": {
+      "rules": 106,
+      "support": 1.3264,
+      "capture_rate_points": 27.0
+    },
+    "moves_vs_hand_built": [
+      {
+        "category": "ALCOHOLIC BEVERAGES",
+        "from_zone": "zone_5",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "BISCUITS AND COOKIES",
+        "from_zone": "zone_3",
+        "to_zone": "zone_5"
+      },
+      {
+        "category": "BREAKFAST CEREALS",
+        "from_zone": "zone_5",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "CANNED AND PACKAGED FOODS",
+        "from_zone": "zone_1",
+        "to_zone": "zone_5"
+      },
+      {
+        "category": "CIGARETTE AND TOBACCO",
+        "from_zone": "zone_5",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "CLEANING SUPPLIES",
+        "from_zone": "zone_1",
+        "to_zone": "zone_5"
+      },
+      {
+        "category": "COOKING OIL",
+        "from_zone": "zone_1",
+        "to_zone": "zone_5"
+      },
+      {
+        "category": "ELECTRICAL SUPPLIES",
+        "from_zone": "zone_5",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "FOOD STAPLES",
+        "from_zone": "zone_1",
+        "to_zone": "zone_5"
+      },
+      {
+        "category": "FROZEN FOODS",
+        "from_zone": "zone_4",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "PARTY SUPPLIES",
+        "from_zone": "zone_5",
+        "to_zone": "zone_1"
+      },
+      {
+        "category": "PERSONAL CARE",
+        "from_zone": "zone_1",
+        "to_zone": "zone_5"
+      },
+      {
+        "category": "RICE",
+        "from_zone": "zone_5",
+        "to_zone": "zone_4"
+      },
+      {
+        "category": "SOFT DRINKS AND JUICES",
+        "from_zone": "zone_5",
+        "to_zone": "zone_3"
+      },
+      {
+        "category": "TEA AND SPICES",
+        "from_zone": "zone_1",
+        "to_zone": "zone_5"
+      }
+    ],
+    "groups": {
+      "zone_1": [
+        "ALCOHOLIC BEVERAGES",
+        "BREAKFAST CEREALS",
+        "CIGARETTE AND TOBACCO",
+        "ELECTRICAL SUPPLIES",
+        "FROZEN FOODS",
+        "PARTY SUPPLIES"
+      ],
+      "zone_2": [
+        "CONFECTIONERY",
+        "HOUSEHOLD ITEMS",
+        "NOODLES",
+        "POOJA ITEMS",
+        "SNACKS"
+      ],
+      "zone_3": [
+        "BABY CARE",
+        "SOFT DRINKS AND JUICES",
+        "STATIONERY"
+      ],
+      "zone_4": [
+        "BAKERY",
+        "DAIRY PRODUCTS",
+        "FRESH PRODUCE",
+        "RICE"
+      ],
+      "zone_5": [
+        "BISCUITS AND COOKIES",
+        "CANNED AND PACKAGED FOODS",
+        "CLEANING SUPPLIES",
+        "COOKING OIL",
+        "FOOD STAPLES",
+        "PERSONAL CARE",
+        "TEA AND SPICES"
+      ]
+    }
+  },
+  "capacity_constrained": {
+    "assignment": {
+      "BISCUITS AND COOKIES": "zone_3",
+      "CANNED AND PACKAGED FOODS": "zone_1",
+      "CLEANING SUPPLIES": "zone_1",
+      "CONFECTIONERY": "zone_2",
+      "COOKING OIL": "zone_1",
+      "FOOD STAPLES": "zone_1",
+      "HOUSEHOLD ITEMS": "zone_2",
+      "NOODLES": "zone_2",
+      "PERSONAL CARE": "zone_1",
+      "POOJA ITEMS": "zone_2",
+      "SNACKS": "zone_2",
+      "TEA AND SPICES": "zone_1",
+      "DAIRY PRODUCTS": "zone_4",
+      "FROZEN FOODS": "zone_4",
+      "ALCOHOLIC BEVERAGES": "zone_5",
+      "CIGARETTE AND TOBACCO": "zone_5",
+      "RICE": "zone_5",
+      "BABY CARE": "zone_3",
+      "BAKERY": "zone_4",
+      "BREAKFAST CEREALS": "zone_5",
+      "ELECTRICAL SUPPLIES": "zone_5",
+      "FRESH PRODUCE": "zone_4",
+      "PARTY SUPPLIES": "zone_5",
+      "SOFT DRINKS AND JUICES": "zone_5",
+      "STATIONERY": "zone_3"
+    },
+    "rules_captured": 180,
+    "support_captured": 2.661438,
+    "capture_rate": 54.141919,
+    "total_rules": 368,
+    "total_support": 4.91567,
+    "restarts": 200,
+    "seed": 42,
+    "restarts_reaching_best": 65,
+    "trace_from_reference": [],
+    "movable": [
+      "BISCUITS AND COOKIES",
+      "CANNED AND PACKAGED FOODS",
+      "CLEANING SUPPLIES",
+      "CONFECTIONERY",
+      "COOKING OIL",
+      "FOOD STAPLES",
+      "HOUSEHOLD ITEMS",
+      "NOODLES",
+      "PERSONAL CARE",
+      "POOJA ITEMS",
+      "SNACKS",
+      "TEA AND SPICES"
+    ],
+    "locked": {
+      "DAIRY PRODUCTS": "zone_4",
+      "FROZEN FOODS": "zone_4",
+      "ALCOHOLIC BEVERAGES": "zone_5",
+      "CIGARETTE AND TOBACCO": "zone_5",
+      "RICE": "zone_5"
+    },
+    "forbidden": {},
+    "capacities": {
+      "zone_1": 6,
+      "zone_2": 5,
+      "zone_3": 3,
+      "zone_4": 4,
+      "zone_5": 7
+    },
+    "exact_optimum_support": 2.661438,
+    "exact_optimum_rules": 180,
+    "local_search_is_exact": true,
+    "delta_vs_hand_built": {
+      "rules": 0,
+      "support": 0.0,
+      "capture_rate_points": 0.0
+    },
+    "moves_vs_hand_built": [],
+    "groups": {
+      "zone_1": [
+        "CANNED AND PACKAGED FOODS",
+        "CLEANING SUPPLIES",
+        "COOKING OIL",
+        "FOOD STAPLES",
+        "PERSONAL CARE",
+        "TEA AND SPICES"
+      ],
+      "zone_2": [
+        "CONFECTIONERY",
+        "HOUSEHOLD ITEMS",
+        "NOODLES",
+        "POOJA ITEMS",
+        "SNACKS"
+      ],
+      "zone_3": [
+        "BABY CARE",
+        "BISCUITS AND COOKIES",
+        "STATIONERY"
+      ],
+      "zone_4": [
+        "BAKERY",
+        "DAIRY PRODUCTS",
+        "FRESH PRODUCE",
+        "FROZEN FOODS"
+      ],
+      "zone_5": [
+        "ALCOHOLIC BEVERAGES",
+        "BREAKFAST CEREALS",
+        "CIGARETTE AND TOBACCO",
+        "ELECTRICAL SUPPLIES",
+        "PARTY SUPPLIES",
+        "RICE",
+        "SOFT DRINKS AND JUICES"
+      ]
+    }
+  },
+  "constraint_cost": {
+    "unlimited_zones": {
+      "rules": 2,
+      "support": 0.0279,
+      "capture_rate_points": 0.6
+    },
+    "capacity_matched": {
+      "rules": 106,
+      "support": 1.3264,
+      "capture_rate_points": 27.0
+    }
+  }
+}

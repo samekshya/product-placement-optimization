@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-08-15T17:51:08",
+  "generated_at_human": "15 Aug 2026, 17:51",
+  "duration_seconds": 144.7,
+  "all_passed": true,
+  "checks": {
+    "verify_thesis_numbers": {
+      "description": "Every reported figure checked against a live source",
+      "passed": 263,
+      "failed": 0,
+      "total": 263,
+      "exit_code": 0,
+      "ok": true,
+      "verified": 263,
+      "checkable": 263,
+      "not_auto_checkable": 6
+    },
+    "quality_checks": {
+      "description": "Warehouse checked against the OLTP source and the thesis figures",
+      "passed": 32,
+      "failed": 0,
+      "total": 32,
+      "exit_code": 0,
+      "ok": true
+    },
+    "reproduce_all_results": {
+      "description": "Artifacts regenerated and every stage re-checked",
+      "passed": 26,
+      "failed": 0,
+      "total": 26,
+      "exit_code": 0,
+      "ok": true,
+      "verified": 263,
+      "checkable": 263,
+      "not_auto_checkable": 6,
+      "stages": 12
+    }
+  }
+}

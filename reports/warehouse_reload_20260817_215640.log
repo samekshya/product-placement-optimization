@@ -1,0 +1,65 @@
+======================================================================
+DELIBERATE DESTRUCTIVE RELOAD OF oltp AND warehouse SCHEMAS
+======================================================================
+When   : 2026-08-17 21:56:40
+Why    : propagate the audited category remap (reports/CATEGORY_REMAP_SPEC.md).
+         The pipeline's ON CONFLICT DO NOTHING idempotency inserts nothing on a
+         re-run, so an in-place update is impossible by design. Dropping and
+         reloading is the correct way to propagate a relabel. This is NOT a
+         pipeline failure.
+Target : postgres@localhost:5435/product_placement
+
+[0] Pre-reload state:
+      oltp.products                     5,680
+      oltp.transactions               218,037
+      oltp.transaction_items          767,180
+      warehouse.dim_category               25
+      warehouse.dim_product             5,680
+      warehouse.fact_sales            767,180
+      dim_category names (25): ALCOHOLIC BEVERAGES, BABY CARE, BAKERY, BISCUITS AND COOKIES, BREAKFAST CEREALS, CANNED AND PACKAGED FOODS, CIGARETTE AND TOBACCO, CLEANING SUPPLIES, CONFECTIONERY, COOKING OIL, DAIRY PRODUCTS, ELECTRICAL SUPPLIES, FOOD STAPLES, FRESH PRODUCE, FROZEN FOODS, HOUSEHOLD ITEMS, NOODLES, PARTY SUPPLIES, PERSONAL CARE, POOJA ITEMS, RICE, SNACKS, SOFT DRINKS AND JUICES, STATIONERY, TEA AND SPICES
+
+[1] Dropping schemas...
+      dropped warehouse and oltp in 0.0s
+
+[2] Reloading OLTP via scripts/load_to_postgres.py ...
+
+[3] Rebuilding warehouse via etl/load_warehouse.py ...
+
+[4] Post-reload confirmation:
+      dim_category rows            : 25   OK
+      SNACKS present               : True
+      FRESH PRODUCE present        : True
+      NAMKEEN AND SNACKS present   : False   (must be False)
+      FRUITS AND VEGETABLES present: False   (must be False)
+      products compared CSV vs warehouse: 5,680
+      products whose warehouse category differs from the remapped CSV: 0   OK
+      products whose warehouse category differs from PRE-REMAP backup: 694  (638 moves + 56 renamed-only)
+      of which genuine moves (not just a rename): 638   OK, 638
+
+      products per category in warehouse:
+        PERSONAL CARE                 1294
+        CANNED AND PACKAGED FOODS      709
+        CLEANING SUPPLIES              576
+        CONFECTIONERY                  452
+        TEA AND SPICES                 400
+        BISCUITS AND COOKIES           305
+        HOUSEHOLD ITEMS                229
+        BABY CARE                      220
+        SOFT DRINKS AND JUICES         191
+        FOOD STAPLES                   161
+        BREAKFAST CEREALS              143
+        SNACKS                         127
+        POOJA ITEMS                    115
+        ALCOHOLIC BEVERAGES            102
+        STATIONERY                      96
+        DAIRY PRODUCTS                  94
+        FROZEN FOODS                    94
+        COOKING OIL                     84
+        RICE                            84
+        NOODLES                         81
+        BAKERY                          39
+        ELECTRICAL SUPPLIES             38
+        CIGARETTE AND TOBACCO           17
+        PARTY SUPPLIES                  16
+        FRESH PRODUCE                   13
+        TOTAL                         5680

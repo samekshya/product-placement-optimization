@@ -1,0 +1,35 @@
+{
+  "windows": {
+    "development": {
+      "start": "2025-07-17",
+      "end": "2026-01-31",
+      "baskets": 141111
+    },
+    "validation": {
+      "start": "2026-02-01",
+      "end": "2026-05-20",
+      "baskets": 76926
+    }
+  },
+  "thresholds": {
+    "min_support": 0.01,
+    "min_lift": 1.0,
+    "strong_lift": 3.0,
+    "ratio_floor": 0.5,
+    "top_n": 20
+  },
+  "dev_rules": 1276,
+  "rules_with_defined_ratio": 1276,
+  "rules_without_defined_ratio": 0,
+  "median_ratio": 1.0155,
+  "min_ratio": 0.8671,
+  "max_ratio": 1.1558,
+  "mean_ratio": 1.0177,
+  "rules_below_ratio_floor": 0,
+  "top_n_still_strong": 20,
+  "top_n_evaluated": 20,
+  "top_n_ratio_min": 0.9841,
+  "top_n_ratio_max": 1.0365,
+  "strong_dev_rules": 342,
+  "strong_dev_rules_still_strong": 334
+}

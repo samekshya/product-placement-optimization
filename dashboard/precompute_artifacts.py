@@ -19,6 +19,7 @@ and 07 (placement) so every number matches the verified project figures:
 
 import json
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -34,6 +35,18 @@ from sklearn.preprocessing import StandardScaler
 # ------------------------------------------------------------------
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(HERE)
+
+# The cross-sell capture metric is shared with the interactive shelf layout
+# tool in app/, so that the tool and the dissertation cannot report different
+# numbers. There is one implementation, in analysis/cross_sell.py, and both
+# import it.
+sys.path.insert(0, PROJECT_ROOT)
+from analysis.cross_sell import (  # noqa: E402
+    OPTIMISED_ZONES,
+    STRONG_LIFT_FLOOR,
+    optimised_groups,
+    score_layout,
+)
 PROCESSED = os.path.join(PROJECT_ROOT, "data", "processed")
 CLEANED_CSV = os.path.join(PROCESSED, "sales_data_cleaned.csv")
 BASKET_CSV = os.path.join(PROCESSED, "basket_encoded.csv")
@@ -44,29 +57,9 @@ os.makedirs(ARTIFACTS, exist_ok=True)
 # Constants used by the notebooks for the projection maths.
 DATA_DAYS = 307  # data covers 307 days (notebook 07)
 
-# The 5 optimised placement zones (notebook 07). Used for the cross-sell
-# before/after analysis (RQ2) so the dashboard and notebook agree.
-OPTIMISED_ZONES = {
-    "Zone 1: Daily Essentials Core": [
-        "FOOD STAPLES", "COOKING OIL", "CLEANING SUPPLIES",
-        "TEA AND SPICES", "HOUSEHOLD ITEMS",
-    ],
-    "Zone 2: Snacks and Drinks": [
-        "NOODLES", "SOFT DRINKS AND JUICES", "BISCUITS AND COOKIES",
-        "CONFECTIONERY", "NAMKEEN AND SNACKS", "CANNED AND PACKAGED FOODS",
-    ],
-    "Zone 3: Personal and Baby Care": [
-        "PERSONAL CARE", "BABY CARE", "STATIONERY",
-    ],
-    "Zone 4: Dairy and Fresh": [
-        "DAIRY PRODUCTS", "FROZEN FOODS", "FRUITS AND VEGETABLES", "BAKERY",
-    ],
-    "Zone 5: Special Categories": [
-        "RICE", "ALCOHOLIC BEVERAGES", "CIGARETTE AND TOBACCO",
-        "POOJA ITEMS", "BREAKFAST CEREALS", "ELECTRICAL SUPPLIES",
-        "PARTY SUPPLIES",
-    ],
-}
+# The 5 optimised placement zones (notebook 07) are imported above from
+# analysis/cross_sell.py, which is the single definition shared with the
+# interactive shelf layout tool.
 
 
 def log(msg):
@@ -118,6 +111,25 @@ monthly["month"] = monthly["date"].astype(str)
 monthly["avg_basket"] = monthly["revenue"] / monthly["baskets"]
 monthly = monthly[["month", "revenue", "baskets", "avg_basket"]]
 monthly.to_csv(os.path.join(ARTIFACTS, "monthly_revenue.csv"), index=False)
+
+# ==================================================================
+# 3b. Monthly category mix (observed record, per month per category)
+# ==================================================================
+# Feeds the dashboard's month-by-month page. This is a plain aggregation of
+# the cleaned record, not an analysis output: revenue and distinct baskets
+# for each (month, category). The dashboard computes shares and comparisons
+# from these observed values at display time.
+log("Computing monthly category mix ...")
+monthly_mix = (
+    df.groupby([df["date"].dt.to_period("M").astype(str), "category"])
+    .agg(revenue=("total_amount", "sum"), baskets=("invoice_no", "nunique"))
+    .reset_index()
+    .rename(columns={"date": "month"})
+)
+monthly_mix["revenue"] = monthly_mix["revenue"].round(2)
+monthly_mix = monthly_mix.sort_values(["month", "category"]).reset_index(drop=True)
+monthly_mix.to_csv(os.path.join(ARTIFACTS, "monthly_category_mix.csv"), index=False)
+log(f"  -> {len(monthly_mix):,} month x category rows")
 
 # ==================================================================
 # 4. Category distribution (share of baskets each category appears in)
@@ -206,6 +218,14 @@ category_rules = category_rules.sort_values("lift", ascending=False).reset_index
 rules_out = category_rules[["antecedents", "consequents", "support", "confidence", "lift"]].copy()
 rules_out["antecedents"] = rules_out["antecedents"].apply(frozenset_to_str)
 rules_out["consequents"] = rules_out["consequents"].apply(frozenset_to_str)
+# Deterministic row order. Sorting on lift alone leaves tied rows (every rule
+# and its mirror share a lift) in whatever order the unstable sort happens to
+# produce, so the committed CSV changed on every regeneration without any
+# value changing. The itemset tiebreak makes the full key unique, so the file
+# is byte-identical run to run.
+rules_out = rules_out.sort_values(
+    ["lift", "antecedents", "consequents"], ascending=[False, True, True]
+).reset_index(drop=True)
 rules_out.to_csv(os.path.join(ARTIFACTS, "category_rules.csv"), index=False)
 log(f"  -> {len(rules_out):,} category rules, max lift {category_rules['lift'].max():.2f}")
 
@@ -283,6 +303,10 @@ product_rules = product_rules.sort_values("lift", ascending=False).reset_index(d
 prod_rules_out = product_rules[["antecedents", "consequents", "support", "confidence", "lift"]].copy()
 prod_rules_out["antecedents"] = prod_rules_out["antecedents"].apply(frozenset_to_str)
 prod_rules_out["consequents"] = prod_rules_out["consequents"].apply(frozenset_to_str)
+# Same deterministic tiebreak as category_rules.csv above.
+prod_rules_out = prod_rules_out.sort_values(
+    ["lift", "antecedents", "consequents"], ascending=[False, True, True]
+).reset_index(drop=True)
 prod_rules_out.to_csv(os.path.join(ARTIFACTS, "product_rules.csv"), index=False)
 
 # Product list (with basket counts) for the recommendation explorer dropdown.
@@ -303,7 +327,7 @@ log(f"  -> {len(prod_rules_out):,} product rules, max lift {product_rules['lift'
 # captures. This is a data-driven before/after, NOT the Rs projection.
 log("Computing cross-sell before/after (lift >= 3) ...")
 
-LIFT_FLOOR = 3.0
+LIFT_FLOOR = STRONG_LIFT_FLOOR
 strong = category_rules[category_rules["lift"] >= LIFT_FLOOR].copy()
 strong["cats"] = strong.apply(
     lambda r: set(r["antecedents"]) | set(r["consequents"]), axis=1
@@ -313,22 +337,19 @@ current_groups = [
     set(cluster_assign[cluster_assign["frequency_cluster"] == c]["category"])
     for c in sorted(cluster_assign["frequency_cluster"].unique())
 ]
-optimised_groups = [set(v) for v in OPTIMISED_ZONES.values()]
 
-
-def captured(cats, groups):
-    return any(cats <= g for g in groups)
-
-
-def score_layout(groups):
-    mask = strong["cats"].apply(lambda c: captured(c, groups))
-    return int(mask.sum()), float(strong.loc[mask, "support"].sum())
-
-
-cur_n, cur_support = score_layout(current_groups)
-opt_n, opt_support = score_layout(optimised_groups)
+# captured() and score_layout() are imported from analysis/cross_sell.py. The
+# interactive tool calls the same functions on the same rules, so the two
+# cannot report different figures.
+strong_records = strong[["cats", "support"]].to_dict("records")
 total_strong = len(strong)
 total_strong_support = float(strong["support"].sum())
+
+cur = score_layout(strong_records, current_groups, total_strong_support)
+opt = score_layout(strong_records, optimised_groups(), total_strong_support)
+
+cur_n, cur_support = cur["rules_captured"], cur["support_captured"]
+opt_n, opt_support = opt["rules_captured"], opt["support_captured"]
 
 cross_sell = {
     "lift_floor": LIFT_FLOOR,
@@ -342,8 +363,8 @@ cross_sell = {
     "current_support_captured": round(cur_support, 4),
     "optimised_support_captured": round(opt_support, 4),
     "support_captured_delta": round(opt_support - cur_support, 4),
-    "current_capture_pct": round(cur_support / total_strong_support * 100, 1) if total_strong_support else 0,
-    "optimised_capture_pct": round(opt_support / total_strong_support * 100, 1) if total_strong_support else 0,
+    "current_capture_pct": round(cur["capture_rate"], 1),
+    "optimised_capture_pct": round(opt["capture_rate"], 1),
 }
 with open(os.path.join(ARTIFACTS, "cross_sell_summary.json"), "w") as f:
     json.dump(cross_sell, f, indent=2)

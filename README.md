@@ -83,12 +83,24 @@ product-placement-optimization/
 │   ├── 09_ml_recommendation.ipynb
 │   ├── 10_demand_forecasting.ipynb
 │   ├── 11_basket_classifier.ipynb      (Decision Tree)
-│   └── 12_neural_network.ipynb         (MLP, compared against the tree)
+│   ├── 12_neural_network.ipynb         (MLP, compared against the tree)
+│   ├── 13_daily_forecasting.ipynb      (notebook 10 refitted at daily granularity)
+│   └── 14_richer_basket_features.ipynb (notebooks 11 and 12 with richer features)
+├── analysis/                   (shared analysis code, imported by notebooks, dashboard, app and tests)
+│   ├── cross_sell.py           (the ONE cross-sell capture scorer behind the 28 / 56 result)
+│   ├── zones.py                (the five placement zones and their ethics classification)
+│   ├── optimise_zones.py       (computed zone assignment: local search + exhaustive certificate)
+│   ├── daily_forecast.py       (daily revenue series, baselines, regression, Prophet)
+│   ├── basket_features.py      (richer basket features, ceiling and retrained models)
+│   └── tests/                  (pytest suite for the three modules above)
+├── app/                        (interactive shelf layout tool: FastAPI + React, see app/README.md)
 ├── sql/
 │   ├── 01_create_oltp.sql      (products, transactions, transaction_items)
 │   └── 02_create_warehouse.sql (star schema + 7 serving views)
 ├── scripts/
-│   └── load_to_postgres.py     (cleaned CSV -> OLTP)
+│   ├── load_to_postgres.py     (cleaned CSV -> OLTP)
+│   ├── verify_thesis_numbers.py (every reported figure checked against a live source)
+│   └── run_verifications.py    (runs all three verification scripts, writes reports/verification_status.json)
 ├── etl/
 │   ├── load_warehouse.py       (OLTP -> star schema)
 │   ├── quality_checks.py       (32 data quality checks)
@@ -106,6 +118,7 @@ product-placement-optimization/
 │   └── figures/                (all charts and visualizations)
 ├── docker-compose.yml          (Postgres 16 + Airflow 3.3.0 LocalExecutor)
 ├── reproduce_all_results.py    (verifies every reported number, one command)
+├── pytest.ini                  (python -m pytest runs the whole test suite)
 ├── requirements.txt
 └── README.md
 ---
@@ -143,9 +156,10 @@ pip install -r requirements.txt
 streamlit run dashboard/app.py
 ```
 
-It opens with two modes: **Store Owner** (shelf planner, monthly stock plan, store
-performance) and **Examiner** (project overview, association rules, clustering, model
-validation, placement zones, ethics). All charts are interactive (hover/zoom) and the
+It opens on a landing page ("The Result") and then offers two modes: **Store Owner**
+(three pages) and **Examiner** (eight pages, including live verification status). Pages
+are titled as the question each answers, with the former topic name and dissertation
+section number kept as the subtitle. All charts are interactive (hover/zoom) and the
 layout works in both light and dark themes.
 
 To rebuild the artifacts after re-running the notebooks (requires the processed CSVs):
@@ -200,8 +214,16 @@ python etl/refresh_artifacts.py        # warehouse    -> dashboard artifacts
 python reproduce_all_results.py
 ```
 
-It runs 12 checks across 8 steps, prints a full report, saves a timestamped log to `reports/`, and
-exits 0 only if every check passes.
+It regenerates every artifact (including the three extension studies below), runs 26 checks across
+12 steps, calls the full thesis-number sweep as its last step, saves a timestamped log to `reports/`,
+and exits 0 only if every check passes.
+
+```
+python scripts/verify_thesis_numbers.py   # every reported figure against a live source (263 checkable)
+python etl/quality_checks.py              # 32 warehouse quality checks
+python -m pytest                          # 54 tests: app, dashboard and the analysis modules
+python scripts/run_verifications.py       # all three scripts, status written to reports/verification_status.json
+```
 
 ---
 
@@ -216,6 +238,8 @@ exits 0 only if every check passes.
 | Prophet | Supervised ML | Forecast revenue including the Dashain seasonal peak |
 | Decision Tree | Supervised ML | Identify which categories predict basket value |
 | MLP Neural Network | Supervised ML | Test whether more model capacity beats the tree |
+| Greedy local search with random restarts | Optimisation | Find the best category-to-zone assignment under the cross-sell metric, certified by exhaustive enumeration |
+| Naive baselines, day-of-week regression, Prophet (daily) | Supervised ML | Refit the forecasting question on 304 daily observations |
 
 ---
 
@@ -237,6 +261,40 @@ co-locates **56** strong cross-sell rules (lift ≥ 3) versus **28** for the cur
 frequency-driven layout - a **2.0x** increase, raising captured strong-rule support from
 8.2% to 16.3%. This result is measured from the association rules; the rupee uplift above
 remains a projection.
+
+---
+
+## Extensions (added 15 August 2026)
+
+Three follow-up studies, each an extension of a reported result rather than a replacement. All
+figures below are held in `config/metrics.py` and checked by `scripts/verify_thesis_numbers.py`.
+
+**1. Computed zone assignment (`analysis/optimise_zones.py`, `dashboard/artifacts/zone_optimisation.json`).**
+Greedy local search with 200 seeded restarts over the same `score_layout` objective as the 28 / 56
+result, certified against exhaustive enumeration. Only 12 of the 25 categories appear in any strong
+rule. With no limit on zone size the optimum puts all 12 in one zone and captures every rule
+(360, 100 per cent): a property of the metric, not a shelf plan. With each zone held to its
+hand-built size (5/6/3/4/7) the certified optimum is 250 rules (71.4 per cent) against the
+hand-built 56 (16.3 per cent), and the whole gain comes from two moves: CANNED AND PACKAGED FOODS
+and PERSONAL CARE into the Daily Essentials group. The cold-storage and entrance constraints cost
+nothing, because none of the four constrained categories appears in a strong rule.
+
+**2. Daily granularity forecasting (`analysis/daily_forecast.py`, notebook 13, chart 25).** The
+monthly forecast (notebook 10, R squared -2.377 on three test months) is kept as reported. On the
+304 trading days, split chronologically 243 / 61, every fitted model beats naive persistence
+(the best, day-of-week regression refit daily, by 41.6 per cent in MAE) but no model reaches a
+positive R squared on the held-out days, and Prophet does not detect the Dashain peak at daily
+granularity unless its trend is loosened enough to overfit. Daily forecasting is usable as a
+level-and-weekday planning rule (about 11 per cent MAPE) and fails as a model of variation.
+
+**3. Richer basket features (`analysis/basket_features.py`, notebook 14, chart 26).** The 71.67 per
+cent ceiling on 25 binary flags is kept as reported and recomputed in the same run. Adding item
+count, category count, per-category quantity, day of week and month (45 features; hour of day does
+not exist in the source) moves the depth-5 tree from 61.30 to 71.98 per cent and the MLP from 69.05
+to 75.75 per cent on the same split. The same-method ceiling rises to 91.27 per cent, but 49 per
+cent of baskets then have a unique pattern, so that ceiling is a memorisation bound rather than
+headroom. Item count displaces COOKING OIL (0.280 to 0.010) as the top tree feature; RICE stays
+second.
 
 ---
 

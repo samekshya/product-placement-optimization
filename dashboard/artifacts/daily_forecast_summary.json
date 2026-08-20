@@ -1,0 +1,367 @@
+{
+  "generated_from": "data/processed/sales_data_cleaned.csv",
+  "series": {
+    "trading_days": 304,
+    "first_date": "2025-07-17",
+    "last_date": "2026-05-20",
+    "calendar_span_days": 308,
+    "missing_days": [
+      "2025-09-10",
+      "2025-10-02",
+      "2025-10-23",
+      "2026-03-05"
+    ],
+    "total_revenue": 218214456.85,
+    "mean_daily_revenue": 717810.713322,
+    "std_daily_revenue": 133628.22306
+  },
+  "split": {
+    "method": "chronological, first 80 per cent of trading days train",
+    "test_fraction": 0.2,
+    "train_days": 243,
+    "test_days": 61,
+    "train_start": "2025-07-17",
+    "train_end": "2026-03-20",
+    "test_start": "2026-03-21",
+    "test_end": "2026-05-20"
+  },
+  "day_of_week": {
+    "by_weekday": {
+      "Monday": {
+        "mean_revenue": 722490.363182,
+        "days": 44,
+        "total_revenue": 31789575.98
+      },
+      "Tuesday": {
+        "mean_revenue": 735129.42,
+        "days": 44,
+        "total_revenue": 32345694.48
+      },
+      "Wednesday": {
+        "mean_revenue": 750109.348605,
+        "days": 43,
+        "total_revenue": 32254701.99
+      },
+      "Thursday": {
+        "mean_revenue": 703389.632683,
+        "days": 41,
+        "total_revenue": 28838974.94
+      },
+      "Friday": {
+        "mean_revenue": 745545.132955,
+        "days": 44,
+        "total_revenue": 32803985.85
+      },
+      "Saturday": {
+        "mean_revenue": 652803.263864,
+        "days": 44,
+        "total_revenue": 28723343.61
+      },
+      "Sunday": {
+        "mean_revenue": 714958.636364,
+        "days": 44,
+        "total_revenue": 31458180.0
+      }
+    },
+    "highest_mean_revenue": "Wednesday",
+    "lowest_mean_revenue": "Saturday",
+    "highest_total_revenue": "Friday",
+    "lowest_total_revenue": "Saturday"
+  },
+  "models": {
+    "naive_flat": {
+      "r2": -6.4e-05,
+      "mae": 74993.896393,
+      "rmse": 110685.295312,
+      "mape": 12.100866,
+      "name": "Naive flat (last training day repeated)",
+      "framing": "fixed"
+    },
+    "historical_mean": {
+      "r2": -3e-06,
+      "mae": 74959.092307,
+      "rmse": 110681.884873,
+      "mape": 12.107955,
+      "name": "Historical mean (training mean repeated)",
+      "framing": "fixed"
+    },
+    "seasonal_naive_fixed": {
+      "r2": -0.522755,
+      "mae": 101417.058852,
+      "rmse": 136581.23959,
+      "mape": 16.646911,
+      "name": "Seasonal naive (last training week repeated)",
+      "framing": "fixed"
+    },
+    "linear_dow": {
+      "r2": -0.022236,
+      "mae": 69473.427511,
+      "rmse": 111905.523923,
+      "mape": 11.365525,
+      "name": "Linear regression, day-of-week dummies",
+      "framing": "fixed",
+      "weekday_coefficients": {
+        "Monday": 728854.142286,
+        "Tuesday": 724663.785143,
+        "Wednesday": 763649.087941,
+        "Thursday": 688189.634848,
+        "Friday": 749260.079167,
+        "Saturday": 655321.272,
+        "Sunday": 713205.320571
+      },
+      "highest_weekday": "Wednesday",
+      "lowest_weekday": "Saturday"
+    },
+    "linear_dow_trend": {
+      "r2": -0.078085,
+      "mae": 76461.462257,
+      "rmse": 114921.797255,
+      "mape": 12.737312,
+      "name": "Linear regression, day-of-week plus trend",
+      "framing": "fixed",
+      "trend_per_day": 175.7166
+    },
+    "prophet_weekly": {
+      "r2": -0.063413,
+      "mae": 75113.756594,
+      "rmse": 114137.114027,
+      "mape": 12.496649,
+      "name": "Prophet, weekly seasonality",
+      "framing": "fixed"
+    },
+    "naive_persistence": {
+      "r2": -1.600369,
+      "mae": 119610.681311,
+      "rmse": 178481.602331,
+      "mape": 18.167971,
+      "name": "Naive persistence (yesterday's value)",
+      "framing": "rolling"
+    },
+    "expanding_mean": {
+      "r2": -0.003701,
+      "mae": 75073.654808,
+      "rmse": 110886.341484,
+      "mape": 12.115854,
+      "name": "Expanding mean (all days observed so far)",
+      "framing": "rolling"
+    },
+    "seasonal_naive": {
+      "r2": -0.596298,
+      "mae": 97759.109016,
+      "rmse": 139840.508977,
+      "mape": 15.240851,
+      "name": "Seasonal naive (same weekday last week)",
+      "framing": "rolling"
+    },
+    "linear_dow_rolling": {
+      "r2": -0.014616,
+      "mae": 69793.619821,
+      "rmse": 111487.65014,
+      "mape": 11.394075,
+      "name": "Linear regression, day-of-week, refit daily",
+      "framing": "rolling"
+    },
+    "prophet_weekly_rolling": {
+      "r2": -0.043776,
+      "mae": 73423.113717,
+      "rmse": 113078.390395,
+      "mape": 12.140295,
+      "name": "Prophet, weekly seasonality, refit daily",
+      "framing": "rolling",
+      "refits": 61
+    }
+  },
+  "verdict": {
+    "fixed": {
+      "best_model": "linear_dow",
+      "vs_naive_flat": {
+        "historical_mean": {
+          "mae_change_pct": 0.05,
+          "beats": true
+        },
+        "seasonal_naive_fixed": {
+          "mae_change_pct": -35.23,
+          "beats": false
+        },
+        "linear_dow": {
+          "mae_change_pct": 7.36,
+          "beats": true
+        },
+        "linear_dow_trend": {
+          "mae_change_pct": -1.96,
+          "beats": false
+        },
+        "prophet_weekly": {
+          "mae_change_pct": -0.16,
+          "beats": false
+        }
+      },
+      "vs_historical_mean": {
+        "naive_flat": {
+          "mae_change_pct": -0.05,
+          "beats": false
+        },
+        "seasonal_naive_fixed": {
+          "mae_change_pct": -35.3,
+          "beats": false
+        },
+        "linear_dow": {
+          "mae_change_pct": 7.32,
+          "beats": true
+        },
+        "linear_dow_trend": {
+          "mae_change_pct": -2.0,
+          "beats": false
+        },
+        "prophet_weekly": {
+          "mae_change_pct": -0.21,
+          "beats": false
+        }
+      },
+      "vs_seasonal_naive_fixed": {
+        "naive_flat": {
+          "mae_change_pct": 26.05,
+          "beats": true
+        },
+        "historical_mean": {
+          "mae_change_pct": 26.09,
+          "beats": true
+        },
+        "linear_dow": {
+          "mae_change_pct": 31.5,
+          "beats": true
+        },
+        "linear_dow_trend": {
+          "mae_change_pct": 24.61,
+          "beats": true
+        },
+        "prophet_weekly": {
+          "mae_change_pct": 25.94,
+          "beats": true
+        }
+      }
+    },
+    "rolling": {
+      "best_model": "linear_dow_rolling",
+      "vs_naive_persistence": {
+        "expanding_mean": {
+          "mae_change_pct": 37.23,
+          "beats": true
+        },
+        "seasonal_naive": {
+          "mae_change_pct": 18.27,
+          "beats": true
+        },
+        "linear_dow_rolling": {
+          "mae_change_pct": 41.65,
+          "beats": true
+        },
+        "prophet_weekly_rolling": {
+          "mae_change_pct": 38.61,
+          "beats": true
+        }
+      },
+      "vs_expanding_mean": {
+        "naive_persistence": {
+          "mae_change_pct": -59.32,
+          "beats": false
+        },
+        "seasonal_naive": {
+          "mae_change_pct": -30.22,
+          "beats": false
+        },
+        "linear_dow_rolling": {
+          "mae_change_pct": 7.03,
+          "beats": true
+        },
+        "prophet_weekly_rolling": {
+          "mae_change_pct": 2.2,
+          "beats": true
+        }
+      },
+      "vs_seasonal_naive": {
+        "naive_persistence": {
+          "mae_change_pct": -22.35,
+          "beats": false
+        },
+        "expanding_mean": {
+          "mae_change_pct": 23.21,
+          "beats": true
+        },
+        "linear_dow_rolling": {
+          "mae_change_pct": 28.61,
+          "beats": true
+        },
+        "prophet_weekly_rolling": {
+          "mae_change_pct": 24.89,
+          "beats": true
+        }
+      }
+    },
+    "any_model_r2_positive_fixed": false,
+    "any_model_r2_positive_rolling": false,
+    "test_mean_revenue": 717954.243607,
+    "test_std_revenue": 110681.739221
+  },
+  "dashain": {
+    "window": [
+      "2025-09-22",
+      "2025-10-02"
+    ],
+    "actual_peak_day": "2025-10-01",
+    "actual_peak_revenue": 1386057.0,
+    "fitted_peak_day": "2026-03-18",
+    "fitted_peak_value": 781459.272571,
+    "trend_peak_day": "2026-03-20",
+    "fitted_mean_inside_window": 716205.982974,
+    "fitted_mean_outside_window": 717893.673144,
+    "actual_mean_inside_window": 988038.441,
+    "actual_mean_outside_window": 706175.380172,
+    "fitted_peak_inside_window": false,
+    "trend_peak_inside_window": false
+  },
+  "prophet_sensitivity": {
+    "r2": -0.520691,
+    "mae": 102646.949824,
+    "rmse": 136488.605815,
+    "mape": 17.056216,
+    "name": "Prophet, weekly seasonality, flexible trend (changepoint_prior_scale 0.5)",
+    "framing": "fixed",
+    "changepoint_prior_scale": 0.5,
+    "dashain": {
+      "window": [
+        "2025-09-22",
+        "2025-10-02"
+      ],
+      "actual_peak_day": "2025-10-01",
+      "actual_peak_revenue": 1386057.0,
+      "fitted_peak_day": "2025-09-24",
+      "fitted_peak_value": 837675.312827,
+      "trend_peak_day": "2025-09-25",
+      "fitted_mean_inside_window": 794729.234407,
+      "fitted_mean_outside_window": 714454.476591,
+      "actual_mean_inside_window": 988038.441,
+      "actual_mean_outside_window": 706175.380172,
+      "fitted_peak_inside_window": true,
+      "trend_peak_inside_window": true
+    }
+  },
+  "error_structure": {
+    "days": [
+      "2026-04-13",
+      "2026-04-14"
+    ],
+    "what": "Nepali New Year eve and day: 83 transactions on the 13th, the busiest test day on the 14th",
+    "share_of_linear_dow_sse_pct": 51.192534,
+    "linear_dow_mae_excluding_days": 56873.266458,
+    "linear_dow_r2_excluding_days": -0.033434
+  },
+  "prophet_settings": {
+    "yearly_seasonality": false,
+    "weekly_seasonality": true,
+    "daily_seasonality": false,
+    "seasonality_mode": "additive",
+    "point_estimate": "MAP (deterministic)"
+  },
+  "random_seed": 42
+}

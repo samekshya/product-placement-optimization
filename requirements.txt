@@ -1,4 +1,8 @@
-streamlit>=1.30
+# Pinned exactly: the dashboard uses use_container_width, which Streamlit
+# deprecated with removal scheduled after 2025-12-31. An open >= pin would let
+# a fresh install pull a release that has removed it and break every page.
+# 1.58.0 is the version the dashboard is verified against.
+streamlit==1.58.0
 pandas>=2.0
 numpy>=1.24
 plotly>=5.18

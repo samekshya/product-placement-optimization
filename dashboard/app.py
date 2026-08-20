@@ -12,6 +12,7 @@ Apriori at launch, so a marker can run it instantly from a fresh clone:
 
 import json
 import os
+import sys
 import textwrap
 from itertools import combinations
 
@@ -28,6 +29,26 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ARTIFACTS = os.path.join(HERE, "artifacts")
 PROJECT_ROOT = os.path.dirname(HERE)  # so config/db.py is importable
 
+for _p in (PROJECT_ROOT, HERE):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
+# The five placement zones. Content (categories, ethics) comes from the shared
+# analysis/zones.py via zone_layout.py; only colours and geometry are local.
+# dashboard/tests/test_shared_zones.py asserts this stays true.
+from zone_layout import ZONES  # noqa: E402
+from config import metrics as M  # noqa: E402
+
+# The same scoring functions the dissertation figures and the shelf layout
+# tool use. The per-zone ethics breakdown on the Placement Zones page is
+# computed with these rather than typed in.
+from analysis import zones as zone_defs  # noqa: E402
+from analysis.cross_sell import (  # noqa: E402
+    STRONG_LIFT_FLOOR,
+    groups_from_assignment,
+    score_layout,
+)
+
 st.set_page_config(
     page_title="The case study store",
     layout="wide",
@@ -39,48 +60,73 @@ st.set_page_config(
 # ============================================================
 # Brand: indigo primary, teal accent, amber highlight. Green/red only for deltas.
 
-PRIMARY = "#1E2A4A"    # indigo (headers / primary chart series)
-ACCENT = "#0EA5A4"     # teal (accents, secondary series)
-HIGHLIGHT = "#F59E0B"  # amber (callouts)
-POSITIVE = "#16A34A"   # green delta
-NEGATIVE = "#DC2626"    # red delta
+# Colour language, used identically on every page. The widget chrome
+# (buttons, sliders, active nav, focus rings) is themed to the same teal in
+# .streamlit/config.toml, so interactive chrome and measured results share
+# one colour and the default Streamlit red never appears.
+#   ACCENT (teal)     measured results, and the interactive chrome
+#   HIGHLIGHT (amber) projections ONLY: if amber is visible, it means estimate
+#   NEGATIVE (red)    genuine failures only: a failed check, a stale report,
+#                     the documented error record
+#   everything else   neutral: stone text, grey and slate chart series
+# ACCENT and HIGHLIGHT are assigned from the active theme just after
+# get_theme(), because dark mode needs lighter steps of the same hues.
+POSITIVE = "#16A34A"   # green: pass states and the live-source indicator
+NEGATIVE = "#DC2626"   # red: failures only
 
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = False
 if "view_mode" not in st.session_state:
     st.session_state.view_mode = "Owner"
+if "entered" not in st.session_state:
+    # False until a mode is chosen on the landing page ("The Result").
+    st.session_state.entered = False
 
 
 def get_theme(dark):
-    """Accessible (WCAG AA) light + dark palettes."""
+    """Accessible (WCAG AA) light + dark palettes.
+
+    The light values mirror .streamlit/config.toml exactly. Dark keeps the
+    same hue roles but lightens accent and amber so they stay legible.
+    """
     if dark:
         return {
             "bg": "#0B1120",
             "card": "#131C31",
+            "sidebar": "#131C31",
             "border": "#1F2A44",
             "text": "#E2E8F0",
             "subtext": "#94A3B8",
             "grid": "#1F2A44",
             "header": "#E2E8F0",
-            "header2": "#7C9CD6",   # lighter indigo so it reads on dark
+            "header2": "#E2E8F0",
             "shadow": "0 1px 3px rgba(0,0,0,0.45)",
             "plot_template": "plotly_dark",
+            "accent": "#14B8A6",
+            "projected": "#D97706",
         }
     return {
-        "bg": "#F1F5F9",
+        "bg": "#FFFFFF",
         "card": "#FFFFFF",
-        "border": "#E2E8F0",
-        "text": "#0F172A",
-        "subtext": "#475569",
-        "grid": "#E2E8F0",
-        "header": PRIMARY,
-        "header2": PRIMARY,
-        "shadow": "0 1px 3px rgba(15,23,42,0.08)",
+        "sidebar": "#F5F5F4",
+        "border": "#D6D3D1",
+        "text": "#1C1917",
+        "subtext": "#78716C",
+        "grid": "#E7E5E4",
+        "header": "#1C1917",
+        "header2": "#1C1917",
+        "shadow": "0 1px 3px rgba(28,25,23,0.08)",
         "plot_template": "plotly_white",
+        "accent": "#0F766E",
+        "projected": "#B45309",
     }
 
 
 T = get_theme(st.session_state.dark_mode)
+
+# The two signal colours, resolved per theme (see the colour language above).
+ACCENT = T["accent"]
+HIGHLIGHT = T["projected"]
 
 # ------------------------------------------------------------
 # Single CSS block for the whole app
@@ -91,7 +137,7 @@ st.markdown(
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     html, body, [class*="css"], [data-testid="stMarkdownContainer"] {{ font-family: 'Inter', sans-serif; }}
     .stApp {{ background-color: {T['bg']}; color: {T['text']}; }}
-    [data-testid="stSidebar"] {{ background-color: {T['card']}; border-right: 1px solid {T['border']}; }}
+    [data-testid="stSidebar"] {{ background-color: {T['sidebar']}; border-right: 1px solid {T['border']}; }}
     [data-testid="stSidebar"] label {{ color: {T['text']} !important; }}
     [data-testid="stSidebar"] p {{ color: {T['text']} !important; }}
     [data-testid="stSidebar"] span {{ color: {T['text']} !important; }}
@@ -200,6 +246,99 @@ def info_card(title, body, accent=None):
     )
 
 
+def hero(value, statement, kind=None, value_color=None):
+    """The one dominant figure at the top of a page.
+
+    kind='measured' attaches the teal MEASURED treatment; kind='projected' the
+    amber dashed PROJECTED treatment; None is neutral. Every page opens with
+    exactly one of these rather than a row of equal tiles.
+    """
+    pill = ""
+    box = ""
+    if kind == "measured":
+        box = f"border-left:5px solid {ACCENT};"
+        pill = (
+            f"<div style='margin-bottom:10px;'><span style='background:{ACCENT};"
+            f"color:#FFFFFF;font-size:11px;font-weight:700;letter-spacing:0.1em;"
+            f"border-radius:99px;padding:3px 12px;'>MEASURED</span></div>"
+        )
+    elif kind == "projected":
+        box = f"border:2px dashed {HIGHLIGHT};"
+        pill = (
+            f"<div style='margin-bottom:10px;'><span style='background:{HIGHLIGHT};"
+            f"color:#FFFFFF;font-size:11px;font-weight:700;letter-spacing:0.1em;"
+            f"border-radius:99px;padding:3px 12px;'>PROJECTED</span></div>"
+        )
+    vc = value_color or T["text"]
+    render_html(
+        f"<div class='ui-card' style='{box}padding:22px 26px;margin-bottom:14px;'>"
+        f"{pill}"
+        f"<div style='font-size:38px;font-weight:800;line-height:1.1;color:{vc};'>{value}</div>"
+        f"<div style='font-size:14px;color:{T['subtext']};margin-top:8px;max-width:680px;"
+        f"line-height:1.55;'>{statement}</div></div>"
+    )
+
+
+def projection_block(stats, note):
+    """The single visual treatment for projected figures: amber, dashed,
+    PROJECTED pill. Measured figures never use this; projections never appear
+    outside it. stats: list of (label, value)."""
+    cells = "".join(
+        f"<div style='flex:1;min-width:150px;text-align:center;'>"
+        f"<div style='font-size:11px;font-weight:600;text-transform:uppercase;"
+        f"letter-spacing:0.06em;color:{T['subtext']};margin-bottom:4px;'>{label}</div>"
+        f"<div style='font-size:22px;font-weight:800;color:{T['text']};'>{value}</div></div>"
+        for label, value in stats
+    )
+    render_html(
+        f"<div style='border:2px dashed {HIGHLIGHT};border-radius:12px;"
+        f"background-color:{T['card']};padding:16px 18px;margin:4px 0 10px 0;'>"
+        f"<div style='text-align:center;margin-bottom:10px;'>"
+        f"<span style='background:{HIGHLIGHT};color:#FFFFFF;font-size:11px;"
+        f"font-weight:700;letter-spacing:0.1em;border-radius:99px;padding:3px 12px;'>"
+        f"PROJECTED</span></div>"
+        f"<div style='display:flex;gap:12px;flex-wrap:wrap;'>{cells}</div>"
+        f"<div style='font-size:12px;color:{T['subtext']};margin-top:10px;"
+        f"text-align:center;line-height:1.5;'>{note}</div></div>"
+    )
+
+
+# Each page is titled with the question it answers; the subtitle beneath keeps
+# the former topic name and points at the dissertation section it reports, so a
+# reader with the document open can match page to section without guessing.
+PAGE_TOPICS = {
+    "What should go next to what?": "Shelf Planner . 23.2 Association rules",
+    "What happened each month?": "Monthly Stock Plan . 23.1 Purchasing behaviour",
+    "How is the store doing?": "Store Performance . 23.1 Purchasing behaviour",
+    "What was done?": "Project Overview . 12.4 Analytical methods",
+    "What drives the store's revenue?": "Store Analytics . 23.1 Purchasing behaviour",
+    "What do customers buy together?": "23.2 Association rules",
+    "Which categories belong near each other?": "23.3 Clustering and zone derivation",
+    "Do the recommendations actually work?": "Model Validation . 23.5 Predictive models",
+    "Where should everything go?": "Placement Zones . 23.4 Layout comparison",
+    "How do I know these numbers are right?": "Verification and error history . 21.4 Reproducibility, 22 Ethical reflection",
+    "Was this done responsibly?": "Ethics & Data . 13 Ethical considerations, 24 RQ2 findings",
+}
+
+
+def page_header(question, subtitle=None):
+    """Question title, topic-and-section line, optional descriptive subtitle."""
+    st.title(question)
+    topic = PAGE_TOPICS.get(question)
+    if topic:
+        # Sentence case, not uppercase: this line is a cross-reference to the
+        # dissertation, not a label.
+        st.markdown(
+            f"<div style='font-size:13px;font-weight:500;"
+            f"color:{T['subtext']};margin:-4px 0 4px 0;'>"
+            f"{topic}</div>",
+            unsafe_allow_html=True,
+        )
+    if subtitle:
+        section(None, subtitle)
+    st.markdown("---")
+
+
 def style_fig(fig, height=380, legend=True):
     """Apply the ONE shared Plotly theme to every figure (reads current mode)."""
     fig.update_layout(
@@ -209,7 +348,7 @@ def style_fig(fig, height=380, legend=True):
         font=dict(family="Inter, sans-serif", color=T["text"], size=12),
         margin=dict(l=10, r=10, t=30, b=10),
         height=height,
-        colorway=[PRIMARY if not st.session_state.dark_mode else "#7C9CD6", ACCENT, HIGHLIGHT, "#8B5CF6", "#EC4899"],
+        colorway=[SERIES, ACCENT, "#A8A29E", "#78716C", "#D6D3D1"],
         showlegend=legend,
         legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color=T["subtext"])),
         hoverlabel=dict(font=dict(family="Inter, sans-serif")),
@@ -223,8 +362,9 @@ def show_chart(fig):
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 
-# Brand colour for chart series that should read in the current theme
-SERIES = PRIMARY if not st.session_state.dark_mode else "#7C9CD6"
+# Neutral slate for chart series that are neither a measured emphasis (teal)
+# nor a projection (amber): data reads as data, colour is reserved for meaning.
+SERIES = "#475569" if not st.session_state.dark_mode else "#94A3B8"
 
 
 # ============================================================
@@ -356,6 +496,20 @@ def load_cross_sell():
         return json.load(f)
 
 
+def load_verification_status():
+    """Most recent output of scripts/run_verifications.py, or None.
+
+    Deliberately NOT cached: the point of this file is showing current state,
+    and it changes whenever verification is re-run.
+    """
+    path = os.path.join(PROJECT_ROOT, "reports", "verification_status.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
 @st.cache_data
 def load_zone_performance():
     """Revenue by placement zone. Only the warehouse can answer this.
@@ -374,6 +528,59 @@ def load_zone_performance():
         )
     except Exception:  # noqa: BLE001
         return None
+
+
+def rule_categories(rules_df, floor):
+    """The set of categories appearing in any rule at or above a lift floor."""
+    cats = set()
+    for _, row in rules_df[rules_df["lift"] >= floor].iterrows():
+        cats |= {a.strip() for a in str(row["antecedents"]).split(",")}
+        cats |= {c.strip() for c in str(row["consequents"]).split(",")}
+    return cats
+
+
+@st.cache_data(show_spinner=False)
+def load_layout_reach(strong_cats):
+    """Share of baskets the layout can influence, and the revenue outside it.
+
+    Recomputed from the warehouse when it is running; otherwise the recorded
+    figures from config/metrics.py, measured 2026-08-14, are shown and labelled
+    as recorded rather than live.
+    """
+    strong_cats = sorted(strong_cats)
+    if WAREHOUSE_LIVE:
+        try:
+            in_list = ", ".join("'" + c.replace("'", "''") + "'" for c in strong_cats)
+            df_ = sql_df(
+                "WITH covered AS ("
+                "  SELECT DISTINCT f.basket_key FROM warehouse.fact_sales f"
+                "  JOIN warehouse.dim_category c ON c.category_key = f.category_key"
+                f"  WHERE c.category_name IN ({in_list}))"
+                " SELECT"
+                "  (SELECT COUNT(*) FROM covered) AS covered_baskets,"
+                "  (SELECT COUNT(*) FROM warehouse.dim_basket) AS total_baskets,"
+                "  (SELECT COALESCE(SUM(basket_value), 0) FROM warehouse.dim_basket b"
+                "     WHERE NOT EXISTS (SELECT 1 FROM covered v"
+                "                       WHERE v.basket_key = b.basket_key)) AS uncovered_revenue,"
+                "  (SELECT SUM(basket_value) FROM warehouse.dim_basket) AS total_revenue"
+            )
+            row = df_.iloc[0]
+            covered = float(row["covered_baskets"]) / float(row["total_baskets"]) * 100
+            uncov_rev = float(row["uncovered_revenue"]) / float(row["total_revenue"]) * 100
+            return {
+                "reachable_pct": round(covered, 2),
+                "unreachable_pct": round(100 - covered, 2),
+                "unreachable_revenue_pct": round(uncov_rev, 2),
+                "source": "recomputed from the warehouse just now",
+            }
+        except Exception:  # noqa: BLE001 - fall back to the recorded figures
+            pass
+    return {
+        "reachable_pct": M.LAYOUT_REACHABLE_BASKET_PCT,
+        "unreachable_pct": M.LAYOUT_UNREACHABLE_BASKET_PCT,
+        "unreachable_revenue_pct": M.LAYOUT_UNREACHABLE_REVENUE_PCT,
+        "source": "recorded in config/metrics.py, measured 2026-08-14 (warehouse offline)",
+    }
 
 
 def get_recommendations(product_name, rules_df, top_n=5):
@@ -430,6 +637,25 @@ abc_analysis = from_warehouse_or_csv(
     "ORDER BY revenue DESC, product_name",
     "abc_analysis.csv",
 )
+monthly_mix = from_warehouse_or_csv(
+    "SELECT d.year_month AS month, c.category_name AS category, "
+    "ROUND(SUM(f.total_amount), 2) AS revenue, "
+    "COUNT(DISTINCT f.basket_key) AS baskets "
+    "FROM warehouse.fact_sales f "
+    "JOIN warehouse.dim_date d ON d.date_key = f.date_key "
+    "JOIN warehouse.dim_category c ON c.category_key = f.category_key "
+    "GROUP BY d.year_month, c.category_name "
+    "ORDER BY d.year_month, c.category_name",
+    "monthly_category_mix.csv",
+)
+monthly_mix["revenue"] = monthly_mix["revenue"].astype(float)
+monthly_mix["baskets"] = monthly_mix["baskets"].astype(int)
+# Share of the month's revenue, computed at display time from the observed
+# values so the same formula serves the warehouse and the artifact.
+monthly_mix["share_pct"] = (
+    monthly_mix["revenue"]
+    / monthly_mix.groupby("month")["revenue"].transform("sum") * 100
+)
 if WAREHOUSE_LIVE and "cumulative_pct" not in abc_analysis.columns:
     # The view returns ranked revenue; the ABC banding is presentation logic,
     # applied here so the same thresholds as notebook 03 Chart 10 are used.
@@ -459,50 +685,155 @@ def crore(rs):
 
 
 # ============================================================
-# SEASONAL STOCK DATA (owner planning -- unchanged content)
+# OBSERVED MONTHLY RECORD (replaces the former hardcoded seasonal
+# dictionary; everything shown is computed from the data at runtime)
 # ============================================================
 
-SEASONAL_STOCK = {
-    "July": {"season": "Monsoon", "stock_up": ["CLEANING SUPPLIES", "FOOD STAPLES", "COOKING OIL"], "reduce": ["SOFT DRINKS", "PARTY SUPPLIES"], "tip": "Monsoon starts. Customers clean more. Stock extra detergent and floor cleaners."},
-    "August": {"season": "Monsoon", "stock_up": ["CLEANING SUPPLIES", "FOOD STAPLES", "NOODLES"], "reduce": ["FROZEN FOODS", "PARTY SUPPLIES"], "tip": "Peak monsoon. NOODLES spike as customers want quick meals during rain."},
-    "September": {"season": "Dashain", "stock_up": ["ALCOHOLIC BEVERAGES", "CONFECTIONERY", "FOOD STAPLES", "POOJA ITEMS"], "reduce": ["STATIONERY", "ELECTRICAL SUPPLIES"], "tip": "Dashain month. Highest revenue month in your data at Rs 23.3 million. Stock ALCOHOL 3 weeks early."},
-    "October": {"season": "Tihar", "stock_up": ["CONFECTIONERY", "POOJA ITEMS", "ALCOHOLIC BEVERAGES", "FOOD STAPLES"], "reduce": ["FROZEN FOODS"], "tip": "Tihar follows Dashain. Confectionery and sweets peak. Keep POOJA ITEMS well stocked."},
-    "November": {"season": "Winter Start", "stock_up": ["TEA AND SPICES", "CIGARETTE AND TOBACCO", "COOKING OIL", "FOOD STAPLES"], "reduce": ["SOFT DRINKS AND JUICES"], "tip": "Winter begins. TEA AND SPICES peak. Cigarette sales consistently top 5 in cold months."},
-    "December": {"season": "Winter", "stock_up": ["TEA AND SPICES", "CIGARETTE AND TOBACCO", "FOOD STAPLES", "COOKING OIL"], "reduce": ["SOFT DRINKS AND JUICES", "FROZEN FOODS"], "tip": "Deep winter. Same pattern as November. FOOD STAPLES and TEA are your anchor categories."},
-    "January": {"season": "Winter", "stock_up": ["TEA AND SPICES", "CIGARETTE AND TOBACCO", "FOOD STAPLES"], "reduce": ["SOFT DRINKS AND JUICES"], "tip": "Coldest month. Focus on warm beverage categories and essential food staples."},
-    "February": {"season": "Spring Start", "stock_up": ["FOOD STAPLES", "PERSONAL CARE", "BISCUITS AND COOKIES"], "reduce": ["CIGARETTE AND TOBACCO"], "tip": "Regular patterns return. Good time to start rearranging shelves before the next festival season."},
-    "March": {"season": "Spring", "stock_up": ["FOOD STAPLES", "PERSONAL CARE", "COOKING OIL"], "reduce": [], "tip": "Stable month. No major spikes. Focus on maintaining core category stock levels."},
-    "April": {"season": "Spring", "stock_up": ["FOOD STAPLES", "SOFT DRINKS AND JUICES", "PERSONAL CARE"], "reduce": [], "tip": "Temperatures rising. SOFT DRINKS start to increase. Stock up ahead of summer."},
-    "May": {"season": "Pre Summer", "stock_up": ["SOFT DRINKS AND JUICES", "FOOD STAPLES", "PERSONAL CARE"], "reduce": [], "tip": "Pre summer spike in cold drinks. SOFT DRINKS AND JUICES will peak in coming months."},
-    "June": {"season": "Summer", "stock_up": ["SOFT DRINKS AND JUICES", "FOOD STAPLES", "CLEANING SUPPLIES"], "reduce": [], "tip": "Summer peak for cold drinks. Data for June is incomplete in this dataset so use trend from April and May."},
+MONTH_LABELS = {
+    "01": "January", "02": "February", "03": "March", "04": "April",
+    "05": "May", "06": "June", "07": "July", "08": "August",
+    "09": "September", "10": "October", "11": "November", "12": "December",
 }
 
+
+def month_label(ym):
+    """'2025-09' -> 'September 2025'."""
+    year, month = ym.split("-")
+    return f"{MONTH_LABELS[month]} {year}"
+
+
+def month_partial_note(ym):
+    """A month is flagged partial when the record starts or ends inside it."""
+    if ym == M.DATA_START[:7]:
+        return f"Partial month: the record begins on {M.DATA_START}."
+    if ym == M.DATA_END[:7]:
+        return f"Partial month: the record ends on {M.DATA_END}."
+    return None
+
 # ============================================================
-# PLACEMENT ZONES (shared by Placement Zones page + planogram)
+# PLACEMENT ZONES: imported from zone_layout.py at the top of this file.
+# The category content is the shared analysis/zones.py definition; only
+# colours, rectangles and prose are presentation.
 # ============================================================
 
-ZONES = [
-    {"name": "Zone 1 - Center", "label": "High Traffic Anchor", "color": "#1E2A4A",
-     "categories": ["FOOD STAPLES", "COOKING OIL", "CLEANING SUPPLIES", "TEA AND SPICES", "HOUSEHOLD ITEMS"],
-     "reason": "CLEANING SUPPLIES connects to 48 rules with lift above 5. FOOD STAPLES appears in 42.2% of all baskets. Central placement forces customers to pass other products.",
-     "rect": (0.35, 0.30, 0.30, 0.40)},
-    {"name": "Zone 2 - Entrance", "label": "Impulse Purchase", "color": "#0EA5A4",
-     "categories": ["NOODLES", "SOFT DRINKS AND JUICES", "BISCUITS AND COOKIES", "CONFECTIONERY", "NAMKEEN AND SNACKS", "CANNED AND PACKAGED FOODS"],
-     "reason": "High frequency impulse categories. Entrance placement captures customers before they focus on essentials, increasing unplanned purchases.",
-     "rect": (0.05, 0.05, 0.90, 0.15)},
-    {"name": "Zone 3 - Side Aisle", "label": "Destination", "color": "#8B5CF6",
-     "categories": ["PERSONAL CARE", "BABY CARE", "STATIONERY"],
-     "reason": "Customers seeking these products will find them regardless of placement. Side aisle keeps them out of the main traffic flow.",
-     "rect": (0.05, 0.25, 0.25, 0.60)},
-    {"name": "Zone 4 - Back Wall", "label": "Cold Storage", "color": "#F59E0B",
-     "categories": ["DAIRY PRODUCTS", "FROZEN FOODS", "FRUITS AND VEGETABLES", "BAKERY"],
-     "reason": "Physical constraint: refrigeration required. Back placement also draws customers through the store, increasing exposure to other products.",
-     "rect": (0.05, 0.78, 0.90, 0.17)},
-    {"name": "Zone 5 - Perimeter", "label": "Speciality", "color": "#EC4899",
-     "categories": ["RICE", "ALCOHOLIC BEVERAGES", "CIGARETTE AND TOBACCO", "POOJA ITEMS", "BREAKFAST CEREALS", "ELECTRICAL SUPPLIES", "PARTY SUPPLIES"],
-     "reason": "Low frequency or destination categories. Customers buying these seek them out specifically. Perimeter placement reduces main aisle congestion.",
-     "rect": (0.70, 0.25, 0.25, 0.45)},
-]
+# ============================================================
+# LANDING PAGE: "The Result", shown before mode selection.
+# Every figure on it is read from the artifacts, config/metrics.py or the
+# verification report at runtime. Nothing is typed in.
+# ============================================================
+
+if not st.session_state.entered:
+    _proj_annual = AVG_BASKET * (M.UPLIFT_SCENARIO_PCT / 100) * DAILY_CUSTOMERS * 365
+    _vstat = load_verification_status()
+
+    _, mid, _ = st.columns([1, 5, 1])
+    with mid:
+        st.markdown("<br>", unsafe_allow_html=True)
+        render_html(
+            f"<div style='text-align:center;color:{T['subtext']};font-size:12px;"
+            f"letter-spacing:0.14em;text-transform:uppercase;margin-bottom:14px;'>"
+            f"Product Placement Optimisation . An independent grocery store</div>"
+        )
+
+        # ---- THE MEASURED RESULT: dominant ----
+        render_html(
+            f"<div class='ui-card' style='border-left:6px solid {ACCENT};"
+            f"padding:30px 34px;text-align:center;'>"
+            f"<div style='display:inline-block;background:{ACCENT};color:#FFFFFF;"
+            f"font-size:11px;font-weight:700;letter-spacing:0.1em;border-radius:99px;"
+            f"padding:3px 12px;margin-bottom:14px;'>MEASURED</div>"
+            f"<div style='font-size:56px;font-weight:800;line-height:1.05;color:{T['text']};'>"
+            f"{CROSS['current_capture_pct']}% <span style='color:{ACCENT};'>&#8594;</span> "
+            f"{CROSS['optimised_capture_pct']}%</div>"
+            f"<div style='font-size:18px;color:{T['text']};margin:14px auto 10px auto;"
+            f"max-width:620px;line-height:1.5;'>A shelf layout derived from purchase "
+            f"associations captures more than nine times the cross-sell support of the store's current "
+            f"arrangement.</div>"
+            f"<div style='font-size:13px;color:{T['subtext']};'>Computed from "
+            f"{CROSS['total_strong_rules']} association rules. Involves no assumption "
+            f"about customer response.</div>"
+            f"</div>"
+        )
+
+        # ---- THE PROJECTION: subordinate, visually distinct ----
+        _, pmid, _ = st.columns([1, 3, 1])
+        with pmid:
+            render_html(
+                f"<div style='border:2px dashed {HIGHLIGHT};border-radius:12px;"
+                f"padding:18px 22px;text-align:center;margin:6px 0 4px 0;'>"
+                f"<div style='display:inline-block;background:{HIGHLIGHT};color:#FFFFFF;"
+                f"font-size:11px;font-weight:700;letter-spacing:0.1em;border-radius:99px;"
+                f"padding:3px 12px;margin-bottom:10px;'>PROJECTED</div>"
+                f"<div style='font-size:26px;font-weight:800;color:{T['text']};'>"
+                f"{crore(_proj_annual)}</div>"
+                f"<div style='font-size:13px;color:{T['subtext']};margin-top:6px;"
+                f"line-height:1.5;'>estimated additional annual revenue. Applies the "
+                f"4 to 6% uplift range reported by Dreze, Hoch and Purk (1994) for shelf "
+                f"reorganisation; the {M.UPLIFT_SCENARIO_PCT}% mid-point is shown. "
+                f"Not a finding of this study.</div>"
+                f"</div>"
+            )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ---- Supporting figures, all read at runtime ----
+        if _vstat:
+            _v = _vstat["checks"].get("verify_thesis_numbers", {})
+            _v_value = f"{_v.get('verified', _v.get('passed', 0))} of {_v.get('checkable', _v.get('total', 0))}"
+            _v_ok = _vstat.get("all_passed", False)
+            _v_sub = (
+                f"reported figures verified automatically. Last run "
+                f"{_vstat.get('generated_at_human', 'unknown')}"
+            ) if _v_ok else (
+                f"figures verified. VERIFICATION FAILING as of "
+                f"{_vstat.get('generated_at_human', 'unknown')}"
+            )
+        else:
+            _v_value = "Not yet run"
+            _v_ok = False
+            _v_sub = "run: python scripts/run_verifications.py"
+
+        _tiles = [
+            (f"{KPI['total_transactions']:,}", "baskets analysed"),
+            (f"{KPI['n_category_rules']:,} rules",
+             f"{M.RULES_BONFERRONI:,} surviving Bonferroni correction"),
+            (f"{M.SILHOUETTE_FREQUENCY:.3f} to {KPI['cooccurrence_silhouette_k3']:.3f}",
+             "silhouette, by changing the clustering representation"),
+            (_v_value, _v_sub),
+        ]
+        tcols = st.columns(4)
+        for tcol, (value, sub) in zip(tcols, _tiles):
+            with tcol:
+                render_html(
+                    f"<div class='ui-card' style='text-align:center;padding:14px 12px;"
+                    f"min-height:96px;'>"
+                    f"<div style='font-size:19px;font-weight:800;color:{T['text']};'>{value}</div>"
+                    f"<div style='font-size:11.5px;color:{T['subtext']};margin-top:4px;"
+                    f"line-height:1.4;'>{sub}</div></div>"
+                )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ---- Routing ----
+        bcol1, bcol2 = st.columns(2)
+        with bcol1:
+            if st.button("I am the store owner", use_container_width=True, type="primary"):
+                st.session_state.view_mode = "Owner"
+                st.session_state.entered = True
+                st.rerun()
+        with bcol2:
+            if st.button("I am reviewing this work", use_container_width=True, type="primary"):
+                st.session_state.view_mode = "Examiner"
+                st.session_state.entered = True
+                st.rerun()
+
+        render_html(
+            f"<div style='text-align:center;color:{T['subtext']};font-size:11px;"
+            f"margin-top:16px;'>Samikshya Baniya . 230360 . ST6001CEM . "
+            f"Coventry University</div>"
+        )
+
+    st.stop()
 
 # ============================================================
 # SIDEBAR
@@ -531,10 +862,23 @@ with st.sidebar:
 
     if st.session_state.view_mode == "Owner":
         st.markdown(f"<div style='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:{ACCENT};margin-bottom:6px;'>Store Owner Tools</div>", unsafe_allow_html=True)
-        page = st.radio("nav", ["Shelf Planner", "Monthly Stock Plan", "Store Performance"], label_visibility="collapsed")
+        page = st.radio("nav", [
+            "What should go next to what?",
+            "What happened each month?",
+            "How is the store doing?",
+        ], label_visibility="collapsed")
     else:
         st.markdown(f"<div style='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:{ACCENT};margin-bottom:6px;'>Technical Analysis</div>", unsafe_allow_html=True)
-        page = st.radio("nav", ["Project Overview", "Store Analytics", "Association Rules", "Clustering Results", "Model Validation", "Placement Zones", "Ethics & Data"], label_visibility="collapsed")
+        page = st.radio("nav", [
+            "What was done?",
+            "What drives the store's revenue?",
+            "What do customers buy together?",
+            "Which categories belong near each other?",
+            "Do the recommendations actually work?",
+            "Where should everything go?",
+            "How do I know these numbers are right?",
+            "Was this done responsibly?",
+        ], label_visibility="collapsed")
 
     st.markdown("---")
 
@@ -542,9 +886,13 @@ with st.sidebar:
     if st.button(theme_label, use_container_width=True):
         st.session_state.dark_mode = not st.session_state.dark_mode
         st.rerun()
+    if st.button("Back to The Result", use_container_width=True):
+        st.session_state.entered = False
+        st.rerun()
     if st.button("Reset View", use_container_width=True):
         st.session_state.view_mode = "Owner"
         st.session_state.dark_mode = False
+        st.session_state.entered = False
         st.rerun()
 
     st.markdown("---")
@@ -554,7 +902,7 @@ with st.sidebar:
     if WAREHOUSE_LIVE:
         _dot, _label, _sub = POSITIVE, "Live: Postgres warehouse", WAREHOUSE_DETAIL
     else:
-        _dot, _label, _sub = HIGHLIGHT, "Static: CSV artifacts", (
+        _dot, _label, _sub = T["subtext"], "Static: CSV artifacts", (
             f"Postgres not reachable ({WAREHOUSE_DETAIL}). "
             "Start it with: docker compose up -d postgres"
         )
@@ -593,7 +941,7 @@ def chart_revenue_trend():
     fig.add_annotation(
         x=peak["month"], y=peak["rev_m"],
         text=f"Dashain peak<br>Rs {peak['rev_m']:.1f}M", showarrow=True,
-        arrowhead=2, arrowcolor=HIGHLIGHT, font=dict(color=HIGHLIGHT, size=11),
+        arrowhead=2, arrowcolor=ACCENT, font=dict(color=ACCENT, size=11),
         ax=0, ay=-40,
     )
     fig.update_yaxes(title_text="Revenue (Rs Million)")
@@ -604,7 +952,7 @@ def chart_category_distribution():
     d = category_dist.head(15).sort_values("pct_of_baskets")
     fig = go.Figure(go.Bar(
         x=d["pct_of_baskets"], y=d["category"], orientation="h",
-        marker_color=[HIGHLIGHT if c == "FOOD STAPLES" else SERIES for c in d["category"]],
+        marker_color=[ACCENT if c == "FOOD STAPLES" else SERIES for c in d["category"]],
         hovertemplate="%{y}<br>%{x:.1f}% of baskets<extra></extra>",
     ))
     fig.update_xaxes(title_text="% of baskets containing category")
@@ -618,10 +966,10 @@ def chart_basket_histogram():
         x=centers, y=h["count"], marker_color=SERIES, width=(h["bin_right"] - h["bin_left"]) * 0.9,
         hovertemplate="Rs %{x:.0f}<br>%{y:,} baskets<extra></extra>",
     ))
-    fig.add_vline(x=AVG_BASKET, line_dash="dash", line_color=HIGHLIGHT,
-                  annotation_text=f"Mean Rs {AVG_BASKET:.0f}", annotation_font_color=HIGHLIGHT)
-    fig.add_vline(x=KPI["median_basket_value"], line_dash="dash", line_color=ACCENT,
-                  annotation_text=f"Median Rs {KPI['median_basket_value']:.0f}", annotation_font_color=ACCENT)
+    fig.add_vline(x=AVG_BASKET, line_dash="dash", line_color=ACCENT,
+                  annotation_text=f"Mean Rs {AVG_BASKET:.0f}", annotation_font_color=ACCENT)
+    fig.add_vline(x=KPI["median_basket_value"], line_dash="dot", line_color=T["subtext"],
+                  annotation_text=f"Median Rs {KPI['median_basket_value']:.0f}", annotation_font_color=T["subtext"])
     fig.update_xaxes(title_text="Basket value (Rs, capped at 5000 for display)")
     fig.update_yaxes(title_text="Number of baskets")
     return style_fig(fig, legend=False)
@@ -632,7 +980,9 @@ def chart_abc_analysis():
     a = abc_analysis
     n_all = len(a)
     rev_all = a["revenue"].sum()
-    colors = {"A": SERIES, "B": ACCENT, "C": "#93D3D2"}
+    # Class A is the measured headline (70% of revenue), so it carries the
+    # teal; B and C are neutral greys.
+    colors = {"A": ACCENT, "B": SERIES, "C": "#A8A29E"}
     fig = go.Figure()
     for cls in ["A", "B", "C"]:
         sub = a[a["abc_category"] == cls]
@@ -658,7 +1008,7 @@ def chart_day_of_week():
     busiest = d.loc[d["revenue"].idxmax(), "day_name"]
     fig = go.Figure(go.Bar(
         x=d["day_name"], y=d["rev_m"],
-        marker_color=[HIGHLIGHT if day == busiest else SERIES for day in d["day_name"]],
+        marker_color=[ACCENT if day == busiest else SERIES for day in d["day_name"]],
         customdata=d[["transaction_count", "avg_basket"]],
         hovertemplate="%{x}<br>Rs %{y:.1f}M revenue<br>%{customdata[0]:,} transactions"
                       "<br>Rs %{customdata[1]:,.0f} average basket<extra></extra>",
@@ -716,7 +1066,7 @@ def chart_category_network():
 
     baskets = dict(zip(category_dist["category"], category_dist["baskets"]))
     clusters = dict(zip(cluster_assign["category"], cluster_assign["cooccurrence_cluster"]))
-    cluster_colors = {0: ACCENT, 1: SERIES, 2: HIGHLIGHT}
+    cluster_colors = {0: ACCENT, 1: SERIES, 2: "#78716C"}
     max_baskets = max(baskets.get(n, 1) for n in G.nodes)
     min_lift = min(edges.values())
     lift_span = max(max(edges.values()) - min_lift, 1e-9)
@@ -764,6 +1114,25 @@ def chart_category_network():
     return style_fig(fig, height=560)
 
 
+def chart_month_mix(sel_month, top_n=12):
+    """Category share of one observed month's revenue."""
+    mm = (
+        monthly_mix[monthly_mix["month"].astype(str) == sel_month]
+        .sort_values("share_pct", ascending=False)
+        .head(top_n)
+        .sort_values("share_pct")
+    )
+    fig = go.Figure(go.Bar(
+        x=mm["share_pct"], y=mm["category"], orientation="h",
+        marker_color=SERIES,
+        customdata=mm[["revenue", "baskets"]].astype(float).values,
+        hovertemplate="%{y}<br>%{x:.1f}% of the month's revenue"
+                      "<br>Rs %{customdata[0]:,.0f} | %{customdata[1]:,.0f} baskets<extra></extra>",
+    ))
+    fig.update_xaxes(title_text="% of the month's revenue")
+    return style_fig(fig, height=420, legend=False)
+
+
 def chart_recommendations(recs):
     fig = go.Figure(go.Bar(
         x=recs["Lift"], y=recs["Product"], orientation="h", marker_color=ACCENT,
@@ -781,11 +1150,12 @@ def chart_planogram(highlight=None):
         is_hl = highlight == z["name"]
         fig.add_shape(type="rect", x0=x, y0=y, x1=x + w, y1=y + h,
                       line=dict(color="white", width=2),
-                      fillcolor=z["color"], opacity=1.0 if is_hl else 0.55,
+                      fillcolor=z["color"], opacity=1.0 if is_hl else 0.85,
                       layer="below")
         fig.add_trace(go.Scatter(
             x=[x + w / 2], y=[y + h / 2], mode="text",
-            text=[f"<b>{z['name'].split(' - ')[0]}</b>"], textfont=dict(color="white", size=12),
+            text=[f"<b>{z['name'].split(' - ')[0]}</b>"],
+            textfont=dict(color=z["ink"], size=12),
             hovertext=[f"<b>{z['name']}</b> ({z['label']})<br>" + "<br>".join(z["categories"])],
             hoverinfo="text", showlegend=False,
         ))
@@ -801,10 +1171,11 @@ def chart_planogram(highlight=None):
 # OWNER MODE - SHELF PLANNER
 # ============================================================
 
-if st.session_state.view_mode == "Owner" and page == "Shelf Planner":
-    st.title("Shelf Planner")
-    section(None, "Type any product to find out what to place next to it on the shelf.")
-    st.markdown("---")
+if st.session_state.view_mode == "Owner" and page == "What should go next to what?":
+    page_header(
+        "What should go next to what?",
+        "Type any product to find out what to place next to it on the shelf.",
+    )
 
     all_products = sorted(top_products["product"].tolist())
     default_idx = all_products.index("Sugar") if "Sugar" in all_products else 0
@@ -844,80 +1215,130 @@ if st.session_state.view_mode == "Owner" and page == "Shelf Planner":
 # OWNER MODE - MONTHLY STOCK PLAN
 # ============================================================
 
-elif st.session_state.view_mode == "Owner" and page == "Monthly Stock Plan":
-    import datetime
-    current_month = datetime.datetime.now().strftime("%B")
-
-    st.title("Monthly Stock Plan")
-    section(None, "Stock recommendations based on 11 calendar months of real sales data from the case study store.")
-    st.markdown("---")
-
-    month_data = SEASONAL_STOCK.get(current_month, SEASONAL_STOCK["June"])
-    render_html(
-        f"<div class='ui-card' style='border-left:4px solid {HIGHLIGHT};'>"
-        f"<div class='c-label'>This Month</div>"
-        f"<div style='font-size:26px;font-weight:800;color:{T['text']};'>{current_month} "
-        f"<span style='color:{HIGHLIGHT};font-size:15px;'>{month_data['season']}</span></div>"
-        f"<div class='c-sub' style='margin-top:6px;'>{month_data['tip']}</div></div>"
+elif st.session_state.view_mode == "Owner" and page == "What happened each month?":
+    page_header(
+        "What happened each month?",
+        "What each month actually sold, computed from the record. Observed history, not a forecast.",
     )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        section("Stock Up Now")
-        for cat in month_data["stock_up"]:
-            render_html(
-                f"<div class='ui-card' style='border-left:4px solid {ACCENT};padding:12px 16px;'>"
-                f"<span style='color:{ACCENT};font-size:13px;font-weight:700;'>+ {cat}</span></div>"
-            )
-    with col2:
-        section("Normal Stock")
-        if month_data["reduce"]:
-            for cat in month_data["reduce"]:
+    months = monthly_revenue["month"].astype(str).tolist()
+    n_months = len(months)
+
+    info_card(
+        "Read this before planning from it",
+        f"Everything on this page is the observed record from {M.DATA_START} to {M.DATA_END}: "
+        f"{n_months} calendar months containing one Dashain season. Each month was observed "
+        "exactly once, so no single month here is evidence of a seasonal pattern. "
+        "It shows what happened, not what will happen.",
+    )
+
+    _rev_series = monthly_revenue["revenue"].astype(float)
+    peak_pos = int(_rev_series.reset_index(drop=True).idxmax())
+    sel = st.selectbox(
+        "Select an observed month", months, index=peak_pos, format_func=month_label
+    )
+
+    row = monthly_revenue[monthly_revenue["month"].astype(str) == sel].iloc[0]
+    others = monthly_revenue[monthly_revenue["month"].astype(str) != sel]
+    rev = float(row["revenue"])
+    baskets = int(row["baskets"])
+    avg = float(row["avg_basket"])
+    o_rev = float(others["revenue"].astype(float).mean())
+    o_baskets = float(others["baskets"].astype(float).mean())
+    o_avg = float(others["avg_basket"].astype(float).mean())
+
+    partial = month_partial_note(sel)
+    if partial:
+        st.caption(partial)
+
+    hero(
+        f"Rs {rev/1e6:.1f}M",
+        f"revenue observed in {month_label(sel)}, "
+        f"{(rev/o_rev-1)*100:+.1f}% against the mean of the other {n_months-1} months. "
+        f"{baskets:,} baskets ({(baskets/o_baskets-1)*100:+.1f}%) at an average of "
+        f"Rs {avg:,.0f} each ({(avg/o_avg-1)*100:+.1f}%). One observation.",
+    )
+
+    st.markdown("---")
+    section(
+        f"Category mix in {month_label(sel)}",
+        "Share of the month's revenue by category. Hover for rupees and basket counts.",
+    )
+    show_chart(chart_month_mix(sel))
+
+    # Deviations vs each category's median month, computed from the record.
+    med_share = monthly_mix.groupby("category")["share_pct"].median()
+    mm_sel = (
+        monthly_mix[monthly_mix["month"].astype(str) == sel]
+        .set_index("category")["share_pct"]
+        .reindex(med_share.index, fill_value=0.0)
+    )
+    dev = (mm_sel - med_share).sort_values(ascending=False)
+    ups = dev[dev >= 0.25].head(3)
+    downs = dev[dev <= -0.25].tail(3)
+
+    if len(ups) or len(downs):
+        section(
+            "Where this month differed from its median month",
+            "Change in revenue share, in percentage points. One observation, so a "
+            "description of this month, not a prediction about the next one.",
+        )
+        col_u, col_d = st.columns(2)
+        with col_u:
+            for cat, d in ups.items():
+                render_html(
+                    f"<div class='ui-card' style='border-left:4px solid {ACCENT};padding:12px 16px;'>"
+                    f"<span style='color:{ACCENT};font-size:13px;font-weight:700;'>{cat}</span>"
+                    f"<span style='color:{T['subtext']};font-size:13px;'> took {d:+.1f} pp "
+                    f"more of revenue than its median month</span></div>"
+                )
+        with col_d:
+            for cat, d in downs.items():
                 render_html(
                     f"<div class='ui-card' style='padding:12px 16px;'>"
-                    f"<span style='color:{T['subtext']};font-size:13px;'>= {cat}</span></div>"
+                    f"<span style='color:{T['text']};font-size:13px;font-weight:700;'>{cat}</span>"
+                    f"<span style='color:{T['subtext']};font-size:13px;'> took {d:+.1f} pp "
+                    f"less than its median month</span></div>"
                 )
-        else:
-            st.caption("All categories at normal stock levels this month.")
+    else:
+        st.caption("No category moved more than 0.25 percentage points from its median month.")
 
     st.markdown("---")
-    section("Plan Ahead")
-    selected_month = st.selectbox("Select a month to plan for", list(SEASONAL_STOCK.keys()))
-    plan = SEASONAL_STOCK[selected_month]
-    stock_list = "".join([f"<div style='color:{T['text']};font-size:14px;margin-bottom:4px;'>+ {cat}</div>" for cat in plan["stock_up"]])
-    render_html(
-        f"<div class='ui-card'>"
-        f"<div style='font-size:18px;font-weight:700;color:{T['text']};margin-bottom:6px;'>{selected_month} "
-        f"<span style='color:{HIGHLIGHT};font-size:14px;'>{plan['season']}</span></div>"
-        f"<div class='c-sub' style='margin-bottom:12px;'>{plan['tip']}</div>"
-        f"<div class='c-label' style='color:{ACCENT};'>Stock Up</div>{stock_list}</div>"
-    )
-    info_card(
-        "Rule that never changes",
-        "FOOD STAPLES, COOKING OIL and RICE are top 3 every single month without exception. "
-        "Never let these run out of stock regardless of season.",
-    )
+
+    # The one claim the record repeats every month, computed rather than asserted.
+    _top3 = monthly_mix.sort_values("revenue", ascending=False).groupby("month").head(3)
+    _always = _top3.groupby("category")["month"].nunique()
+    _always = sorted(_always[_always == n_months].index.tolist())
+    if _always:
+        info_card(
+            f"Constant in all {n_months} observed months",
+            f"{', '.join(_always)} placed in the top three revenue categories in every "
+            f"one of the {n_months} observed months. That is {n_months} separate "
+            "observations of the same ranking, the most repeated pattern in this record, "
+            "and the only finding on this page supported by more than one observation.",
+            accent=ACCENT,
+        )
 
 # ============================================================
 # OWNER MODE - STORE PERFORMANCE
 # ============================================================
 
-elif st.session_state.view_mode == "Owner" and page == "Store Performance":
-    st.title("Store Performance")
-    section(None, "Based on 11 calendar months of real sales data from the case study store, Pokhara.")
-    st.markdown("---")
+elif st.session_state.view_mode == "Owner" and page == "How is the store doing?":
+    page_header(
+        "How is the store doing?",
+        f"Based on {M.CALENDAR_MONTHS} calendar months of real sales data from the case study store.",
+    )
 
+    hero(
+        crore(KPI["total_revenue"]),
+        f"revenue across {M.CALENDAR_MONTHS} months and {KPI['total_transactions']:,} "
+        f"baskets. Top category: {KPI['top_category'].title()}.",
+    )
     kpi_row([
         {"label": "Avg Basket Value", "value": f"Rs {AVG_BASKET:,.2f}"},
-        {"label": "Transactions", "value": f"{KPI['total_transactions']:,}"},
-        {"label": "Total Revenue", "value": crore(KPI["total_revenue"])},
-        {"label": "Top Category", "value": KPI["top_category"].title()},
-    ])
-    st.markdown("<br>", unsafe_allow_html=True)
-    kpi_row([
+        {"label": "Median Basket", "value": f"Rs {KPI['median_basket_value']:,.0f}"},
         {"label": "Daily Revenue", "value": f"Rs {KPI['daily_revenue']:,.0f}"},
         {"label": "Daily Customers", "value": f"{KPI['daily_customers']:,}"},
-        {"label": "Median Basket", "value": f"Rs {KPI['median_basket_value']:,.0f}"},
     ])
 
     st.markdown("---")
@@ -936,41 +1357,51 @@ elif st.session_state.view_mode == "Owner" and page == "Store Performance":
         insight(f"Mean Rs {AVG_BASKET:.0f} but median only Rs {KPI['median_basket_value']:.0f} -- lifting small baskets is the opportunity.")
 
     st.markdown("---")
-    section("How Much Can You Earn from Rearranging Shelves?", "Drag the slider to see projected extra revenue.")
-    uplift = st.slider("Basket-value uplift", 2, 8, 5, 1, format="%d%%")
+    section(
+        "How Much Can You Earn from Rearranging Shelves?",
+        "Drag the slider. Everything inside the amber dashed box is a projection, "
+        "not a measurement.",
+    )
+    uplift = st.slider("Basket-value uplift", 4, 6, 5, 1, format="%d%%")
     extra_daily = AVG_BASKET * (uplift / 100) * DAILY_CUSTOMERS
     extra_annual = extra_daily * 365
-    kpi_row([
-        {"label": "New Avg Basket", "value": f"Rs {AVG_BASKET*(1+uplift/100):,.2f}", "delta": f"{uplift}%"},
-        {"label": "Extra per Day", "value": f"Rs {extra_daily:,.0f}"},
-        {"label": "Extra per Year", "value": crore(extra_annual)},
-    ])
-    st.caption(
-        f"PROJECTION, not a measured result. A {uplift}% uplift is a retail-industry benchmark for "
-        "placement optimisation, not an outcome of a live experiment in this store."
+    projection_block(
+        [
+            ("New Avg Basket", f"Rs {AVG_BASKET*(1+uplift/100):,.2f}"),
+            ("Extra per Day", f"Rs {extra_daily:,.0f}"),
+            ("Extra per Year", crore(extra_annual)),
+        ],
+        f"A {uplift}% uplift sits inside the 4 to 6% range reported by Dreze, Hoch "
+        "and Purk (1994) for shelf reorganisation. It is a published benchmark, not "
+        "an outcome of a live experiment in this store. No shelf was moved during "
+        "this study.",
     )
-    insight("First move: place Rato Dal next to Kalo Dal -- bought together 3,989 times. Measure for 4 weeks, then expand.")
+    _tp = top_pairs.sort_values("cooccurrences", ascending=False).iloc[0]
+    insight(
+        f"First move: place {_tp['product_a']} next to {_tp['product_b']} -- bought together "
+        f"{int(_tp['cooccurrences']):,} times. Measure for 4 weeks, then expand."
+    )
 
 # ============================================================
 # EXAMINER MODE - PROJECT OVERVIEW
 # ============================================================
 
-elif st.session_state.view_mode == "Examiner" and page == "Project Overview":
-    st.title("Project Overview")
-    section(None, "Data Analytics and Machine Learning Based Product Placement Optimisation to Increase Sales in a Nepali Grocery Retail Store")
-    st.markdown("---")
+elif st.session_state.view_mode == "Examiner" and page == "What was done?":
+    page_header(
+        "What was done?",
+        "Data Analytics and Machine Learning Based Product Placement Optimisation to Increase Sales in a Nepali Grocery Retail Store",
+    )
 
+    hero(
+        f"{KPI['total_transactions']:,}",
+        f"real shopping trips analysed, covering {M.TOTAL_PRODUCTS:,} products in "
+        f"{KPI['n_categories']} categories. Every figure below is computed from them "
+        "and checked automatically.",
+    )
     kpi_row([
-        {"label": "Transactions", "value": f"{KPI['total_transactions']:,}"},
-        {"label": "Categories", "value": str(KPI["n_categories"])},
-        {"label": "Products", "value": "5,681"},
         {"label": "Total Revenue", "value": crore(KPI["total_revenue"])},
-    ])
-    st.markdown("<br>", unsafe_allow_html=True)
-    kpi_row([
         {"label": "MBA Rules", "value": f"{KPI['n_category_rules']:,}"},
         {"label": "Max Lift (Category)", "value": str(KPI["max_lift_category"])},
-        {"label": "Max Lift (Product)", "value": str(KPI["max_lift_product"])},
         {"label": "Silhouette (k=3)", "value": str(KPI["cooccurrence_silhouette_k3"])},
     ])
 
@@ -979,15 +1410,15 @@ elif st.session_state.view_mode == "Examiner" and page == "Project Overview":
     steps = [
         ("01", "Data Audit", "Examined 768,222 raw rows. Found 1,040 duplicates, 168,864 trailing spaces. Confirmed header=7 gives correct row count."),
         ("02", "Data Cleaning", "Removed duplicates and bad rows. Standardised 38 product groups into 25 clean categories. Final: 767,180 rows."),
-        ("03", "EDA", "9 charts. FOOD STAPLES in 42.2% of baskets. Average basket Rs 1,000.81. Kalo Dal and Rato Dal co-occur 3,989 times. Large baskets (13.7% of trips) drive 52.1% of revenue."),
+        ("03", "EDA", "9 charts. FOOD STAPLES in 30.5% of baskets. Average basket Rs 1,000.81. Kalo Dal and Rato Dal co-occur 3,989 times. Large baskets (13.7% of trips) drive 52.1% of revenue."),
         ("04", "Transaction Encoding", "Converted to basket matrix: 218,037 rows x 25 columns. True/False per category per invoice."),
-        ("05", "Market Basket Analysis", "Apriori and FP-Growth both found 1,228 rules. Max lift 6.81. 48 rules above lift 5."),
-        ("06", "Clustering", "Frequency K-Means: silhouette 0.190. Co-occurrence K-Means: silhouette 0.554 at k=3, an increase of 0.364."),
-        ("07", "Placement Simulation", "5 zones designed. Cross-sell capture doubles vs current layout. 5% uplift projects Rs 1.30 crore (projection)."),
+        ("05", "Market Basket Analysis", "Apriori and FP-Growth both found 1,320 rules. Max lift 7.44. 62 rules above lift 5."),
+        ("06", "Clustering", "Frequency K-Means: silhouette 0.190. Co-occurrence K-Means: silhouette 0.493 at k=3, an increase of 0.303."),
+        ("07", "Placement Simulation", "5 zones designed. After the 2026-08-17 category remap the zones were re-derived: they capture 180 of 368 strong rules (48.9% by count, 54.1% of strong-rule support) against 22 for the current-layout proxy. 5% uplift, the mid-point of the 4 to 6% range in Dreze, Hoch and Purk (1994), projects Rs 1.30 crore (projection)."),
         ("08", "Evaluation", "Algorithm comparison, 6 limitations, 7 future recommendations."),
         ("09", "ML Recommendation", "Product level MBA on top 100 products. 70/30 train test split. 28% hit rate on unseen data. Max lift 22.41."),
         ("10", "Demand Forecasting", "Prophet detects the Dashain peak automatically. Prophet MAE Rs 2.9M beats Linear Regression MAE Rs 3.4M."),
-        ("11", "Basket Classifier", "Decision Tree (depth 5) predicts small/medium/large baskets at 61.3% accuracy vs 49.7% baseline. COOKING OIL and RICE are the strongest predictors of a large basket."),
+        ("11", "Basket Classifier", "Decision Tree (depth 5) predicts small/medium/large baskets at 61.4% accuracy vs 49.7% baseline. COOKING OIL and RICE are the strongest predictors of a large basket."),
     ]
     for num, title, desc in steps:
         render_html(
@@ -1001,15 +1432,23 @@ elif st.session_state.view_mode == "Examiner" and page == "Project Overview":
 # EXAMINER MODE - STORE ANALYTICS
 # ============================================================
 
-elif st.session_state.view_mode == "Examiner" and page == "Store Analytics":
-    st.title("Store Analytics")
-    section(None, "ABC stock priority and the weekly shopping rhythm, computed from all 218,037 transactions (notebook 03, Charts 10 and 11).")
-    st.markdown("---")
+elif st.session_state.view_mode == "Examiner" and page == "What drives the store's revenue?":
+    page_header(
+        "What drives the store's revenue?",
+        f"ABC stock priority and the weekly shopping rhythm, computed from all "
+        f"{KPI['total_transactions']:,} transactions (notebook 03, Charts 10 and 11).",
+    )
 
     abc_a = abc_analysis[abc_analysis["abc_category"] == "A"]
     abc_c = abc_analysis[abc_analysis["abc_category"] == "C"]
     a_share = len(abc_a) / len(abc_analysis) * 100
     c_share = len(abc_c) / len(abc_analysis) * 100
+
+    hero(
+        f"{len(abc_a):,} products",
+        f"just {a_share:.1f}% of the range, generate 70% of all revenue. Daily stock "
+        "checks on this small group protect most of the store's income.",
+    )
 
     section(
         "ABC Analysis of Products",
@@ -1047,13 +1486,18 @@ elif st.session_state.view_mode == "Examiner" and page == "Store Analytics":
 # EXAMINER MODE - ASSOCIATION RULES
 # ============================================================
 
-elif st.session_state.view_mode == "Examiner" and page == "Association Rules":
-    st.title("Association Rules")
-    section(None, f"{KPI['n_category_rules']:,} rules from {KPI['total_transactions']:,} baskets. Apriori and FP-Growth produced identical results, validating the findings.")
-    st.markdown("---")
+elif st.session_state.view_mode == "Examiner" and page == "What do customers buy together?":
+    page_header(
+        "What do customers buy together?",
+        "Apriori and FP-Growth produced identical results, validating the findings.",
+    )
 
+    hero(
+        f"{KPI['n_category_rules']:,} rules",
+        f"mined from {KPI['total_transactions']:,} baskets; {M.RULES_BONFERRONI:,} "
+        "survive Bonferroni correction for the simultaneous tests.",
+    )
     kpi_row([
-        {"label": "Total Rules", "value": f"{KPI['n_category_rules']:,}"},
         {"label": "Rules Lift > 5", "value": str(KPI["rules_lift_above_5"])},
         {"label": "Max Lift (Cat)", "value": str(KPI["max_lift_category"])},
         {"label": "Max Lift (Product)", "value": str(KPI["max_lift_product"])},
@@ -1091,9 +1535,9 @@ elif st.session_state.view_mode == "Examiner" and page == "Association Rules":
     )
     show_chart(chart_category_network())
     insight(
-        "Only 12 of 25 categories carry all 360 strong rules, connected by 40 pairwise links. "
+        "Only 14 of 25 categories carry all 368 strong rules, connected by 47 pairwise links. "
         "CLEANING SUPPLIES sits at the centre of the web, confirming its connector role from notebook 05. "
-        "The other 13 categories have no strong-rule ties, so they are free to be placed by other criteria "
+        "The other 11 categories have no strong-rule ties, so they are free to be placed by other criteria "
         "(refrigeration, destination shopping) without losing cross-sell opportunities."
     )
 
@@ -1101,17 +1545,20 @@ elif st.session_state.view_mode == "Examiner" and page == "Association Rules":
 # EXAMINER MODE - CLUSTERING RESULTS
 # ============================================================
 
-elif st.session_state.view_mode == "Examiner" and page == "Clustering Results":
-    st.title("Clustering Results")
-    section(None, "Comparison of frequency based vs co-occurrence based K-Means clustering.")
-    st.markdown("---")
+elif st.session_state.view_mode == "Examiner" and page == "Which categories belong near each other?":
+    page_header(
+        "Which categories belong near each other?",
+        "Comparison of frequency based vs co-occurrence based K-Means clustering.",
+    )
 
-    kpi_row([
-        {"label": "Frequency K-Means", "value": "0.19", "help": "Silhouette at k=5 -- weak"},
-        {"label": "Co-occurrence K-Means", "value": str(KPI["cooccurrence_silhouette_k3"]), "help": "Silhouette at k=3 -- strong"},
-        {"label": "Improvement", "value": "+0.364", "delta": "0.190 to 0.554, right question asked",
-         "help": "Absolute increase. Silhouette is bounded -1 to 1, so a percentage change between two silhouette scores has no interpretation."},
-    ])
+    hero(
+        f"+{M.SILHOUETTE_INCREASE}",
+        f"absolute silhouette gain, from {M.SILHOUETTE_FREQUENCY:.3f} (frequency, k=5) "
+        f"to {KPI['cooccurrence_silhouette_k3']} (co-occurrence, k=3), from changing "
+        "what the clustering is asked about. Stated as an absolute increase because "
+        "silhouette is bounded on [-1, 1] and a percentage between two scores has "
+        "no interpretation.",
+    )
 
     info_card(
         "Why co-occurrence is better",
@@ -1124,7 +1571,7 @@ elif st.session_state.view_mode == "Examiner" and page == "Clustering Results":
     show_chart(chart_cooccurrence_heatmap())
 
     section("Three Placement Clusters at k=3")
-    cluster_colors = {0: ACCENT, 1: SERIES, 2: HIGHLIGHT}
+    cluster_colors = {0: ACCENT, 1: SERIES, 2: "#78716C"}
     for cid in sorted(cluster_assign["cooccurrence_cluster"].unique()):
         cats = cluster_assign[cluster_assign["cooccurrence_cluster"] == cid]["category"].tolist()
         color = cluster_colors.get(cid, ACCENT)
@@ -1138,23 +1585,40 @@ elif st.session_state.view_mode == "Examiner" and page == "Clustering Results":
 # EXAMINER MODE - MODEL VALIDATION
 # ============================================================
 
-elif st.session_state.view_mode == "Examiner" and page == "Model Validation":
-    st.title("Model Validation")
-    section(None, "Product level ML recommendation system. Trained on top 100 most sold products with 70/30 train test split.")
-    st.markdown("---")
+elif st.session_state.view_mode == "Examiner" and page == "Do the recommendations actually work?":
+    page_header(
+        "Do the recommendations actually work?",
+        "Product level ML recommendation system. Trained on top 100 most sold products with 70/30 train test split.",
+    )
 
+    _vs_random = M.REC_MODEL_HIT_PCT / M.REC_RANDOM_MATCHED_PCT
+    hero(
+        f"{M.REC_MODEL_HIT_PCT}%",
+        f"hit rate on {M.REC_TEST_BASKETS:,} unseen multi-product baskets. At the same "
+        f"recommendation budget, popularity alone scores {M.REC_POPULARITY_MATCHED_PCT}% "
+        f"and random {M.REC_RANDOM_MATCHED_PCT}%.",
+    )
     kpi_row([
-        {"label": "Training Baskets", "value": "95,570", "help": "70% of baskets"},
-        {"label": "Test Baskets", "value": "40,959", "help": "30% held out"},
-        {"label": "Hit Rate", "value": "28%"},
-        {"label": "vs Random", "value": "28x", "delta": "better than 1% baseline"},
+        {"label": "Training Baskets", "value": f"{M.ML_TRAIN_BASKETS:,}", "help": "70% of baskets"},
+        {"label": "Held-out Baskets", "value": f"{M.ML_TEST_BASKETS:,}",
+         "help": f"30% held out. The hit rate is computed on the {M.REC_TEST_BASKETS:,} multi-product baskets among these."},
+        {"label": "vs Popularity", "value": f"+{M.REC_MODEL_HIT_PCT - M.REC_POPULARITY_MATCHED_PCT:.1f} pts",
+         "help": "Against recommending bestsellers at the same budget"},
+        {"label": "vs Matched Random", "value": f"{_vs_random:.0f}x",
+         "help": f"Random at the model's own budget scores {M.REC_RANDOM_MATCHED_PCT}%"},
     ])
 
     info_card(
-        "Why 28% hit rate is good",
-        "The model picks from 100 possible products. Random guessing would give 1% accuracy; the model gives 28%, "
-        "which is 28x better. It was trained on 70% of baskets and tested on 40,959 baskets it had never seen, "
-        "confirming it learned real patterns rather than memorising.",
+        f"What the {M.REC_MODEL_HIT_PCT}% means, honestly",
+        f"The model picks from 100 products and issues {M.REC_AVG_RECS_PER_BASKET} "
+        f"recommendations per basket on average, so matched random scores "
+        f"{M.REC_RANDOM_MATCHED_PCT}%, making the model roughly {_vs_random:.0f}x "
+        "chance, not the 28x an unmatched 1% baseline once suggested. The tougher "
+        f"comparison is popularity at the same budget: {M.REC_POPULARITY_MATCHED_PCT}% "
+        f"against the model's {M.REC_MODEL_HIT_PCT}%, and {M.REC_COVERED_POPULARITY_PCT}% "
+        f"against {M.REC_COVERED_MODEL_PCT}% on baskets where the model has rule "
+        "coverage. The full history of this correction is on 'How do I know these "
+        "numbers are right?'.",
     )
 
     section("Recommendation Explorer", "Pick a product to see its top-5 'also bought' products with lift.")
@@ -1173,17 +1637,23 @@ elif st.session_state.view_mode == "Examiner" and page == "Model Validation":
 # EXAMINER MODE - PLACEMENT ZONES
 # ============================================================
 
-elif st.session_state.view_mode == "Examiner" and page == "Placement Zones":
-    st.title("Placement Zones")
-    section(None, f"5 zones derived from MBA association rules and co-occurrence clustering (silhouette {KPI['cooccurrence_silhouette_k3']} at k=3).")
-    st.markdown("---")
+elif st.session_state.view_mode == "Examiner" and page == "Where should everything go?":
+    page_header(
+        "Where should everything go?",
+        f"5 zones derived from MBA association rules and co-occurrence clustering (silhouette {KPI['cooccurrence_silhouette_k3']} at k=3).",
+    )
+
+    hero(
+        f"{CROSS['current_capture_pct']}% <span style='color:{ACCENT};'>&#8594;</span> {CROSS['optimised_capture_pct']}%",
+        f"of strong-rule support captured when the five designed zones replace the "
+        f"current frequency-driven arrangement: {CROSS['current_rules_captured']} "
+        f"co-located rules become {CROSS['optimised_rules_captured']} of "
+        f"{CROSS['total_strong_rules']}. Computed from the association rules; no "
+        "assumption about customer response is involved.",
+        kind="measured",
+    )
 
     section("Cross-Sell Before / After (RQ2)", f"Strong rules (lift >= {CROSS['lift_floor']:.0f}) whose category pairs become co-located.")
-    kpi_row([
-        {"label": "Current Layout", "value": f"{CROSS['current_rules_captured']} rules", "help": f"{CROSS['current_capture_pct']}% of strong support"},
-        {"label": "Optimised Layout", "value": f"{CROSS['optimised_rules_captured']} rules", "delta": f"{CROSS['optimised_capture_pct']}% of strong support"},
-        {"label": "Improvement", "value": f"+{CROSS['rules_captured_delta']} rules", "delta": f"{CROSS['optimised_rules_captured']/max(CROSS['current_rules_captured'],1):.1f}x more captured"},
-    ])
 
     bfig = go.Figure(go.Bar(
         x=["Current layout", "Optimised layout"],
@@ -1203,12 +1673,96 @@ elif st.session_state.view_mode == "Examiner" and page == "Placement Zones":
     )
 
     st.markdown("---")
-    kpi_row([
-        {"label": "Zones Designed", "value": "5"},
-        {"label": "Moderate Uplift (5%)", "value": crore(AVG_BASKET * 0.05 * DAILY_CUSTOMERS * 365)},
-        {"label": "Basis", "value": "Projection", "help": "not a measured result"},
+
+    # ------------------------------------------------------------
+    # Zone-level ethics breakdown. Computed here with the SAME shared
+    # scoring functions the dissertation figures come from
+    # (analysis/cross_sell.py + analysis/zones.py), not hardcoded.
+    # ------------------------------------------------------------
+    _strong_df = category_rules[category_rules["lift"] >= STRONG_LIFT_FLOOR]
+    _strong_rules = [
+        {
+            "cats": {a.strip() for a in str(r["antecedents"]).split(",")}
+                    | {c.strip() for c in str(r["consequents"]).split(",")},
+            "support": float(r["support"]),
+        }
+        for _, r in _strong_df.iterrows()
+    ]
+    _assignment = zone_defs.proposed_assignment()
+    _scored = score_layout(
+        _strong_rules,
+        groups_from_assignment(_assignment),
+        float(_strong_df["support"].sum()),
+    )
+
+    _zone_rules = {z["id"]: 0 for z in zone_defs.ZONES}
+    _zone_support = {z["id"]: 0.0 for z in zone_defs.ZONES}
+    for _rule in _scored["captured"]:
+        # A captured rule sits entirely in one zone, so any of its categories
+        # identifies that zone.
+        _zid = _assignment[next(iter(_rule["cats"]))]
+        _zone_rules[_zid] += 1
+        _zone_support[_zid] += _rule["support"]
+
+    _captured_support = sum(_zone_support.values())
+    _creates_rules = sum(
+        _zone_rules[z["id"]] for z in zone_defs.ZONES if z["ethics"] == zone_defs.CREATES
+    )
+    _assists_rules = _scored["rules_captured"] - _creates_rules
+
+    section(
+        "Which zones do the capturing, and on what ethical terms",
+        "Each zone is classified by its relationship to customer intention "
+        "(section 24.3 of the dissertation). Rules captured per zone are computed "
+        "with the same shared scoring function that produced the headline figures.",
+    )
+
+    _ethics_table = pd.DataFrame([
+        {
+            "Zone": next(dz["name"] for dz in ZONES if dz["id"] == z["id"]),
+            "Ethics classification": zone_defs.ETHICS_LABEL[z["ethics"]],
+            "Rules captured": _zone_rules[z["id"]],
+            "Share of captured support": (
+                f"{_zone_support[z['id']] / _captured_support * 100:.1f}%"
+                if _captured_support else "0.0%"
+            ),
+        }
+        for z in zone_defs.ZONES
     ])
-    st.caption("The rupee uplift is a PROJECTION based on a 3-8% retail benchmark, not a live-experiment result.")
+    st.dataframe(_ethics_table, use_container_width=True, hide_index=True)
+
+    if _creates_rules == 0:
+        info_card(
+            "The measured benefit needs no impulse placement",
+            f"All {_scored['rules_captured']} captured rules sit in zones classified as "
+            "assisting an existing intention: they co-locate goods customers already "
+            "buy together. The entrance zone, the only zone that creates rather than "
+            "assists an intention, captures zero rules. The entire measured cross-sell "
+            "benefit therefore comes from arrangements that help customers do what "
+            "they came to do, and the impulse placement could be removed without "
+            "reducing it.",
+            accent=ACCENT,
+        )
+    else:
+        info_card(
+            "Where the captured rules sit",
+            f"{_assists_rules} of {_scored['rules_captured']} captured rules sit in "
+            f"zones that assist an existing intention; {_creates_rules} sit in the "
+            "zone classified as creating one.",
+            accent=ACCENT,
+        )
+
+    st.markdown("---")
+    projection_block(
+        [
+            (f"Estimated additional annual revenue at {M.UPLIFT_SCENARIO_PCT}% uplift",
+             crore(AVG_BASKET * (M.UPLIFT_SCENARIO_PCT / 100) * DAILY_CUSTOMERS * 365)),
+        ],
+        f"Applies the 4 to 6% uplift range reported by Dreze, Hoch and Purk (1994) "
+        f"for shelf reorganisation; the {M.UPLIFT_SCENARIO_PCT}% mid-point is shown. "
+        "Not a measured result: no shelf was moved during this study, so customer "
+        "response was never observed.",
+    )
 
     section("Store Layout", "The 5 zones. Hover a zone to see its categories.")
     zone_names = [z["name"] for z in ZONES]
@@ -1218,7 +1772,10 @@ elif st.session_state.view_mode == "Examiner" and page == "Placement Zones":
         z = next(z for z in ZONES if z["name"] == chosen)
         render_html(
             f"<div class='ui-card' style='border-left:4px solid {z['color']};'>"
-            f"<div style='color:{z['color']};font-size:15px;font-weight:700;'>{z['name']} -- {z['label']}</div>"
+            f"<div style='color:{T['text']};font-size:15px;font-weight:700;'>"
+            f"<span style='display:inline-block;width:10px;height:10px;border-radius:2px;"
+            f"background:{z['color']};margin-right:8px;'></span>"
+            f"{z['name']} -- {z['label']}</div>"
             f"<div class='c-sub' style='color:{T['text']};margin:8px 0;'>{', '.join(z['categories'])}</div>"
             f"<div class='c-sub'>{z['reason']}</div></div>"
         )
@@ -1267,31 +1824,248 @@ elif st.session_state.view_mode == "Examiner" and page == "Placement Zones":
         render_html(
             f"<div class='ui-card' style='border-left:4px solid {z['color']};'>"
             f"<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;'>"
-            f"<div style='color:{z['color']};font-size:15px;font-weight:700;'>{z['name']}</div>"
+            f"<div style='color:{T['text']};font-size:15px;font-weight:700;'>"
+            f"<span style='display:inline-block;width:10px;height:10px;border-radius:2px;"
+            f"background:{z['color']};margin-right:8px;'></span>{z['name']}</div>"
             f"<div style='color:{T['subtext']};font-size:12px;text-transform:uppercase;letter-spacing:0.06em;'>{z['label']}</div></div>"
             f"<div class='c-sub' style='color:{T['text']};margin-bottom:8px;'>{', '.join(z['categories'])}</div>"
             f"<div class='c-sub' style='border-top:1px solid {T['border']};padding-top:8px;'>{z['reason']}</div></div>"
         )
 
 # ============================================================
+# EXAMINER MODE - HOW DO I KNOW THESE NUMBERS ARE RIGHT?
+# ============================================================
+
+elif st.session_state.view_mode == "Examiner" and page == "How do I know these numbers are right?":
+    page_header(
+        "How do I know these numbers are right?",
+        "Five documented errors, one shared direction, and the machinery that now "
+        "checks every figure so a sixth would be caught.",
+    )
+
+    hero(
+        "5 of 5",
+        "errors found in this project made a result look better than the data "
+        "supported. None understated one. The pattern, and the machinery that now "
+        "prevents a sixth, are below.",
+        value_color=NEGATIVE,
+    )
+
+    # ------------------------------------------------------------
+    # Section 1: the five errors. Corrected values are read from the
+    # verified record (config/metrics.py and the artifacts) at runtime;
+    # the "reported" values are the historical wrong claims.
+    # ------------------------------------------------------------
+    fs_pen = float(
+        category_dist.loc[category_dist["category"] == "FOOD STAPLES", "pct_of_baskets"].iloc[0]
+    )
+    model_vs_matched = M.REC_MODEL_HIT_PCT / M.REC_RANDOM_MATCHED_PCT
+
+    section(
+        "Five errors, one direction",
+        "Every error found in this project is listed, with what was reported and what "
+        "was correct. The corrected values are read from the verified record at runtime.",
+    )
+
+    _errors = [
+        ("Product co-occurrence counted line items instead of baskets",
+         "4,236 co-occurrences",
+         f"{M.TOP_PAIR_COUNT:,} baskets",
+         "Notebook 09 summed quantity products per basket instead of counting baskets "
+         "containing both products. The artifact pipeline had always counted baskets "
+         "correctly, so only the notebook was wrong."),
+        ("A line item share was reported under a transactions label",
+         "23.34% of transactions",
+         f"{fs_pen}% basket penetration",
+         "23.34% is FOOD STAPLES' share of line items. The chart axis said transactions, "
+         "which the number never measured. The share of baskets containing the category "
+         "is the figure the label promised."),
+        ("A bounded score's gain was expressed as a percentage",
+         "\"189% improvement\"",
+         f"+{M.SILHOUETTE_INCREASE} absolute",
+         "Silhouette is bounded on [-1, 1] and has no meaningful zero, so a ratio "
+         "between two silhouette values has no interpretation. The absolute increase "
+         f"from {M.SILHOUETTE_FREQUENCY:.3f} to {M.SILHOUETTE_COOCCURRENCE} is the "
+         "correct statement."),
+        ("A hit rate was reported against the wrong denominator",
+         f"quoted for the full {M.ML_TEST_BASKETS:,}-basket test set",
+         f"computed on {M.REC_TEST_BASKETS:,} multi-product baskets",
+         "The rate was measured on the subset of test baskets with more than one "
+         "product, then quoted as if it covered the whole held-out set."),
+        ("The recommender was compared to an unmatched baseline",
+         "28x better than chance (1% uniform random)",
+         f"about {model_vs_matched:.0f}x at a matched budget",
+         f"The model issues {M.REC_AVG_RECS_PER_BASKET} recommendations per basket, so "
+         f"matched random scores {M.REC_RANDOM_MATCHED_PCT}%, not 1%. A popularity "
+         f"baseline at equal budget scores {M.REC_POPULARITY_MATCHED_PCT}% against the "
+         f"model's {M.REC_MODEL_HIT_PCT}%. The honest comparison is much closer than "
+         "the reported one."),
+    ]
+
+    for i, (title, reported, correct, note) in enumerate(_errors, 1):
+        render_html(
+            f"<div class='ui-card' style='display:flex;gap:16px;align-items:flex-start;'>"
+            f"<div style='color:{NEGATIVE};font-size:20px;font-weight:800;min-width:28px;'>{i}</div>"
+            f"<div style='flex:1;'>"
+            f"<div class='c-title' style='margin-bottom:6px;'>{title}</div>"
+            f"<div style='font-size:14px;margin-bottom:6px;'>"
+            f"<span style='color:{NEGATIVE};text-decoration:line-through;'>{reported}</span>"
+            f"<span style='color:{T['subtext']};'> &#8594; </span>"
+            f"<span style='color:{T['text']};font-weight:700;'>{correct}</span></div>"
+            f"<div class='c-sub'>{note}</div></div>"
+            f"<div style='flex:none;background:rgba(220,38,38,0.10);color:{NEGATIVE};"
+            f"font-size:10.5px;font-weight:700;letter-spacing:0.06em;border-radius:99px;"
+            f"padding:3px 10px;white-space:nowrap;'>FLATTERED THE RESULT</div>"
+            f"</div>"
+        )
+
+    info_card(
+        "The finding is the direction, not the errors",
+        "All five corrections moved the same way: every error made a result appear "
+        "larger, cleaner or more impressive than the data supported, and no error was "
+        "found that had understated one. Measurement error is not randomly signed with "
+        "respect to the interests of the person measuring. That is why every figure in "
+        "this project is now checked by a machine, below, instead of being trusted.",
+        accent=NEGATIVE,
+    )
+
+    st.markdown("---")
+
+    # ------------------------------------------------------------
+    # Section 2: live verification status, read from the report that
+    # scripts/run_verifications.py writes. The timestamp is displayed
+    # prominently because a stale pass shown as current would be exactly
+    # the kind of error this page exists to prevent.
+    # ------------------------------------------------------------
+    section(
+        "Verification status",
+        "Read from reports/verification_status.json, written each time "
+        "scripts/run_verifications.py runs all three mechanisms.",
+    )
+
+    vstat = load_verification_status()
+    if vstat is None:
+        render_html(
+            f"<div class='ui-card' style='border-left:4px solid {NEGATIVE};'>"
+            f"<div class='c-title' style='color:{NEGATIVE};margin-bottom:6px;'>"
+            f"No verification report found</div>"
+            f"<div class='c-sub'>Run <b>python scripts/run_verifications.py</b> from the "
+            f"repository root. Until it has run, treat every figure on this dashboard "
+            f"as unverified.</div></div>"
+        )
+    else:
+        _age_days = (pd.Timestamp.now() - pd.Timestamp(vstat["generated_at"])).days
+        _all_ok = vstat.get("all_passed", False)
+        _dotc = POSITIVE if _all_ok else NEGATIVE
+        _verdict = "ALL PASSED" if _all_ok else "FAILING"
+        render_html(
+            f"<div class='ui-card' style='border-left:4px solid {_dotc};'>"
+            f"<div class='c-label'>Last verified</div>"
+            f"<div style='font-size:24px;font-weight:800;color:{T['text']};'>"
+            f"{vstat.get('generated_at_human', vstat['generated_at'])}"
+            f" <span style='color:{_dotc};font-size:14px;'>{_verdict}</span></div>"
+            f"<div class='c-sub' style='margin-top:4px;'>"
+            f"{'Today' if _age_days == 0 else f'{_age_days} day(s) ago'}. "
+            f"A pass is only as current as this timestamp; re-run with "
+            f"<b>python scripts/run_verifications.py</b>.</div></div>"
+        )
+        if _age_days > 7:
+            # Red is legitimate here: a stale pass presented as current is a
+            # failure of the verification claim itself.
+            render_html(
+                f"<div class='ui-card' style='border-left:4px solid {NEGATIVE};'>"
+                f"<div class='c-sub' style='color:{T['text']};'>"
+                f"<b style='color:{NEGATIVE};'>Stale:</b> this report is "
+                f"{_age_days} days old. Anything changed since then is unverified.</div></div>"
+            )
+
+        _mechanisms = [
+            ("verify_thesis_numbers", "scripts/verify_thesis_numbers.py",
+             "reported figures checked against a live source"),
+            ("quality_checks", "etl/quality_checks.py",
+             "warehouse checked against the OLTP source and the thesis"),
+            ("reproduce_all_results", "reproduce_all_results.py",
+             "artifacts regenerated, every stage re-checked"),
+        ]
+        for key, script, what in _mechanisms:
+            c = vstat["checks"].get(key)
+            if c is None:
+                continue
+            ok = c.get("ok", False)
+            chip_c = POSITIVE if ok else NEGATIVE
+            if key == "verify_thesis_numbers":
+                # This script's own summary line is the meaningful count.
+                shown = f"{c.get('verified', c.get('passed', 0))} of {c.get('checkable', c.get('total', 0))}"
+            else:
+                shown = f"{c.get('passed', 0)} of {c.get('total', 0)}"
+            extra = f" across {c['stages']} stages" if c.get("stages") else ""
+            render_html(
+                f"<div class='ui-card' style='display:flex;justify-content:space-between;"
+                f"align-items:center;padding:12px 18px;'>"
+                f"<div><div class='c-title' style='font-size:14px;'>{script}</div>"
+                f"<div class='c-sub'>{what}</div></div>"
+                f"<div style='text-align:right;'>"
+                f"<div style='color:{chip_c};font-weight:800;font-size:16px;'>"
+                f"{'PASS' if ok else 'FAIL'} {shown}{extra}</div></div></div>"
+            )
+
+    st.markdown("---")
+
+    # ------------------------------------------------------------
+    # Section 3: what this study does not know. The rule-coverage counts
+    # are computed from the mined rules at runtime; the basket reach is
+    # recomputed from the warehouse when it is running.
+    # ------------------------------------------------------------
+    n_all_cats = int(len(cluster_assign))
+    n_lift3 = len(rule_categories(category_rules, 3.0))
+    n_lift2 = len(rule_categories(category_rules, 2.0))
+    n_no_rule = n_all_cats - len(rule_categories(category_rules, 0.0))
+    reach = load_layout_reach(tuple(sorted(rule_categories(category_rules, 3.0))))
+
+    section("What this study does not know", "Stated plainly, so the result above is read at its actual size.")
+
+    _unknowns = [
+        ("The revenue uplift is projected, not measured",
+         f"The rupee figure applies the {M.UPLIFT_SCENARIO_PCT}% mid-point of the 4 to 6% "
+         "range reported by Dreze, Hoch and Purk (1994) to observed basket values. No shelf "
+         "was moved during this study, so customer response was never observed. Only a "
+         "controlled in-store trial could measure it."),
+        ("Most categories carry no strong rule",
+         f"Rule coverage reaches {n_lift3} of {n_all_cats} categories at lift 3.0. "
+         f"Relaxing the threshold to lift 2.0 reaches {n_lift2}. {n_no_rule} categories "
+         "carry no rule at any threshold, so association evidence says nothing about "
+         "where they should go."),
+        ("The layout cannot reach every basket",
+         f"{reach['reachable_pct']}% of baskets contain at least one category that "
+         f"appears in a strong rule, so the layout can in principle influence them. "
+         f"The other {reach['unreachable_pct']}%, carrying "
+         f"{reach['unreachable_revenue_pct']}% of revenue, are unaffected by any zone "
+         f"arrangement this study can propose. ({reach['source']}.)"),
+    ]
+    for title, body in _unknowns:
+        info_card(title, body)
+
+# ============================================================
 # EXAMINER MODE - ETHICS & DATA
 # ============================================================
 
-elif st.session_state.view_mode == "Examiner" and page == "Ethics & Data":
-    st.title("Ethics & Data")
-    section(None, "Objective 5 -- responsible use of real store data.")
-    st.markdown("---")
+elif st.session_state.view_mode == "Examiner" and page == "Was this done responsibly?":
+    page_header(
+        "Was this done responsibly?",
+        "Objective 5 -- responsible use of real store data.",
+    )
 
-    kpi_row([
-        {"label": "Data Source", "value": "Primary"},
-        {"label": "Cash (anonymous)", "value": "98%"},
-        {"label": "Personal Data", "value": "None"},
-    ])
+    hero(
+        "98% cash",
+        "of transactions carry no customer identity at all. Primary data from the "
+        "student's own family-run store, used with management's permission. No names, "
+        "phone numbers, addresses or loyalty IDs exist anywhere in the record.",
+    )
 
     info_card(
         "Data provenance &amp; consent",
-        "This is <b>primary data</b> collected from the student's own family-run store "
-        "(Pokhara), used <b>with the explicit permission of store management</b> for academic research "
+        "This is <b>primary data</b> collected from the student's own family-run store, "
+        "used <b>with the explicit permission of store management</b> for academic research "
         "only. It was <b>not provided by faculty</b>; the earlier methodology note describing it as faculty-provided "
         "was incorrect and is superseded by this statement.",
     )
@@ -1304,7 +2078,7 @@ elif st.session_state.view_mode == "Examiner" and page == "Ethics & Data":
     )
     info_card(
         "Honest reporting",
-        "All association, clustering and basket figures are measured from the data. The 3% / 5% / 8% revenue uplift is "
+        "All association, clustering and basket figures are measured from the data. The 4% to 6% revenue uplift is "
         "clearly labelled as a <b>projection</b> based on retail-industry benchmarks, not the result of a live in-store "
         "experiment. The cross-sell before/after on the Placement Zones page is a data-driven result computed from the "
         "association rules; only the rupee conversion is a projection.",
